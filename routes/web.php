@@ -2,10 +2,119 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+// Import Controller Admin (Porsi Nita & Marvel)
+use App\Http\Controllers\Admin\GuruController;
+use App\Http\Controllers\Admin\MapelController;
+use App\Http\Controllers\Admin\KelasController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\SiswaController;
+use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\JamPelController;
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+// Import Controller Guru (Porsi Mapeng, Wildan, Adip)
+use App\Http\Controllers\Guru\JurnalGuruController;
+use App\Http\Controllers\Guru\RiwayatJurnalGuruController;
+use App\Http\Controllers\Guru\ProfilGuruController;
+
+// Import Controller Sekretaris (Porsi Mapeng, Wildan, Adip)
+use App\Http\Controllers\Sekretaris\ValidasiSekreController;
+use App\Http\Controllers\Sekretaris\RiwayatSekreController;
+use App\Http\Controllers\Sekretaris\ProfilSekreController;
+
+// Import Controller Staff Piket (Porsi Wildan & Mapeng)
+use App\Http\Controllers\Piket\DashboardPiketController;
+use App\Http\Controllers\Piket\LaporanPiketController;
+
+// -------------------------------------------------------------
+// ROUTE BAWAAN STARTER KIT
+// -------------------------------------------------------------
+Route::get('/', function () {
+    return redirect()->route('login');
 });
 
+// -------------------------------------------------------------
+// ROUTE SETELAH LOGIN (AUTH & VERIFIED)
+// -------------------------------------------------------------
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    Route::view('dashboard', 'dashboard')->name('dashboard');
+
+    // =========================================================
+    // 1. GROUP ROLE ADMIN (Nita & Marvel)
+    // =========================================================
+    Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('admin.dashboard');
+        })->name('dashboard');
+
+        // --- PORSI NITA ---
+        Route::resource('guru', GuruController::class);
+        Route::resource('mapel', MapelController::class);
+
+        // --- PORSI MARVEL ---
+        Route::resource('kelas', KelasController::class);
+        Route::resource('user', UserController::class);
+        Route::resource('siswa', SiswaController::class);
+        Route::resource('jam', JamPelController::class);
+        Route::resource('jadwal', JadwalController::class);
+    });
+
+    // =========================================================
+    // 2. GROUP ROLE GURU (Mapeng, Wildan, Adip)
+    // =========================================================
+    Route::middleware(['role:Guru'])->prefix('guru')->name('guru.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('guru.dashboard');
+        })->name('dashboard');
+
+        // --- PORSI MAPENG ---
+        Route::resource('jurnal', JurnalGuruController::class);
+
+        // --- PORSI WILDAN ---
+        Route::get('riwayat', [RiwayatJurnalGuruController::class, 'index'])->name('riwayat.index');
+        Route::get('riwayat/{id}', [RiwayatJurnalGuruController::class, 'show'])->name('riwayat.show');
+
+        // --- PORSI ADIP ---
+        Route::get('profil', [ProfilGuruController::class, 'edit'])->name('profil.edit');
+        Route::put('profil', [ProfilGuruController::class, 'update'])->name('profil.update');
+    });
+
+    // =========================================================
+    // 3. GROUP ROLE SEKRETARIS (Mapeng, Wildan, Adip)
+    // =========================================================
+    Route::middleware(['role:Sekretaris'])->prefix('sekretaris')->name('sekretaris.')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('sekretaris.dashboard');
+        })->name('dashboard');
+
+        // --- PORSI MAPENG ---
+        Route::get('validasi', [ValidasiSekreController::class, 'index'])->name('validasi.index');
+        Route::post('validasi/{id}/acc', [ValidasiSekreController::class, 'approve'])->name('validasi.approve');
+        Route::post('validasi/{id}/tolak', [ValidasiSekreController::class, 'reject'])->name('validasi.reject');
+
+        // --- PORSI WILDAN ---
+        Route::get('riwayat', [RiwayatSekreController::class, 'index'])->name('riwayat.index');
+
+        // --- PORSI ADIP ---
+        Route::get('profil', [ProfilSekreController::class, 'edit'])->name('profil.edit');
+        Route::put('profil', [ProfilSekreController::class, 'update'])->name('profil.update');
+    });
+
+    // =========================================================
+    // 4. GROUP ROLE STAFF PIKET (Wildan & Mapeng)
+    // =========================================================
+    Route::middleware(['role:Staff Piket'])->prefix('piket')->name('piket.')->group(function () {
+        Route::get('/dashboard', [DashboardPiketController::class, 'index'])->name('dashboard');
+
+        // --- PORSI WILDAN ---
+        Route::get('monitoring', [DashboardPiketController::class, 'monitoring'])->name('monitoring');
+
+        // --- PORSI MAPENG ---
+        Route::get('laporan', [LaporanPiketController::class, 'index'])->name('laporan.index');
+        Route::get('laporan/cetak', [LaporanPiketController::class, 'cetak'])->name('laporan.cetak');
+    });
+
+});
+
+// Load file settings bawaan
 require __DIR__.'/settings.php';
