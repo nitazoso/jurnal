@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('jam_pels', function (Blueprint $table) {
             $table->id('id_jam');
-            $table->enum('klp_hari',['Senin-Kamis', 'Jumat']);
+            $table->enum('klp_hari', ['Senin-Kamis', 'Jumat']);
             $table->integer('jam_ke')->nullable();
-            $table->enum('jenis', ['pelajaran', 'istirahat' ]);
-            $table->time('jam_mulai'); 
+            $table->enum('jenis', ['pelajaran', 'istirahat']);
+            $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();
         });

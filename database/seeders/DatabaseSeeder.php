@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\Guru;
+use App\Models\JamPel;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Siswa;
-use App\Models\JamPel;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 

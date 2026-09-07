@@ -10,6 +10,7 @@ class Jurnal extends Model
     use SoftDeletes;
 
     protected $table = 'jurnals';
+
     protected $primaryKey = 'id_jurnal';
 
     protected $fillable = [

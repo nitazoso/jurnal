@@ -10,6 +10,7 @@ class Kelas extends Model
     use SoftDeletes;
 
     protected $table = 'kelases';
+
     protected $primaryKey = 'id_kelas';
 
     protected $fillable = [

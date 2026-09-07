@@ -10,7 +10,9 @@ class Mapel extends Model
     use SoftDeletes; // Tambahkan ini agar sesuai dengan migration
 
     protected $table = 'mapels';
+
     protected $primaryKey = 'id_mapel';
+
     protected $fillable = ['nama_mapel'];
 
     public function jadwals()

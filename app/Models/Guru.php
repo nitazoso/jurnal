@@ -10,6 +10,7 @@ class Guru extends Model
     use SoftDeletes;
 
     protected $table = 'gurus';
+
     protected $primaryKey = 'id_guru';
 
     protected $fillable = [

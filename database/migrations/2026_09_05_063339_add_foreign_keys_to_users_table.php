@@ -10,14 +10,14 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->foreign('id_guru')
-                  ->references('id_guru')
-                  ->on('gurus')
-                  ->onDelete('set null');
+                ->references('id_guru')
+                ->on('gurus')
+                ->onDelete('set null');
 
             $table->foreign('id_kelas')
-                  ->references('id_kelas')
-                  ->on('kelases')
-                  ->onDelete('set null');
+                ->references('id_kelas')
+                ->on('kelases')
+                ->onDelete('set null');
         });
     }
 

@@ -9,14 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void{
-    Schema::create('mapels', function (Blueprint $table) {
-        $table->id('id_mapel');
-        $table->string('nama_mapel', 60);
-        $table->timestamps();
-        $table->softDeletes();
-    });
+    public function up(): void
+    {
+        Schema::create('mapels', function (Blueprint $table) {
+            $table->id('id_mapel');
+            $table->string('nama_mapel', 60);
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
+
     /**
      * Reverse the migrations.
      */

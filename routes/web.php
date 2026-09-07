@@ -1,29 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
-// Import Controller Admin (Porsi Nita & Marvel)
 use App\Http\Controllers\Admin\GuruController;
-use App\Http\Controllers\Admin\MapelController;
-use App\Http\Controllers\Admin\KelasController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\SiswaController;
+// Import Controller Admin (Porsi Nita & Marvel)
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\JamPelController;
-
-// Import Controller Guru (Porsi Mapeng, Wildan, Adip)
+use App\Http\Controllers\Admin\KelasController;
+use App\Http\Controllers\Admin\MapelController;
+use App\Http\Controllers\Admin\SiswaController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Guru\JurnalGuruController;
-use App\Http\Controllers\Guru\RiwayatJurnalGuruController;
+// Import Controller Guru (Porsi Mapeng, Wildan, Adip)
 use App\Http\Controllers\Guru\ProfilGuruController;
-
-// Import Controller Sekretaris (Porsi Mapeng, Wildan, Adip)
-use App\Http\Controllers\Sekretaris\ValidasiSekreController;
-use App\Http\Controllers\Sekretaris\RiwayatSekreController;
-use App\Http\Controllers\Sekretaris\ProfilSekreController;
-
-// Import Controller Staff Piket (Porsi Wildan & Mapeng)
+use App\Http\Controllers\Guru\RiwayatJurnalGuruController;
 use App\Http\Controllers\Piket\DashboardPiketController;
+// Import Controller Sekretaris (Porsi Mapeng, Wildan, Adip)
 use App\Http\Controllers\Piket\LaporanPiketController;
+use App\Http\Controllers\Sekretaris\ProfilSekreController;
+use App\Http\Controllers\Sekretaris\RiwayatSekreController;
+// Import Controller Staff Piket (Porsi Wildan & Mapeng)
+use App\Http\Controllers\Sekretaris\ValidasiSekreController;
+use Illuminate\Support\Facades\Route;
 
 // -------------------------------------------------------------
 // ROUTE BAWAAN STARTER KIT

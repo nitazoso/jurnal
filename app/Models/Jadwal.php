@@ -10,6 +10,7 @@ class Jadwal extends Model
     use SoftDeletes;
 
     protected $table = 'jadwals';
+
     protected $primaryKey = 'id_jadwal';
 
     protected $fillable = [
@@ -23,7 +24,6 @@ class Jadwal extends Model
         'tahun_ajaran',
     ];
 
-    
     // Relasi ke Guru Pengajar
     public function guru()
     {

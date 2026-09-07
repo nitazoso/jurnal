@@ -10,6 +10,7 @@ class Siswa extends Model
     use SoftDeletes;
 
     protected $primaryKey = 'id_siswa';
+
     protected $fillable = ['nis', 'nama_siswa', 'jenis_kelamin', 'id_kelas'];
 
     public function kelas()

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id('id_siswa');
-            $table->string('nis', 20)->unique(); 
+            $table->string('nis', 20)->unique();
             $table->unsignedBigInteger('id_kelas');
             $table->string('nama_siswa', 225);
             $table->enum('jenis_kelamin', ['L', 'P']);
             $table->timestamps();
-            $table->softDeletes();  
+            $table->softDeletes();
         });
     }
 

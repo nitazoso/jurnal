@@ -7,9 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class JamPel extends Model
 {
     protected $table = 'jam_pels';
+
     protected $primaryKey = 'id_jam';
 
-    
     protected $fillable = [
         'klp_hari',
         'jam_ke',
@@ -21,7 +21,6 @@ class JamPel extends Model
     protected $casts = [
         'jam_ke' => 'integer',
     ];
-
 
     // Relasi ke Jadwal (sebagai jam mulai)
     public function jadwalsMulai()

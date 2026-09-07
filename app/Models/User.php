@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -14,25 +13,26 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements PasskeyUser
 {
-    use HasFactory, Notifiable, PasskeyAuthenticatable, TwoFactorAuthenticatable, SoftDeletes;
+    use HasFactory, Notifiable, PasskeyAuthenticatable, SoftDeletes, TwoFactorAuthenticatable;
 
     protected $table = 'users';
+
     protected $primaryKey = 'id_user';
 
     protected $fillable = [
-        'username', 
-        'password', 
-        'nama_user', 
-        'role', 
-        'id_guru', 
-        'id_kelas'
+        'username',
+        'password',
+        'nama_user',
+        'role',
+        'id_guru',
+        'id_kelas',
     ];
 
     protected $hidden = [
-        'password', 
-        'two_factor_secret', 
-        'two_factor_recovery_codes', 
-        'remember_token'
+        'password',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'remember_token',
     ];
 
     protected function casts(): array
