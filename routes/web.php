@@ -30,7 +30,7 @@ use App\Http\Controllers\Piket\LaporanPiketController;
 // -------------------------------------------------------------
 Route::get('/', function () {
     return redirect()->route('login');
-});
+})->name('home');
 
 // -------------------------------------------------------------
 // ROUTE SETELAH LOGIN (AUTH & VERIFIED)
