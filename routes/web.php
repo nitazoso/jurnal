@@ -1,25 +1,29 @@
 <?php
 
-use App\Http\Controllers\Admin\GuruController;
+use Illuminate\Support\Facades\Route;
+
 // Import Controller Admin (Porsi Nita & Marvel)
+use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\JamPelController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Guru\JurnalGuruController;
+
 // Import Controller Guru (Porsi Mapeng, Wildan, Adip)
+use App\Http\Controllers\Guru\JurnalGuruController;
 use App\Http\Controllers\Guru\ProfilGuruController;
 use App\Http\Controllers\Guru\RiwayatJurnalGuruController;
-use App\Http\Controllers\Piket\DashboardPiketController;
+
 // Import Controller Sekretaris (Porsi Mapeng, Wildan, Adip)
-use App\Http\Controllers\Piket\LaporanPiketController;
 use App\Http\Controllers\Sekretaris\ProfilSekreController;
 use App\Http\Controllers\Sekretaris\RiwayatSekreController;
-// Import Controller Staff Piket (Porsi Wildan & Mapeng)
 use App\Http\Controllers\Sekretaris\ValidasiSekreController;
-use Illuminate\Support\Facades\Route;
+
+// Import Controller Staff Piket (Porsi Wildan & Mapeng)
+use App\Http\Controllers\Piket\DashboardPiketController;
+use App\Http\Controllers\Piket\LaporanPiketController;
 
 // -------------------------------------------------------------
 // ROUTE BAWAAN STARTER KIT
@@ -48,8 +52,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('mapel', MapelController::class);
 
         // --- PORSI MARVEL ---
-        Route::resource('kelas', KelasController::class);
-        Route::resource('user', UserController::class);
+        Route::resource('kelas', KelasController::class)->parameters([
+            'kelas' => 'kelas'
+        ]);        Route::resource('user', UserController::class);
         Route::resource('siswa', SiswaController::class);
         Route::resource('jam', JamPelController::class);
         Route::resource('jadwal', JadwalController::class);

@@ -6,9 +6,11 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
@@ -18,7 +20,21 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Custom LoginResponse agar redirect sesuai Role user
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+            public function toResponse($request)
+            {
+                $role = Auth::user()->role;
+
+                return match ($role) {
+                    'Admin'      => redirect()->intended('/admin/dashboard'),
+                    'Guru'       => redirect()->intended('/gurudashboard'),
+                    'Sekretaris' => redirect()->intended('/sekretaris/dashboard'),
+                    'Staff'      => redirect()->intended('/staff/dashboard'),
+                    default      => redirect()->intended('/dashboard'),
+                };
+            }
+        });
     }
 
     /**
@@ -40,7 +56,7 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::createUsersUsing(CreateNewUser::class);
     }
 
-  /**
+    /**
      * Configure Fortify views.
      */
     private function configureViews(): void
