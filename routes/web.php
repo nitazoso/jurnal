@@ -65,22 +65,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 1. GROUP ROLE ADMIN (Nita & Marvel)
     // =========================================================
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // --- PORSI NITA ---
-        Route::resource('guru', GuruController::class);
-        Route::resource('mapel', MapelController::class);
+    // --- PORSI NITA ---
+    Route::resource('guru', GuruController::class);
+    Route::resource('mapel', MapelController::class);
 
-        // --- PORSI MARVEL ---
-        Route::resource('kelas', KelasController::class)->parameters([
-            'kelas' => 'kelas',
-        ]);
-        Route::resource('user', UserController::class);
-        Route::resource('siswa', SiswaController::class);
-        Route::resource('jam', JamPelController::class);
-        Route::resource('jadwal', JadwalController::class);
-    });
+    Route::resource('kelas', KelasController::class)->parameters([
+        'kelas' => 'kelas',
+    ]);
+    Route::resource('siswa', SiswaController::class);
 
+    Route::resource('user', UserController::class);
+    Route::resource('jam', JamPelController::class);
+    Route::resource('jadwal', JadwalController::class);
+});
     // =========================================================
     // 2. GROUP ROLE GURU (Mapeng, Wildan, Adip)
     // =========================================================

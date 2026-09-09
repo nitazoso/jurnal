@@ -1,102 +1,105 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Kelas - Jurnify</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome untuk Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Font Inter/Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    </style>
-</head>
-<body class="bg-[#F8FAFC] min-h-screen text-slate-800 flex">
+@extends('layouts.admin')
 
-    <!-- SIDEBAR DARI KOMPONEN -->
-    <x-admin-sidebar />
+@section('title', 'Manajemen Kelas')
 
-    <!-- MAIN CONTENT AREA -->
-    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+@section('content')
+<style>
+    .table-kelas-row {
+        background-color: #ffffff;
+        border-radius: 10px;
+        transition: all 0.2s ease-in-out;
+    }
 
-        <!-- TOPBAR DARI KOMPONEN (ATAU HEADER MANUAL) -->
-        <x-admin-topbar />
+    .table-kelas-row:hover {
+        background-color: #f0f3ff !important;
+    }
 
-        <!-- Main Container -->
-        <div class="p-8">
+    .table-kelas-row:hover .col-id {
+        border-left: 4px solid #1B234A !important;
+        color: #1B234A !important;
+    }
 
-            <!-- Card Direktori Kelas -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
-                
-                <!-- Card Header & Filter Search -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <h3 class="text-lg font-bold text-slate-800">Direktori Kelas</h3>
-                    
-                    <div class="flex items-center gap-2">
-                        <!-- Search Bar -->
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                                <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                            </span>
-                            <input type="text" placeholder="Cari kelas atau wali..." class="w-64 bg-slate-100/70 border-0 rounded-xl py-2 pl-9 pr-4 text-xs text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition outline-none">
-                        </div>
+    .table-kelas-row:hover .action-btn {
+        background-color: #1B234A !important;
+        color: #ffffff !important;
+    }
+</style>
 
-                        <!-- Filter Button -->
-                        <button class="bg-slate-100/70 hover:bg-slate-200/80 text-slate-600 p-2.5 rounded-xl transition flex items-center justify-center">
-                            <i class="fa-solid fa-sliders text-xs"></i>
-                        </button>
-                    </div>
-                </div>
+<div class="header-action-wrapper" style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px;">
+    <a href="{{ route('admin.kelas.create') }}" class="btn-primary" style="background-color: #1B234A; color: #fff; padding: 10px 18px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 8px;">
+        <span class="material-symbols-outlined" style="font-size: 18px;">person_add</span>
+        Tambah Kelas
+    </a>
+</div>
 
-                <!-- Table Container -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-100/60 text-[11px] font-bold text-slate-500 uppercase tracking-wider rounded-lg">
-                                <th class="py-3 px-6 rounded-l-xl">ID</th>
-                                <th class="py-3 px-6">NAMA KELAS</th>
-                                <th class="py-3 px-6">WALI KELAS</th>
-                                <th class="py-3 px-6 text-center">SISWA</th>
-                                <th class="py-3 px-6 rounded-r-xl text-center">AKSI</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-xs">
-                            
-                            @forelse($kelas as $item)
-                            <tr class="hover:bg-slate-50/80 transition rounded-xl">
-                                <td class="py-4 px-6 font-medium text-slate-600">
-                                    KLS-{{ str_pad($item->id, 3, '0', STR_PAD_LEFT) }}
-                                </td>
-                                <td class="py-4 px-6 font-bold text-slate-800">
-                                    {{ $item->nama_kelas }}
-                                </td>
-                                <td class="py-4 px-6 text-slate-600 font-medium">
-                                    {{ $item->waliKelas->name ?? '-' }}
-                                </td>
-                                <td class="py-4 px-6 text-center text-slate-600 font-medium">
-                                    {{ $item->siswas_count ?? 0 }}
-                                </td>
-                                <td class="py-4 px-6 text-center text-slate-400 hover:text-slate-600">
-                                <a href="{{ route('admin.kelas.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="py-6 text-center text-slate-400">Belum ada data kelas.</td>
-                            </tr>
-                            @endforelse
-
-                        </tbody>
-                    </table>
-                </div>
-
-            </div>
-
+<div class="activity-card" style="background: #ffffff; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    
+    <div class="activity-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0;">
+        <h3 class="activity-title" style="margin: 0; font-size: 18px; font-weight: 700; color: #1e293b;">Direktori Kelas</h3>
+        
+        <div class="filters" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+<form action="{{ url()->current() }}" method="GET" style="display: inline-block;">
+    <div class="search-box" style="position: relative; display: flex; align-items: center;">
+        <span class="material-symbols-outlined" style="position: absolute; left: 10px; color: #94a3b8; font-size: 18px;">search</span>
+        <input 
+            type="text" 
+            name="search" 
+            value="{{ request('search') }}" 
+            placeholder="Cari kelas atau wali..." 
+            style="padding: 8px 12px 8px 36px; background: #f1f5f9; border: none; border-radius: 10px; font-size: 12px; outline: none; width: 220px;"
+            onkeydown="if(event.key === 'Enter') this.form.submit();"
+        >
+    </div>
+</form>
+            
+            <button class="filter-btn" style="background: #f1f5f9; border: none; padding: 8px 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center;">
+                <span class="material-symbols-outlined" style="font-size: 18px; color: #64748b;">tune</span>
+            </button>
         </div>
+    </div>
 
-    </main>
+    <div class="table-wrapper">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+            <thead>
+                <tr style="background-color: #f8fafc; color: #64748b; font-size: 11px; text-transform: uppercase;">
+                    <th style="padding: 12px 16px; text-align: left; border-top-left-radius: 8px; border-bottom-left-radius: 8px;">ID</th>
+                    <th style="padding: 12px 16px; text-align: left;">NAMA KELAS</th>
+                    <th style="padding: 12px 16px; text-align: left;">WALI KELAS</th>
+                    <th style="padding: 12px 16px; text-align: center;">SISWA</th>
+                    <th style="padding: 12px 16px; text-align: center; border-top-right-radius: 8px; border-bottom-right-radius: 8px;"></th>
+                </tr>
+            </thead>
+            <tbody style="font-size: 13px;">
+                @forelse($kelas as $item)
+                <tr class="table-kelas-row">
+                    <td class="col-id" style="padding: 16px; color: #64748b; font-weight: 700; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-left: 4px solid transparent; transition: all 0.2s;">
+                        KLS-{{ str_pad($item->id_kelas ?? $item->id, 3, '0', STR_PAD_LEFT) }}
+                    </td>
+                    <td style="padding: 16px; color: #0f172a; font-weight: 700;">
+                        {{ $item->nama_kelas }}
+                    </td>
+                      <td style="padding: 16px; color: #475569;">
+                          {{ $item->waliKelas->nama_guru ?? '-' }}
+                    </td>
+                    <td style="padding: 16px; text-align: center; color: #475569;">
+                        {{ $item->siswas_count ?? $item->siswas->count() ?? 0 }}
+                    </td>
+                    <td style="padding: 16px; text-align: center; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
+                       <a href="{{ route('admin.siswa.index', ['kelas_id' => $item->id_kelas ?? $item->id]) }}" class="action-btn" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: #f8fafc; border-radius: 50%; transition: all 0.2s;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                       </a>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" style="padding: 24px; text-align: center; color: #94a3b8;">
+                        Belum ada data kelas.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-</body>
-</html>
+</div>
+@endsection

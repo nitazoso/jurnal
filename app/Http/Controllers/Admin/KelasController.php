@@ -8,14 +8,21 @@ use App\Models\Kelas;
 
 class KelasController extends Controller
 {
-    public function index()
-    {
-        // Mengambil data kelas beserta wali kelas dan jumlah siswa
-        $kelas = Kelas::with('waliKelas')->withCount('siswas')->get();
+   
+    public function index(Request $request)
+{
+    $kelas = Kelas::with('waliKelas')
+        ->withCount('siswas')
+        ->when($request->search, function ($query, $search) {
+            $query->where('nama_kelas', 'like', "%{$search}%")
+                  ->orWhereHas('waliKelas', function ($q) use ($search) {
+                      $q->where('nama_guru', 'like', "%{$search}%"); // Sesuaikan 'nama' dengan kolom nama guru di tabel gurus
+                  });
+        })
+        ->get();
 
-        // Mengarahkan ke file resources/views/admin/kelas/index.blade.php
-        return view('admin.kelas.index', compact('kelas'));
-    }
+    return view('admin.kelas.index', compact('kelas'));
+}
 
     public function create()
     {
