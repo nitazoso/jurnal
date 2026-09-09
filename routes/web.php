@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 // Import Controller Admin (Porsi Nita & Marvel)
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\JamPelController;
@@ -37,15 +38,34 @@ Route::get('/', function () {
 // -------------------------------------------------------------
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    Route::view('dashboard', 'dashboard')->name('dashboard');
+    // Redirection pintar berdasarkan Role pengguna setelah Login
+    Route::get('/dashboard', function () {
+        $user = auth()->user();
+
+        if ($user->hasRole('Admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        if ($user->hasRole('Guru')) {
+            return redirect()->route('guru.dashboard');
+        }
+
+        if ($user->hasRole('Sekretaris')) {
+            return redirect()->route('sekretaris.dashboard');
+        }
+
+        if ($user->hasRole('Staff Piket')) {
+            return redirect()->route('piket.dashboard');
+        }
+
+        return redirect()->route('login');
+    })->name('dashboard');
 
     // =========================================================
     // 1. GROUP ROLE ADMIN (Nita & Marvel)
     // =========================================================
     Route::middleware(['role:Admin'])->prefix('admin')->name('admin.')->group(function () {
-        Route::get('/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // --- PORSI NITA ---
         Route::resource('guru', GuruController::class);
@@ -53,8 +73,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // --- PORSI MARVEL ---
         Route::resource('kelas', KelasController::class)->parameters([
-            'kelas' => 'kelas'
-        ]);        Route::resource('user', UserController::class);
+            'kelas' => 'kelas',
+        ]);
+        Route::resource('user', UserController::class);
         Route::resource('siswa', SiswaController::class);
         Route::resource('jam', JamPelController::class);
         Route::resource('jadwal', JadwalController::class);

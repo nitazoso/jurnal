@@ -18,24 +18,25 @@ class FortifyServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
-    public function register(): void
-    {
-        // Custom LoginResponse agar redirect sesuai Role user
-        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
-            public function toResponse($request)
-            {
-                $role = Auth::user()->role;
+   public function register(): void
+{
+    // Custom LoginResponse agar redirect sesuai Role user
+    $this->app->instance(LoginResponse::class, new class implements LoginResponse {
+        public function toResponse($request)
+        {
+            $role = Auth::user()->role;
 
-                return match ($role) {
-                    'Admin'      => redirect()->intended('/admin/dashboard'),
-                    'Guru'       => redirect()->intended('/gurudashboard'),
-                    'Sekretaris' => redirect()->intended('/sekretaris/dashboard'),
-                    'Staff'      => redirect()->intended('/staff/dashboard'),
-                    default      => redirect()->intended('/dashboard'),
-                };
-            }
-        });
-    }
+            // Menggunakan route() biasa agar selalu langsung ke dashboard
+            return match ($role) {
+                'Admin'       => redirect()->route('admin.dashboard'),
+                'Guru'        => redirect()->route('guru.dashboard'),
+                'Sekretaris'  => redirect()->route('sekretaris.dashboard'),
+                'Staff Piket' => redirect()->route('piket.dashboard'),
+                default       => redirect()->route('dashboard'),
+            };
+        }
+    });
+}
 
     /**
      * Bootstrap any application services.
