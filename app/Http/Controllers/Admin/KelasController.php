@@ -9,16 +9,19 @@ use App\Models\Kelas;
 class KelasController extends Controller
 {
     public function index()
-  {
-     $kelas = Kelas::with('waliKelas')->get();
+    {
+        // Mengambil data kelas beserta wali kelas dan jumlah siswa
+        $kelas = Kelas::with('waliKelas')->withCount('siswas')->get();
 
-     return view('admin.kelas', compact('kelas'));
+        // Mengarahkan ke file resources/views/admin/kelas/index.blade.php
+        return view('admin.kelas.index', compact('kelas'));
     }
 
     public function create()
     {
         return view('admin.kelas.create');
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -30,26 +33,29 @@ class KelasController extends Controller
         return redirect()->route('admin.kelas.index')
             ->with('success', 'Data kelas berhasil ditambahkan.');
     }
+
     public function edit(Kelas $kelas)
     {
         return view('admin.kelas.edit', compact('kelas'));
     }
-   public function update(Request $request, $id)
+
+    public function update(Request $request, Kelas $kelas)
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:50',
         ]);
 
-        $kelas = Kelas::findOrFail($id);
         $kelas->update($request->all());
 
-        return redirect()->route('admin.kelas.index')->with('success', 'Data kelas berhasil diperbarui!');
+        return redirect()->route('admin.kelas.index')
+            ->with('success', 'Data kelas berhasil diperbarui!');
     }
-    public function destroy($id)
+
+    public function destroy(Kelas $kelas)
     {
-        $kelas = Kelas::findOrFail($id);
         $kelas->delete();
 
-        return redirect()->route('admin.kelas.index')->with('success', 'Data kelas berhasil dihapus!');
+        return redirect()->route('admin.kelas.index')
+            ->with('success', 'Data kelas berhasil dihapus!');
     }
 }
