@@ -1,0 +1,24 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#8322
+    [34mall[39m: [
+      [34;4mApp\Models\JamPel[39;24m {#8324
+        [34mid_jam[39m: [35m1[39m,
+        [34mklp_hari[39m: [32m"[39m[32mSenin-Kamis[39m[32m"[39m,
+        [34mjam_ke[39m: [35m1[39m,
+        [34mjenis[39m: [32m"[39m[32mpelajaran[39m[32m"[39m,
+        [34mjam_mulai[39m: [32m"[39m[32m07:00:00[39m[32m"[39m,
+        [34mjam_selesai[39m: [32m"[39m[32m07:45:00[39m[32m"[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-09-08 07:36:01[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-09-08 07:36:01[39m[32m"[39m,
+      },
+      [34;4mApp\Models\JamPel[39;24m {#8325
+        [34mid_jam[39m: [35m2[39m,
+        [34mklp_hari[39m: [32m"[39m[32mSenin-Kamis[39m[32m"[39m,
+        [34mjam_ke[39m: [35m2[39m,
+        [34mjenis[39m: [32m"[39m[32mpelajaran[39m[32m"[39m,
+        [34mjam_mulai[39m: [32m"[39m[32m07:45:00[39m[32m"[39m,
+        [34mjam_selesai[39m: [32m"[39m[32m08:30:00[39m[32m"[39m,
+        [34mcreated_at[39m: [32m"[39m[32m2026-09-08 07:36:01[39m[32m"[39m,
+        [34mupdated_at[39m: [32m"[39m[32m2026-09-08 07:36:01[39m[32m"[39m,
+      },
+    ],
+  }

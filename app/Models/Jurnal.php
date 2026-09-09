@@ -34,49 +34,5 @@ class Jurnal extends Model
 
     protected $casts = [
         'tanggal' => 'date',
-        'jml_hadir' => 'integer',
-        'jml_tidak_hadir' => 'integer',
     ];
-
-    // Relasi ke Jadwal
-    public function jadwal()
-    {
-        return $this->belongsTo(Jadwal::class, 'id_jadwal', 'id_jadwal');
-    }
-
-    // Relasi ke Kelas
-    public function kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
-    }
-
-    // Relasi ke Guru Pengajar
-    public function guru()
-    {
-        return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');
-    }
-
-    // Relasi ke User Pengisi/Pembuat (Sekretaris / Piket)
-    public function user()
-    {
-        return $this->belongsTo(User::class, 'id_user', 'id_user');
-    }
-
-    // Relasi ke Jam Pelajaran Mulai
-    public function jamMulai()
-    {
-        return $this->belongsTo(JamPel::class, 'id_jam_mulai', 'id_jam');
-    }
-
-    // Relasi ke Jam Pelajaran Selesai
-    public function jamSelesai()
-    {
-        return $this->belongsTo(JamPel::class, 'id_jam_selesai', 'id_jam');
-    }
-
-    // Relasi ke Detail Absensi (Siswa yang hadir/sakit/izin/alpa di jurnal ini)
-    public function details()
-    {
-        return $this->hasMany(DetailAbsensi::class, 'id_jurnal', 'id_jurnal');
-    }
 }

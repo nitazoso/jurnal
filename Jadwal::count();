@@ -1,0 +1,13 @@
+[90m= [39m[34;4mApp\Models\Jadwal[39;24m {#8488
+    [34mid_guru[39m: [35m1[39m,
+    [34mid_mapel[39m: [35m1[39m,
+    [34mid_kelas[39m: [35m1[39m,
+    [34mid_jam_mulai[39m: [35m1[39m,
+    [34mid_jam_selesai[39m: [35m1[39m,
+    [34mhari[39m: [32m"[39m[32mSenin[39m[32m"[39m,
+    [34msemester[39m: [32m"[39m[32mGanjil[39m[32m"[39m,
+    [34mtahun_ajaran[39m: [32m"[39m[32m2026/2027[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-09-08 14:08:40[39m[32m"[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-09-08 14:08:40[39m[32m"[39m,
+    [34mid_jadwal[39m: [35m1[39m,
+  }
