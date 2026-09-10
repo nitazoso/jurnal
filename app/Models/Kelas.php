@@ -18,4 +18,22 @@ class Kelas extends Model
         'wali_kelas',
         'jumlah_siswa',
     ];
+
+    public function waliKelas()
+    {
+        return $this->belongsTo(
+            Guru::class,
+            'wali_kelas',
+            'id_guru'
+        );
+    }
+
+    public function siswas()
+    {
+        return $this->hasMany(
+            Siswa::class,
+            'id_kelas',
+            'id_kelas'
+        );
+    }
 }

@@ -12,7 +12,7 @@
     </h3>
 
     <p class="activity-description">
-        Daftar jurnal pembelajaran yang telah dibuat.
+        Daftar jurnal pembelajaran yang telah dibuat oleh guru.
     </p>
 </div>
 
@@ -22,21 +22,37 @@
             <tr>
                 <th>NO</th>
                 <th>TANGGAL</th>
+                <th>GURU</th>
+                <th>MAPEL</th>
+                <th>KELAS</th>
                 <th>MATERI</th>
                 <th>KEHADIRAN</th>
                 <th>STATUS GURU</th>
                 <th>VALIDASI</th>
-                <th>AKSI</th>
             </tr>
         </thead>
 
         <tbody>
             @forelse($jurnals as $jurnal)
                 <tr>
-                    <td>{{ $jurnals->firstItem() + $loop->index }}</td>
+                    <td>
+                        {{ $jurnals->firstItem() + $loop->index }}
+                    </td>
 
                     <td>
                         {{ $jurnal->tanggal->format('d M Y') }}
+                    </td>
+
+                    <td>
+                        {{ $jurnal->guru->nama_guru ?? '-' }}
+                    </td>
+
+                    <td>
+                        {{ $jurnal->jadwal->mapel->nama_mapel ?? '-' }}
+                    </td>
+
+                    <td>
+                        {{ $jurnal->kelas->nama_kelas ?? '-' }}
                     </td>
 
                     <td>
@@ -58,28 +74,10 @@
                     <td>
                         {{ $jurnal->status_validasi_guru }}
                     </td>
-                    <td>
-    <a href="{{ route('admin.jurnal.edit', $jurnal->id_jurnal) }}">
-        Edit
-    </a>
-
-    <form
-        action="{{ route('admin.jurnal.destroy', $jurnal->id_jurnal) }}"
-        method="POST"
-        style="display: inline;"
-    >
-        @csrf
-        @method('DELETE')
-
-        <button type="submit">
-            Hapus
-        </button>
-    </form>
-</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="empty">
+                    <td colspan="9" class="empty">
                         Belum ada data jurnal.
                     </td>
                 </tr>
@@ -87,3 +85,11 @@
         </tbody>
     </table>
 </div>
+
+@if($jurnals->hasPages())
+    <div style="margin-top: 20px;">
+        {{ $jurnals->links() }}
+    </div>
+@endif
+
+@endsection

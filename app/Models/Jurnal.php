@@ -35,4 +35,58 @@ class Jurnal extends Model
     protected $casts = [
         'tanggal' => 'date',
     ];
+
+    public function guru()
+    {
+        return $this->belongsTo(
+            Guru::class,
+            'id_guru',
+            'id_guru'
+        );
+    }
+
+    public function kelas()
+    {
+        return $this->belongsTo(
+            Kelas::class,
+            'id_kelas',
+            'id_kelas'
+        );
+    }
+
+    public function jadwal()
+    {
+        return $this->belongsTo(
+            Jadwal::class,
+            'id_jadwal',
+            'id_jadwal'
+        );
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(
+            User::class,
+            'id_user',
+            'id_user'
+        );
+    }
+
+    public function jamMulai()
+    {
+        return $this->belongsTo(
+            JamPel::class,
+            'id_jam_mulai',
+            'id_jam'
+        );
+    }
+
+    public function jamSelesai()
+    {
+        return $this->belongsTo(
+            JamPel::class,
+            'id_jam_selesai',
+            'id_jam'
+        );
+    }
 }
