@@ -3,15 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard') - Jurnify</title>
-    
+
+    <title>@yield('title', 'Admin - Jurnify')</title>
+
     <!-- Google Fonts & Material Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0"
+          rel="stylesheet">
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: 'Manrope', sans-serif;
@@ -19,6 +26,10 @@
             color: #1f2937;
             min-height: 100vh;
         }
+
+        /* =========================
+           SIDEBAR
+        ========================= */
 
         .sidebar {
             position: fixed;
@@ -29,6 +40,7 @@
             background: #30366f;
             padding: 31px 24px;
             z-index: 100;
+            overflow-y: auto;
         }
 
         .brand {
@@ -47,6 +59,7 @@
             align-items: center;
             justify-content: center;
             color: #30366f;
+            flex-shrink: 0;
         }
 
         .brand-icon .material-symbols-outlined {
@@ -91,7 +104,7 @@
         }
 
         .nav-item:hover {
-            background: rgba(255,255,255,.08);
+            background: rgba(255, 255, 255, .08);
         }
 
         .nav-item.active {
@@ -110,6 +123,10 @@
             border-radius: 3px 0 0 3px;
         }
 
+        /* =========================
+           MAIN
+        ========================= */
+
         .main {
             margin-left: 260px;
             min-height: 100vh;
@@ -121,7 +138,7 @@
             border-bottom: 1px solid #eeeeee;
             display: flex;
             align-items: center;
-            padding: 0 16px;
+            padding: 0 24px;
         }
 
         .topbar h2 {
@@ -134,11 +151,15 @@
             padding: 32px 24px 20px;
         }
 
+        /* =========================
+           STATISTICS
+        ========================= */
+
         .stats {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            margin: 0 42px 23px;
+            margin: 0 0 23px;
         }
 
         .stat-card {
@@ -147,7 +168,7 @@
             border: 1px solid #f0f0f0;
             border-radius: 9px;
             padding: 22px 23px;
-            box-shadow: 0 2px 5px rgba(0,0,0,.025);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .025);
             position: relative;
         }
 
@@ -207,11 +228,15 @@
             font-size: 22px;
         }
 
+        /* =========================
+           ACTIVITY
+        ========================= */
+
         .activity-card {
             background: #fff;
             border-radius: 9px;
             overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,.025);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .025);
         }
 
         .activity-header {
@@ -232,7 +257,11 @@
 
         .filters {
             display: grid;
-            grid-template-columns: minmax(300px, 1.7fr) minmax(210px, 1fr) minmax(150px, .7fr) minmax(150px, .7fr);
+            grid-template-columns:
+                minmax(300px, 1.7fr)
+                minmax(210px, 1fr)
+                minmax(150px, .7fr)
+                minmax(150px, .7fr);
             gap: 12px;
             padding: 0 24px 24px;
         }
@@ -281,6 +310,10 @@
             cursor: pointer;
         }
 
+        /* =========================
+           TABLE
+        ========================= */
+
         .table-wrapper {
             width: 100%;
             overflow-x: auto;
@@ -323,20 +356,31 @@
             border-bottom: none;
         }
 
-        th:nth-child(1), td:nth-child(1) { width: 5%; padding-left: 30px; }
-        th:nth-child(2), td:nth-child(2) { width: 13%; }
-        th:nth-child(3), td:nth-child(3) { width: 15%; }
-        th:nth-child(4), td:nth-child(4) { width: 14%; }
-        th:nth-child(5), td:nth-child(5) { width: 12%; }
-        th:nth-child(6), td:nth-child(6) { width: 14%; }
-        th:nth-child(7), td:nth-child(7) { width: 13%; }
-        th:nth-child(8), td:nth-child(8) { width: 7%; padding-right: 24px; }
+        .number {
+            color: #70737d;
+        }
 
-        .number { color: #70737d; }
-        .date { font-weight: 600; color: #202126; display: block; margin-bottom: 3px; }
-        .time { color: #5e6068; font-size: 10px; }
-        .teacher { color: #152963; font-weight: 800; line-height: 1.35; }
-        .subject { line-height: 1.45; }
+        .date {
+            font-weight: 600;
+            color: #202126;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .time {
+            color: #5e6068;
+            font-size: 10px;
+        }
+
+        .teacher {
+            color: #152963;
+            font-weight: 800;
+            line-height: 1.35;
+        }
+
+        .subject {
+            line-height: 1.45;
+        }
 
         .class-badge {
             display: inline-block;
@@ -349,11 +393,33 @@
             white-space: nowrap;
         }
 
-        .attendance { text-align: center; }
-        .attendance strong { display: block; font-size: 15px; font-weight: 800; }
-        .attendance small { display: block; margin-top: 2px; font-size: 10px; }
-        .attendance .green { color: #159568; }
-        .attendance .red { color: #e00000; }
+        .attendance {
+            text-align: center;
+        }
+
+        .attendance strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .attendance small {
+            display: block;
+            margin-top: 2px;
+            font-size: 10px;
+        }
+
+        .attendance .green {
+            color: #159568;
+        }
+
+        .attendance .red {
+            color: #e00000;
+        }
+
+        /* =========================
+           STATUS
+        ========================= */
 
         .status {
             display: inline-flex;
@@ -366,10 +432,28 @@
             white-space: nowrap;
         }
 
-        .status .material-symbols-outlined { font-size: 13px; }
-        .status.valid { background: #d5f7e8; color: #087451; }
-        .status.waiting { background: #fff0c5; color: #99520a; }
-        .status.rejected { background: #ffd9d5; color: #a9211d; }
+        .status .material-symbols-outlined {
+            font-size: 13px;
+        }
+
+        .status.valid {
+            background: #d5f7e8;
+            color: #087451;
+        }
+
+        .status.waiting {
+            background: #fff0c5;
+            color: #99520a;
+        }
+
+        .status.rejected {
+            background: #ffd9d5;
+            color: #a9211d;
+        }
+
+        /* =========================
+           ACTION
+        ========================= */
 
         .action {
             width: 32px;
@@ -382,9 +466,20 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            text-decoration: none;
         }
 
-        .action .material-symbols-outlined { font-size: 19px; }
+        .action:hover {
+            background: #253779;
+        }
+
+        .action .material-symbols-outlined {
+            font-size: 19px;
+        }
+
+        /* =========================
+           BOTTOM
+        ========================= */
 
         .bottom {
             min-height: 70px;
@@ -394,7 +489,10 @@
             padding: 0 20px;
         }
 
-        .entries { color: #3f4148; font-size: 13px; }
+        .entries {
+            color: #3f4148;
+            font-size: 13px;
+        }
 
         .pagination {
             display: flex;
@@ -431,49 +529,274 @@
             color: #555861;
         }
 
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
         @media (max-width: 1100px) {
-            .sidebar { width: 230px; }
-            .main { margin-left: 230px; }
-            .stats { margin-left: 0; margin-right: 0; }
-            .filters { grid-template-columns: 1fr 1fr; }
+
+            .sidebar {
+                width: 230px;
+            }
+
+            .main {
+                margin-left: 230px;
+            }
+
+            .stats {
+                margin-left: 0;
+                margin-right: 0;
+            }
+
+            .filters {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         @media (max-width: 800px) {
-            .sidebar { width: 200px; padding: 25px 15px; }
-            .main { margin-left: 200px; }
-            .brand-text p { display: none; }
-            .content { padding: 20px 15px; }
-            .stats { grid-template-columns: 1fr; }
-            .filters { grid-template-columns: 1fr; }
+
+            .sidebar {
+                width: 200px;
+                padding: 25px 15px;
+            }
+
+            .main {
+                margin-left: 200px;
+            }
+
+            .brand-text p {
+                display: none;
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 600px) {
-            .sidebar { position: relative; width: 100%; height: auto; }
-            .main { margin-left: 0; }
-            .nav { flex-direction: row; flex-wrap: wrap; }
-            .nav-item { flex: 1 1 130px; }
-            .topbar { padding: 0 20px; }
-            .content { padding: 20px 10px; }
-            .bottom { flex-direction: column; gap: 15px; padding: 18px; }
+
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .nav {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+
+            .nav-item {
+                flex: 1 1 130px;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 20px 10px;
+            }
+
+            .bottom {
+                flex-direction: column;
+                gap: 15px;
+                padding: 18px;
+            }
         }
     </style>
+
     @stack('styles')
 </head>
+
 <body>
 
-    {{-- Render Sidebar Component --}}
-    @include('components.admin-sidebar')
+    {{-- =========================
+         SIDEBAR ADMIN
+    ========================= --}}
+
+    <aside class="sidebar">
+
+        {{-- BRAND --}}
+        <div class="brand">
+
+            <div class="brand-icon">
+                <span class="material-symbols-outlined">
+                    menu_book
+                </span>
+            </div>
+
+            <div class="brand-text">
+                <h1>Jurnify</h1>
+                <p>Kementerian Pendidikan</p>
+            </div>
+
+        </div>
+
+
+        {{-- NAVIGATION --}}
+        <nav class="nav">
+
+            {{-- DASHBOARD --}}
+            <a href="{{ route('admin.dashboard') }}"
+               class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    home
+                </span>
+
+                <span>Dashboard</span>
+
+            </a>
+
+
+            {{-- DAFTAR JURNAL --}}
+            <a href="{{ route('admin.jurnal.index') }}"
+               class="nav-item {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    menu_book
+                </span>
+
+                <span>Daftar Jurnal</span>
+
+            </a>
+
+
+            {{-- USER --}}
+            <a href="{{ route('admin.user.index') }}"
+               class="nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    person_add
+                </span>
+
+                <span>Manajemen Akun</span>
+
+            </a>
+
+
+            {{-- GURU --}}
+            <a href="{{ route('admin.guru.index') }}"
+               class="nav-item {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    person
+                </span>
+
+                <span>Guru</span>
+
+            </a>
+
+
+            {{-- KELAS --}}
+            <a href="{{ route('admin.kelas.index') }}"
+               class="nav-item {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    groups
+                </span>
+
+                <span>Kelas</span>
+
+            </a>
+
+
+            {{-- MAPEL --}}
+            <a href="{{ route('admin.mapel.index') }}"
+               class="nav-item {{ request()->routeIs('admin.mapel.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    auto_stories
+                </span>
+
+                <span>Mapel</span>
+
+            </a>
+
+
+            {{-- JAM PELAJARAN --}}
+            <a href="{{ route('admin.jam.index') }}"
+               class="nav-item {{ request()->routeIs('admin.jam.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    schedule
+                </span>
+
+                <span>Jam Pelajaran</span>
+
+            </a>
+
+
+            {{-- JADWAL --}}
+            <a href="{{ route('admin.jadwal.index') }}"
+               class="nav-item {{ request()->routeIs('admin.jadwal.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    calendar_month
+                </span>
+
+                <span>Jadwal</span>
+
+            </a>
+
+
+            {{-- PROFIL --}}
+            <a href="{{ route('admin.profil') }}"
+               class="nav-item {{ request()->routeIs('admin.profil') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    person
+                </span>
+
+                <span>Profil</span>
+
+            </a>
+
+        </nav>
+
+    </aside>
+
+
+    {{-- =========================
+         MAIN CONTENT
+    ========================= --}}
 
     <main class="main">
-        {{-- Render Topbar Component --}}
-        @include('components.admin-topbar')
 
-        {{-- Main Content Section --}}
+        {{-- TOPBAR --}}
+        <header class="topbar">
+
+            <h2>
+                @yield('page-title', 'Dashboard')
+            </h2>
+
+        </header>
+
+
+        {{-- CONTENT --}}
         <div class="content">
+
             @yield('content')
+
         </div>
+
     </main>
 
+
     @stack('scripts')
+
 </body>
 </html>
