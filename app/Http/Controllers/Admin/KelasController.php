@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Kelas;
+
 use App\Models\Guru; 
 use Illuminate\Validation\Rule;
 class KelasController extends Controller
@@ -39,6 +40,7 @@ public function index(Request $request)
         return view('admin.kelas.create');
     }
 
+
 public function store(Request $request)
     {
         $request->validate([
@@ -72,6 +74,7 @@ public function store(Request $request)
     {
         $request->validate([
             'nama_kelas' => 'required|string|max:50',
+
             'wali_kelas' => 'required|exists:gurus,id_guru',
         ]);
 

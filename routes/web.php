@@ -81,6 +81,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('jadwal', JadwalController::class);
 });
 
+    Route::resource('user', UserController::class);
+    Route::resource('jam', JamPelController::class);
+    Route::resource('jadwal', JadwalController::class);
+});
     // =========================================================
     // 2. GROUP ROLE GURU (Mapeng, Wildan, Adip)
     // =========================================================
@@ -136,7 +140,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('laporan/cetak', [LaporanPiketController::class, 'cetak'])->name('laporan.cetak');
     });
 
-});
+
 
 // Load file settings bawaan
 require __DIR__.'/settings.php';

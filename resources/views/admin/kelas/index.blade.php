@@ -6,6 +6,7 @@
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     .table-kelas-row {
         background-color: #ffffff;
@@ -25,6 +26,7 @@
     .table-kelas-row:hover .action-btn {
         background-color: #1B234A !important;
         color: #ffffff !important;
+
 
         .swal2-container {
         z-index: 10000 !important;
@@ -76,6 +78,7 @@
                     <th style="padding: 12px 16px; text-align: center; border-top-right-radius: 8px; border-bottom-right-radius: 8px;"></th>
                 </tr>
             </thead>
+<<<<<<< HEAD
             @if ($errors->any())
     <div style="background-color: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
         <ul style="margin: 0; padding-left: 20px;">
@@ -118,6 +121,7 @@
     </div>
 
 </div>
+<<<<<<< HEAD
 <!-- Style Tambahan untuk Kebersihan Z-Index SweetAlert2 -->
 <style>
     .swal2-container {
@@ -298,4 +302,6 @@
         });
     }
 </script>
+=======
+>>>>>>> 13ef898128355e401a214851c795536ca280c275
 @endsection
