@@ -70,7 +70,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // --- PORSI NITA ---
     Route::resource('guru', GuruController::class);
     Route::resource('mapel', MapelController::class);
-
+    Route::post('/admin/kelas', [KelasController::class, 'store'])->name('admin.kelas.store');
     Route::resource('kelas', KelasController::class)->parameters([
         'kelas' => 'kelas',
     ]);
@@ -80,6 +80,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('jam', JamPelController::class);
     Route::resource('jadwal', JadwalController::class);
 });
+
     // =========================================================
     // 2. GROUP ROLE GURU (Mapeng, Wildan, Adip)
     // =========================================================
