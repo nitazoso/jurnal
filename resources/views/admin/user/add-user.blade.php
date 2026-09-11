@@ -565,73 +565,100 @@
                 <div class="form-body">
 
                     <!-- Form Inputs Grid -->
-                    <form id="addUserForm" onsubmit="event.preventDefault();" class="form-grid">
+                    <form id="addUserForm" action="{{ route('admin.user.store') }}" method="POST" class="form-grid">
+
+                        @csrf
+
                         <div class="form-group">
-                            <label class="form-label" for="namaLengkap">
+                            <label class="form-label" for="nama_user">
                                 Nama Lengkap & Gelar <span class="required">*</span>
                             </label>
-                            <input type="text" id="namaLengkap" class="form-input" placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd." required>
+                            <input type="text" id="nama_user" name="nama_user" class="form-input" placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd." value="{{ old('nama_user') }}" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="nip">
-                                NIP <span class="required">*</span>
+                            <label class="form-label" for="username">
+                                Username <span class="required">*</span>
                             </label>
-                            <input type="text" id="nip" class="form-input" placeholder="Masukkan 18 digit NIP atau ID pegawai" required>
+                            <input type="text" id="username" name="username" class="form-input" placeholder="Masukkan username" value="{{ old('username') }}" required>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="telepon">
-                                Nomor Telepon / WhatsApp <span class="required">*</span>
+                            <label class="form-label" for="password">
+                                Kata Sandi <span class="required">*</span>
                             </label>
-                            <input type="tel" id="telepon" class="form-input" placeholder="Contoh: 081234567890" required>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-input"
+                                placeholder="Minimal 8 karakter"
+                                required
+                            >
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="role">
                                 Role Pengguna <span class="required">*</span>
                             </label>
-                            <select id="role" class="form-select" required>
-                                <option value="" disabled selected>Pilih Role Pengguna</option>
-                                <option value="guru">Guru Mata Pelajaran</option>
-                                <option value="staff_piket">Staff Piket</option>
-                                <option value="sekre">Sekretaris / Kurikulum</option>
-                                <option value="admin">Administrator Sekolah</option>
+
+                            <select id="role" name="role" class="form-select" required>
+                                <option value="" disabled {{ old('role') ? '' : 'selected' }}>
+                                    Pilih Role Pengguna
+                                </option>
+
+                                <option value="Guru" {{ old('role') === 'Guru' ? 'selected' : '' }}>
+                                    Guru Mata Pelajaran
+                                </option>
+
+                                <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>
+                                    Staff Piket
+                                </option>
+
+                                <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
+                                    Sekretaris / Kurikulum
+                                </option>
+
+                                <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>
+                                    Administrator Sekolah
+                                </option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="mapel">
-                                Mata Pelajaran yang Diampu
+                            <label class="form-label" for="id_guru">
+                                Data Guru
                             </label>
-                            <input type="text" id="mapel" class="form-input" placeholder="Contoh: Matematika, Fisika (Opsional)">
-                            <span class="form-helper">Kosongkan jika bukan pengampu mata pelajaran.</span>
-                        </div>
 
-                        <div class="form-group full-width">
-                            <label class="form-label">
-                                Status Akun Awal
-                            </label>
-                            <div class="radio-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="statusAkun" value="aktif" checked>
-                                    <span>Aktif Langsung</span>
-                                </label>
-                                <label class="radio-label">
-                                    <input type="radio" name="statusAkun" value="nonaktif">
-                                    <span>Non-Aktif</span>
-                                </label>
-                            </div>
+                            <select id="id_guru" name="id_guru" class="form-select">
+                                <option value="">Tidak terhubung ke guru</option>
+
+                                @foreach ($gurus as $guru)
+                                    <option value="{{ $guru->id_guru }}"
+                                        {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
+                                    >
+                                        {{ $guru->nama_guru }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            <span class="form-helper">
+                                Pilih data guru jika akun ini digunakan oleh guru.
+                            </span>
                         </div>
 
                         <div class="form-group full-width">
                             <div class="password-note">
                                 <span class="material-symbols-outlined">info</span>
+
                                 <div>
-                                    Kata sandi sementara akan dibuat secara otomatis oleh sistem dan dikirimkan langsung ke email instansi pengguna terdaftar.
+                                    Kata sandi digunakan untuk login ke sistem.
+                                    Pastikan pengguna menyimpan kata sandinya dengan aman.
                                 </div>
                             </div>
                         </div>
+
                     </form>
                 </div>
 

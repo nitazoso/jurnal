@@ -42,6 +42,11 @@ class User extends Authenticatable implements PasskeyUser
         ];
     }
 
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
+    }
+
     public function initials(): string
     {
         $initials = Str::initials($this->nama_user ?? '', true);

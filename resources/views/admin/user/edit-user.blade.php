@@ -481,7 +481,7 @@
                 <span>Daftar Jurnal</span>
             </a>
 
-            <a href="dashboard_user.html" class="nav-item active">
+            <a href="{{ route('admin.user.index') }}" class="nav-item active">
                 <span class="material-symbols-outlined">person_add</span>
                 <span>User</span>
             </a>
@@ -535,69 +535,92 @@
 
                 <div class="edit-body">
 
-                    <form onsubmit="event.preventDefault();">
+                    <form id="editUserForm" action="{{ route('admin.user.update', $user->id_user) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
                         <div class="form-grid">
+
                             <div class="form-group">
-                                <label class="form-label">
+                                <label class="form-label" for="nama_user">
                                     Nama Lengkap & Gelar <span class="required">*</span>
                                 </label>
-                                <input type="text" class="form-control" value="Siti Aminah, S.Pd" required>
+                                <input type="text" id="nama_user" name="nama_user" class="form-control" value="{{ old('nama_user', $user->nama_user) }}" required>
                             </div>
-
+                            
                             <div class="form-group">
-                                <label class="form-label">
-                                    NIP <span class="required">*</span>
+                                <label class="form-label" for="username">
+                                    Username <span class="required">*</span>
                                 </label>
-                                <input type="text" class="form-control" value="198504122010012005" required>
+                                <input type="text" id="username" name="username" class="form-control" value="{{ old('username', $user->username) }}" required>
                             </div>
-
+                            
                             <div class="form-group">
-                                <label class="form-label">
-                                    Nomor Telepon / WhatsApp
+                                <label class="form-label" for="password">
+                                    Kata Sandi
                                 </label>
-                                <input type="tel" class="form-control" value="081234567890">
+
+                                <input type="password" id="password" name="password" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah">
+
+                                <span class="form-hint">
+                                    Kosongkan jika kata sandi tidak ingin diubah.
+                                </span>
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">
+                                <label class="form-label" for="role">
                                     Role Pengguna <span class="required">*</span>
                                 </label>
-                                <select class="form-control">
-                                    <option value="Guru" selected>Guru</option>
-                                    <option value="Staff">Staff Piket</option>
-                                    <option value="Sekretaris">Sekretaris</option>
-                                    <option value="Admin">Administrator</option>
+
+                                <select id="role" name="role" class="form-control" required>
+                                    <option value="Guru" {{ old('role', $user->role) === 'Guru' ? 'selected' : '' }}>
+                                        Guru Mata Pelajaran
+                                    </option>
+
+                                    <option value="Staff Piket" {{ old('role', $user->role) === 'Staff Piket' ? 'selected' : '' }}>
+                                        Staff Piket
+                                    </option>
+
+                                    <option value="Sekretaris" {{ old('role', $user->role) === 'Sekretaris' ? 'selected' : '' }}>
+                                        Sekretaris / Kurikulum
+                                    </option>
+
+                                    <option value="Admin" {{ old('role', $user->role) === 'Admin' ? 'selected' : '' }}>
+                                        Administrator Sekolah
+                                    </option>
                                 </select>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Mata Pelajaran yang Diampu
+                            <div class="form-group full-width">
+                                <label class="form-label" for="id_guru">
+                                    Data Guru
                                 </label>
-                                <input type="text" class="form-control" value="Bahasa Indonesia, Literasi">
-                                <span class="form-hint">Kosongkan jika bukan pengampu mata pelajaran</span>
+
+                                <select id="id_guru" name="id_guru" class="form-control">
+                                    <option value="">Tidak terhubung ke guru</option>
+
+                                    @foreach ($gurus as $guru)
+                                        <option
+                                            value="{{ $guru->id_guru }}"
+                                            {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}
+                                        >
+                                            {{ $guru->nama_guru }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <span class="form-hint">
+                                    Pilih data guru jika akun ini digunakan oleh guru.
+                                </span>
                             </div>
 
-                            <div class="form-group full-width">
-                                <label class="form-label">Status Akun</label>
-                                <div class="status-options">
-                                    <label class="radio-label">
-                                        <input type="radio" name="user_status" value="active" checked>
-                                        <span>Aktif</span>
-                                    </label>
-                                    <label class="radio-label">
-                                        <input type="radio" name="user_status" value="inactive">
-                                        <span>Non-Aktif</span>
-                                    </label>
-                                </div>
-                            </div>
                         </div>
                     </form>
                 </div>
 
                 <div class="edit-footer">
                     <a href="dashboard_user.html" class="btn-cancel">Batal</a>
-                    <button type="button" class="btn-save">
+                    <button type="submit" form="editUserForm" class="btn-save">
                         Simpan Perubahan
                     </button>
                 </div>
