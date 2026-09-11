@@ -2,16 +2,25 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Siswa extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
+
+    protected $table = 'siswas';
 
     protected $primaryKey = 'id_siswa';
 
-    protected $fillable = ['nis', 'nama_siswa', 'jenis_kelamin', 'id_kelas'];
+    protected $fillable = [
+        'nis', 
+        'id_kelas', 
+        'no_presensi', 
+        'nama_siswa', 
+        'jenis_kelamin'
+    ];
 
     public function kelas()
     {

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id('id_siswa');
             $table->string('nis', 20)->unique();
             $table->unsignedBigInteger('id_kelas');
+            $table->integer('no_presensi');
             $table->string('nama_siswa', 225);
             $table->enum('jenis_kelamin', ['L', 'P']);
             $table->timestamps();

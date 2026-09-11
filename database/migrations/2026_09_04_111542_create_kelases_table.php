@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id('id_kelas');
             $table->string('nama_kelas', 20);
 
+
             $table->unsignedBigInteger('wali_kelas');
-            $table->integer('jumlah_siswa');
+            $table->integer('jumlah_siswa')->default(0);
 
             $table->timestamps();
             $table->softDeletes();
@@ -24,7 +25,7 @@ return new class extends Migration
             $table->foreign('wali_kelas')
                 ->references('id_guru')
                 ->on('gurus')
-                ->onDelete('cascade');
+                ->nullOnDelete();
         });
     }
 

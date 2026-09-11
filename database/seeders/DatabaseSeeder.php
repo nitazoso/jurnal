@@ -95,6 +95,7 @@ class DatabaseSeeder extends Seeder
         Siswa::create([
             'nis' => '222310001',
             'id_kelas' => $kelas12RPL1->id_kelas,
+            'no_presensi'   => 1,
             'nama_siswa' => 'Ahmad Rizky',
             'jenis_kelamin' => 'L',
         ]);
