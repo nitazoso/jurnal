@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('nama_kelas', 20);
 
 
-            $table->unsignedBigInteger('wali_kelas');
+            $table->unsignedBigInteger('wali_kelas')->nullable();
             $table->integer('jumlah_siswa')->default(0);
 
             $table->timestamps();
