@@ -18,27 +18,6 @@ use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 
 /*
 |--------------------------------------------------------------------------
-| DASHBOARD REDIRECT
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/dashboard', function () {
-    if (!auth()->check()) {
-        return redirect()->route('login');
-    }
-
-    return match (auth()->user()->role) {
-        'Admin' => redirect()->route('admin.dashboard'),
-        'Guru' => redirect()->route('guru.dashboard'),
-        'Sekretaris' => redirect()->route('sekretaris.dashboard'),
-        'Staff Piket' => redirect()->route('piket.dashboard'),
-        default => redirect()->route('login'),
-    };
-})->name('dashboard');
-
-
-/*
-|--------------------------------------------------------------------------
 | ADMIN
 |--------------------------------------------------------------------------
 */
@@ -128,23 +107,23 @@ Route::delete('/admin/kelas/{kelas}', [KelasController::class, 'destroy'])
 // ====================
 // SISWA PER KELAS
 // ====================
+Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
+    ->name('admin.kelas.siswa');
 
-Route::get('/admin/kelas/{kelas}/siswa', [SiswaController::class, 'index'])
-    ->name('admin.kelas.siswa.index');
+Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
+    ->name('admin.siswa.create');
 
-Route::get('/admin/kelas/{kelas}/siswa/create', [SiswaController::class, 'create'])
-    ->name('admin.kelas.siswa.create');
+Route::post('/admin/siswa', [SiswaController::class, 'store'])
+    ->name('admin.siswa.store');
 
-Route::post('/admin/kelas/{kelas}/siswa', [SiswaController::class, 'store'])
-    ->name('admin.kelas.siswa.store');
+Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
+    ->name('admin.siswa.edit');
 
-Route::get('/admin/kelas/{kelas}/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
-    ->name('admin.kelas.siswa.edit');
+Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
+    ->name('admin.siswa.update');
 
-Route::put('/admin/kelas/{kelas}/siswa/{siswa}', [SiswaController::class, 'update'])
-    ->name('admin.kelas.siswa.update');
-
-Route::delete('/admin/kelas/{kelas}/siswa/{siswa}', [SiswaController::class, 'destroy']);
+Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
+    ->name('admin.siswa.destroy');
 
 
 // ====================
@@ -233,7 +212,6 @@ Route::get('/admin/profil', function () {
 
 // Dashboard Guru
 Route::get('/guru/dashboard', [GuruDashboardController::class, 'index'])
-    ->middleware('auth')
     ->name('guru.dashboard');
 
 
@@ -241,29 +219,13 @@ Route::get('/guru/dashboard', [GuruDashboardController::class, 'index'])
 // JURNAL GURU
 // ====================
 
-// Daftar Jurnal
 Route::get('/guru/jurnal', [GuruJurnalController::class, 'index'])
-    ->middleware('auth')
     ->name('guru.jurnal.index');
 
-// Isi Jurnal - Daftar Jadwal
-Route::get('/guru/jurnal/create', [GuruJurnalController::class, 'create'])
-    ->middleware('auth')
+Route::get('/guru/jurnal/create/{jadwal}', [GuruJurnalController::class, 'create'])
     ->name('guru.jurnal.create');
 
-// Isi Jurnal - Form berdasarkan Jadwal
-Route::get('/guru/jurnal/form/{jadwal}', [GuruJurnalController::class, 'form'])
-    ->middleware('auth')
-    ->name('guru.jurnal.form');
-
-// Detail Jurnal
-Route::get('/guru/jurnal/{jurnal}', [GuruJurnalController::class, 'show'])
-    ->middleware('auth')
-    ->name('guru.jurnal.show');
-
-// Simpan Jurnal
 Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
-    ->middleware('auth')
     ->name('guru.jurnal.store');
 
 
@@ -273,4 +235,4 @@ Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
 
 Route::get('/guru/profil', function () {
     return view('guru.profil');
-})->middleware('auth')->name('guru.profil');
+})->name('guru.profil');
