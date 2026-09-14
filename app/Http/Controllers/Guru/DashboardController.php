@@ -12,29 +12,21 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        $query = Jurnal::with([
+        $jurnals = Jurnal::with([
             'kelas',
+            'jadwal.mapel',
             'jamMulai',
             'jamSelesai',
         ])
-        ->where('id_user', $user->id_user);
-
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal', $request->tanggal);
-        }
-
-        if ($request->filled('bulan')) {
-            $query->whereMonth('tanggal', $request->bulan);
-        }
-
-        $jurnals = $query
-            ->latest('tanggal')
-            ->get();
+        ->where('id_user', $user->id_user)
+        ->latest('tanggal')
+        ->take(5)
+        ->get();
 
         $totalJurnal = Jurnal::where('id_user', $user->id_user)
             ->count();
 
-        $tahunAjaran = '2026/2027';
+        $tahunAjaran = '2026/2027 Ganjil';
 
         return view('guru.dashboard', compact(
             'jurnals',
