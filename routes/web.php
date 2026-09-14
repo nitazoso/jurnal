@@ -107,24 +107,23 @@ Route::delete('/admin/kelas/{kelas}', [KelasController::class, 'destroy'])
 // ====================
 // SISWA PER KELAS
 // ====================
+Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
+    ->name('admin.kelas.siswa');
 
-Route::get('/admin/kelas/{kelas}/siswa', [SiswaController::class, 'index'])
-    ->name('admin.kelas.siswa.index');
+Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
+    ->name('admin.siswa.create');
 
-Route::get('/admin/kelas/{kelas}/siswa/create', [SiswaController::class, 'create'])
-    ->name('admin.kelas.siswa.create');
+Route::post('/admin/siswa', [SiswaController::class, 'store'])
+    ->name('admin.siswa.store');
 
-Route::post('/admin/kelas/{kelas}/siswa', [SiswaController::class, 'store'])
-    ->name('admin.kelas.siswa.store');
+Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
+    ->name('admin.siswa.edit');
 
-Route::get('/admin/kelas/{kelas}/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
-    ->name('admin.kelas.siswa.edit');
+Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
+    ->name('admin.siswa.update');
 
-Route::put('/admin/kelas/{kelas}/siswa/{siswa}', [SiswaController::class, 'update'])
-    ->name('admin.kelas.siswa.update');
-
-Route::delete('/admin/kelas/{kelas}/siswa/{siswa}', [SiswaController::class, 'destroy'])
-    ->name('admin.kelas.siswa.destroy');
+Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
+    ->name('admin.siswa.destroy');
 
 
 // ====================
