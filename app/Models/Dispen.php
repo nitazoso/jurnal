@@ -16,10 +16,15 @@ class Dispen extends Model
         'id_jam_mulai',
         'id_jam_selesai',
         'alasan',
+        'status',
+        'disetujui_oleh',
+        'disetujui_pada',
+        'catatan_persetujuan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'disetujui_pada' => 'datetime',
     ];
 
     public function siswa()
@@ -35,5 +40,10 @@ class Dispen extends Model
     public function jamSelesai()
     {
         return $this->belongsTo(JamPel::class, 'id_jam_selesai', 'id_jam');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'disetujui_oleh', 'id_user');
     }
 }

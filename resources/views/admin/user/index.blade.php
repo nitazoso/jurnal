@@ -25,6 +25,11 @@
     </div>
 
     <div>
+        <strong>Kesiswaan</strong>
+        <p>{{ $totalKesiswaan }}</p>
+    </div>
+
+    <div>
         <strong>Staff Piket</strong>
         <p>{{ $totalStaffPiket }}</p>
     </div>
@@ -69,6 +74,10 @@
 
         <option value="Guru" {{ request('role') == 'Guru' ? 'selected' : '' }}>
             Guru
+        </option>
+
+        <option value="Kesiswaan" {{ request('role') == 'Kesiswaan' ? 'selected' : '' }}>
+            Kesiswaan
         </option>
 
         <option value="Sekretaris" {{ request('role') == 'Sekretaris' ? 'selected' : '' }}>

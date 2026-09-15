@@ -143,7 +143,7 @@
                 type="password"
                 name="password"
                 id="password"
-                placeholder="Minimal 6 karakter"
+                placeholder="Minimal 8 karakter"
                 autocomplete="new-password"
                 style="
                     padding-right:45px;
@@ -181,7 +181,7 @@
                 margin-top:5px;
             "
         >
-            Password minimal 6 karakter.
+            Password minimal 8 karakter.
         </div>
 
         <div style="
@@ -189,7 +189,7 @@
             font-size:12px;
             margin-top:5px;
         ">
-            Password digunakan untuk login dan minimal 6 karakter.
+            Password digunakan untuk login dan minimal 8 karakter.
         </div>
 
     </div>
@@ -233,6 +233,13 @@
             </option>
 
             <option
+                value="Kesiswaan"
+                {{ old('role') == 'Kesiswaan' ? 'selected' : '' }}
+            >
+                Kesiswaan
+            </option>
+
+            <option
                 value="Sekretaris"
                 {{ old('role') == 'Sekretaris' ? 'selected' : '' }}
             >
@@ -259,6 +266,16 @@
     </div>
 
 
+
+    <div id="waContainer" style="display:none; margin-bottom:20px;">
+        <label for="no_wa"><strong>Nomor WhatsApp Kesiswaan</strong></label>
+        <br>
+        <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa') }}"
+               placeholder="Contoh: 628123456789" inputmode="tel">
+        <div style="color:#666; font-size:12px; margin-top:5px;">
+            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
+        </div>
+    </div>
 
     {{-- ==========================================
          DATA GURU
@@ -394,6 +411,12 @@
     const idGuru =
         document.getElementById('id_guru');
 
+    const waContainer =
+        document.getElementById('waContainer');
+
+    const noWa =
+        document.getElementById('no_wa');
+
     const guruError =
         document.getElementById('guruError');
 
@@ -497,7 +520,7 @@
 
         if (
             this.value.length > 0 &&
-            this.value.length < 6
+            this.value.length < 8
         ) {
 
             passwordError.style.display =
@@ -546,15 +569,25 @@
 
     }
 
+    function updateWaField() {
+        const isKesiswaan = role.value === 'Kesiswaan';
+        waContainer.style.display = isKesiswaan ? 'block' : 'none';
+        noWa.required = isKesiswaan;
+        if (!isKesiswaan) noWa.value = '';
+    }
+
 
     role.addEventListener(
         'change',
         updateGuruField
     );
 
+    role.addEventListener('change', updateWaField);
+
 
     // Jalankan saat halaman dibuka
     updateGuruField();
+    updateWaField();
 
 
 
@@ -581,8 +614,8 @@
         }
 
 
-        // Password minimal 6 karakter
-        if (password.value.length < 6) {
+        // Password minimal 8 karakter
+        if (password.value.length < 8) {
 
             passwordError.style.display =
                 'block';

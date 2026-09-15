@@ -24,6 +24,7 @@ class User extends Authenticatable implements PasskeyUser
         'password',
         'nama_user',
         'role',
+        'no_wa',
         'id_guru',
         'id_kelas',
     ];

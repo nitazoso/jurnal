@@ -185,7 +185,7 @@
                 margin-top:5px;
             "
         >
-            Password minimal 6 karakter.
+            Password minimal 8 karakter.
         </div>
 
         <div style="
@@ -193,7 +193,7 @@
             font-size:12px;
             margin-top:5px;
         ">
-            Kosongkan jika password tidak ingin diubah.
+            Kosongkan jika password tidak ingin diubah. Jika diisi, minimal 8 karakter.
         </div>
 
     </div>
@@ -235,6 +235,13 @@
             </option>
 
             <option
+                value="Kesiswaan"
+                {{ old('role', $user->role) == 'Kesiswaan' ? 'selected' : '' }}
+            >
+                Kesiswaan
+            </option>
+
+            <option
                 value="Sekretaris"
                 {{ old('role', $user->role) == 'Sekretaris' ? 'selected' : '' }}
             >
@@ -261,6 +268,16 @@
     </div>
 
 
+
+    <div id="waContainer" style="display:none; margin-bottom:20px;">
+        <label for="no_wa"><strong>Nomor WhatsApp Kesiswaan</strong></label>
+        <br>
+        <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa', $user->no_wa) }}"
+               placeholder="Contoh: 628123456789" inputmode="tel">
+        <div style="color:#666; font-size:12px; margin-top:5px;">
+            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
+        </div>
+    </div>
 
     {{-- DATA GURU --}}
 
@@ -383,6 +400,12 @@
 
     const idGuru =
         document.getElementById('id_guru');
+
+    const waContainer =
+        document.getElementById('waContainer');
+
+    const noWa =
+        document.getElementById('no_wa');
 
     const guruError =
         document.getElementById('guruError');
@@ -534,15 +557,25 @@
 
     }
 
+    function updateWaField() {
+        const isKesiswaan = role.value === 'Kesiswaan';
+        waContainer.style.display = isKesiswaan ? 'block' : 'none';
+        noWa.required = isKesiswaan;
+        if (!isKesiswaan) noWa.value = '';
+    }
+
 
     role.addEventListener(
         'change',
         updateGuruField
     );
 
+    role.addEventListener('change', updateWaField);
+
 
     // Jalankan saat halaman dibuka
     updateGuruField();
+    updateWaField();
 
 
 

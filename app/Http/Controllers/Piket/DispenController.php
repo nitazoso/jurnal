@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
-use App\Models\Siswa;
 use App\Models\JamPel;
+use App\Models\Siswa;
+use App\Models\User;
+use App\Notifications\DispenDiajukanNotification;
 use Illuminate\Http\Request;
 
 class DispenController extends Controller
@@ -40,7 +42,11 @@ class DispenController extends Controller
             'alasan' => 'required|string|max:255',
         ]);
 
-        Dispen::create($validated);
+        $dispen = Dispen::with('siswa')->create($validated);
+
+        User::where('role', 'Kesiswaan')
+            ->get()
+            ->each(fn (User $user) => $user->notify(new DispenDiajukanNotification($dispen)));
 
         return redirect()
             ->route('piket.dispen.index')

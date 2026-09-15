@@ -311,23 +311,20 @@
                 </a>
             </li>
 
+            {{-- Jadwal Piket --}}
+            <li>
+                <a href="{{ route('guru.piket.index') }}"
+                   class="{{ request()->routeIs('guru.piket.*') ? 'active' : '' }}">
+                    Jadwal Piket
+                </a>
+            </li>
+
             {{-- Profil --}}
             <li>
                 <a href="{{ route('guru.profil') }}"
                    class="{{ request()->routeIs('guru.profil') ? 'active' : '' }}">
                     Profil
                 </a>
-            </li>
-
-            {{-- Logout --}}
-            <li>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-
-                    <button type="submit" class="logout-button">
-                        Logout
-                    </button>
-                </form>
             </li>
 
         </ul>
