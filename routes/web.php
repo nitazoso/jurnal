@@ -15,6 +15,16 @@ use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Guru\JurnalController as GuruJurnalController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 
+use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
+
+// LOGIN
+Route::get('/login', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -162,13 +172,13 @@ Route::get('/admin/jam/create', [JamPelController::class, 'create'])
 Route::post('/admin/jam', [JamPelController::class, 'store'])
     ->name('admin.jam.store');
 
-Route::get('/admin/jam/{jam}/edit', [JamPelController::class, 'edit'])
+Route::get('/admin/jam/{klp_hari}/edit', [JamPelController::class, 'edit'])
     ->name('admin.jam.edit');
 
-Route::put('/admin/jam/{jam}', [JamPelController::class, 'update'])
+Route::put('/admin/jam/{klp_hari}', [JamPelController::class, 'update'])
     ->name('admin.jam.update');
 
-Route::delete('/admin/jam/{jam}', [JamPelController::class, 'destroy'])
+Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
     ->name('admin.jam.destroy');
 
 
@@ -236,3 +246,13 @@ Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
 Route::get('/guru/profil', function () {
     return view('guru.profil');
 })->name('guru.profil');
+
+/*
+|--------------------------------------------------------------------------
+| STAFF PIKET
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::get('/staffpiket/dashboard', [StaffPiketDashboardController::class, 'index'])
+        ->name('staffpiket.dashboard');
+});
