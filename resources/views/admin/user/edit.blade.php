@@ -1,623 +1,572 @@
 @extends('layouts.admin')
 
 @section('title', 'Edit User - Jurnify')
-@section('page-title', 'Edit User')
+@section('page-title', 'Edit Data User')
 
 @section('content')
 
-<h2>Edit User</h2>
-
-<p>
-    Perbarui data akun pengguna Jurnify.
-</p>
-
-<hr>
-
-@if ($errors->any())
-    <div style="
-        background:#ffe5e5;
-        color:#b42318;
-        padding:12px 15px;
-        margin-bottom:20px;
-        border-radius:6px;
-    ">
-        <strong>Terjadi kesalahan:</strong>
-
-        <ul style="margin:8px 0 0 20px;">
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-
-<form
-    action="{{ route('admin.user.update', $user->id_user) }}"
-    method="POST"
-    autocomplete="off"
-    data-form-type="other"
->
-
-    @csrf
-    @method('PUT')
-
-
-    {{-- USERNAME --}}
-
-    <div style="margin-bottom:20px;">
-
-        <label for="username">
-            <strong>Username</strong>
-        </label>
-
-        <br>
-
-        <input
-            type="text"
-            name="username"
-            id="username"
-            value="{{ old('username', $user->username) }}"
-            autocomplete="new-password"
-            autocapitalize="none"
-            autocorrect="off"
-            spellcheck="false"
-            data-lpignore="true"
-            data-1p-ignore="true"
-            data-protonpass-ignore="true"
-            required
-        >
-
-        <div
-            id="usernameError"
-            style="
-                color:#d92d20;
-                font-size:13px;
-                display:none;
-                margin-top:5px;
-            "
-        >
-            Username tidak boleh menggunakan spasi.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Username digunakan untuk login.
-            Tidak boleh menggunakan spasi.
-        </div>
-
-    </div>
-
-
-
-    {{-- NAMA USER --}}
-
-    <div style="margin-bottom:20px;">
-
-        <label for="nama_user">
-            <strong>Nama User</strong>
-        </label>
-
-        <br>
-
-        <input
-            type="text"
-            name="nama_user"
-            id="nama_user"
-            value="{{ old('nama_user', $user->nama_user) }}"
-            autocomplete="off"
-            required
-        >
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Nama lengkap pemilik akun.
-        </div>
-
-    </div>
-
-
-
-    {{-- PASSWORD --}}
-
-    <div style="margin-bottom:20px;">
-
-        <label for="password">
-            <strong>Password Baru</strong>
-        </label>
-
-        <br>
-
-        <div style="
-            position:relative;
-            display:inline-block;
-        ">
-
-            <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Kosongkan jika tidak ingin mengubah"
-                autocomplete="new-password"
-                autocapitalize="none"
-                autocorrect="off"
-                spellcheck="false"
-                data-lpignore="true"
-                data-1p-ignore="true"
-                data-protonpass-ignore="true"
-                style="padding-right:45px;"
-            >
-
-            <button
-                type="button"
-                id="togglePassword"
-                title="Tampilkan password"
-                aria-label="Tampilkan password"
-                style="
-                    position:absolute;
-                    right:5px;
-                    top:50%;
-                    transform:translateY(-50%);
-                    border:none;
-                    background:transparent;
-                    cursor:pointer;
-                    font-size:17px;
-                    padding:5px;
-                "
-            >
-                👁️
-            </button>
-
-        </div>
-
-        <div
-            id="passwordError"
-            style="
-                color:#d92d20;
-                font-size:13px;
-                display:none;
-                margin-top:5px;
-            "
-        >
-            Password minimal 6 karakter.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Kosongkan jika password tidak ingin diubah.
-        </div>
-
-    </div>
-
-
-
-    {{-- ROLE --}}
-
-    <div style="margin-bottom:20px;">
-
-        <label for="role">
-            <strong>Role / Hak Akses</strong>
-        </label>
-
-        <br>
-
-        <select
-            name="role"
-            id="role"
-            required
-        >
-
-            <option value="">
-                -- Pilih Role --
-            </option>
-
-            <option
-                value="Admin"
-                {{ old('role', $user->role) == 'Admin' ? 'selected' : '' }}
-            >
-                Admin
-            </option>
-
-            <option
-                value="Guru"
-                {{ old('role', $user->role) == 'Guru' ? 'selected' : '' }}
-            >
-                Guru
-            </option>
-
-            <option
-                value="Sekretaris"
-                {{ old('role', $user->role) == 'Sekretaris' ? 'selected' : '' }}
-            >
-                Sekretaris
-            </option>
-
-            <option
-                value="Staff Piket"
-                {{ old('role', $user->role) == 'Staff Piket' ? 'selected' : '' }}
-            >
-                Staff Piket
-            </option>
-
-        </select>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Role menentukan hak akses pengguna.
-        </div>
-
-    </div>
-
-
-
-    {{-- DATA GURU --}}
-
-    <div
-        id="guruContainer"
-        style="
-            display:none;
-            margin-bottom:20px;
-        "
-    >
-
-        <label for="id_guru">
-            <strong>Data Guru</strong>
-        </label>
-
-        <br>
-
-        <select
-            name="id_guru"
-            id="id_guru"
-        >
-
-            <option value="">
-                -- Pilih Guru --
-            </option>
-
-            @foreach ($gurus as $guru)
-
-                <option
-                    value="{{ $guru->id_guru }}"
-                    {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}
-                >
-
-                    {{ $guru->nama_guru }}
-
-                    @if ($guru->nip)
-                        - NIP {{ $guru->nip }}
-                    @endif
-
-                </option>
-
-            @endforeach
-
-        </select>
-
-        <div
-            id="guruError"
-            style="
-                color:#d92d20;
-                font-size:13px;
-                display:none;
-                margin-top:5px;
-            "
-        >
-            Silakan pilih data Guru.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Hubungkan akun dengan data guru yang sudah terdaftar.
-        </div>
-
-    </div>
-
-
-
-    {{-- BUTTON --}}
-
-    <div style="margin-top:25px;">
-
-        <button
-            type="submit"
-            id="submitButton"
-        >
-            Simpan Perubahan
-        </button>
-
-        <a
-            href="{{ route('admin.user.index') }}"
-            style="margin-left:10px;"
-        >
-            Batal
-        </a>
-
-    </div>
-
-</form>
-
-
-
-<script>
-
-    // ==========================================
-    // ELEMENT
-    // ==========================================
-
-    const username =
-        document.getElementById('username');
-
-    const usernameError =
-        document.getElementById('usernameError');
-
-    const password =
-        document.getElementById('password');
-
-    const passwordError =
-        document.getElementById('passwordError');
-
-    const togglePassword =
-        document.getElementById('togglePassword');
-
-    const role =
-        document.getElementById('role');
-
-    const guruContainer =
-        document.getElementById('guruContainer');
-
-    const idGuru =
-        document.getElementById('id_guru');
-
-    const guruError =
-        document.getElementById('guruError');
-
-    const form =
-        document.querySelector('form');
-
-
-
-    // ==========================================
-    // USERNAME
-    // ==========================================
-
-    username.addEventListener('keydown', function(event) {
-
-        if (event.key === ' ') {
-
-            event.preventDefault();
-
-            usernameError.innerText =
-                'Username tidak boleh menggunakan spasi.';
-
-            usernameError.style.display =
-                'block';
-
-        }
-
-    });
-
-
-    username.addEventListener('input', function() {
-
-        if (/\s/.test(this.value)) {
-
-            this.value =
-                this.value.replace(/\s/g, '');
-
-            usernameError.innerText =
-                'Spasi otomatis dihapus.';
-
-            usernameError.style.display =
-                'block';
-
-        }
-
-        this.value =
-            this.value.toLowerCase();
-
-    });
-
-
-    username.addEventListener('blur', function() {
-
-        if (!/\s/.test(this.value)) {
-
-            usernameError.style.display =
-                'none';
-
-        }
-
-    });
-
-
-
-    // ==========================================
-    // SHOW / HIDE PASSWORD
-    // ==========================================
-
-    togglePassword.addEventListener('click', function() {
-
-        if (password.type === 'password') {
-
-            password.type = 'text';
-
-            this.innerText = '🙈';
-
-            this.title =
-                'Sembunyikan password';
-
-        } else {
-
-            password.type = 'password';
-
-            this.innerText = '👁️';
-
-            this.title =
-                'Tampilkan password';
-
-        }
-
-    });
-
-
-
-    // ==========================================
-    // PASSWORD VALIDATION
-    // ==========================================
-
-    password.addEventListener('input', function() {
-
-        if (
-            this.value.length > 0 &&
-            this.value.length < 6
-        ) {
-
-            passwordError.style.display =
-                'block';
-
-        } else {
-
-            passwordError.style.display =
-                'none';
-
-        }
-
-    });
-
-
-
-    // ==========================================
-    // ROLE → GURU
-    // ==========================================
-
-    function updateGuruField() {
-
-        if (role.value === 'Guru') {
-
-            guruContainer.style.display =
-                'block';
-
-            idGuru.required =
-                true;
-
-        } else {
-
-            guruContainer.style.display =
-                'none';
-
-            idGuru.required =
-                false;
-
-            idGuru.value =
-                '';
-
-            guruError.style.display =
-                'none';
-
-        }
-
+<style>
+    .edit-page {
+        max-width: 1080px;
+        animation: pageFadeIn .45s ease both;
     }
 
+    .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #70737d;
+        margin-bottom: 24px;
+        animation: fadeDown .4s ease both;
+    }
 
-    role.addEventListener(
-        'change',
-        updateGuruField
-    );
+    .breadcrumb a {
+        color: #4169ff;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color .2s;
+    }
 
+    .breadcrumb a:hover {
+        color: #2d336b;
+        text-decoration: underline;
+    }
 
-    // Jalankan saat halaman dibuka
-    updateGuruField();
+    .breadcrumb .material-symbols-outlined {
+        font-size: 16px;
+        transition: transform .2s;
+    }
 
+    .breadcrumb:hover .material-symbols-outlined {
+        transform: translateX(2px);
+    }
 
+    .edit-card {
+        background: #fff;
+        border-radius: 9px;
+        box-shadow: 0 1px 4px rgba(0,0,0,.025);
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+        animation: cardUp .5s ease .08s both;
+        transition: box-shadow .25s, transform .25s;
+    }
 
-    // ==========================================
-    // VALIDATION
-    // ==========================================
+    .edit-card:hover {
+        box-shadow: 0 5px 18px rgba(29,44,103,.07);
+    }
 
-    form.addEventListener('submit', function(event) {
+    .edit-header {
+        padding: 24px 28px;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 
-        let valid = true;
+    .edit-header-info h3 {
+        color: #1d2c67;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
 
+    .edit-header-info p {
+        color: #4b4d56;
+        font-size: 14px;
+    }
 
-        // Username
-        if (username.value.trim() === '') {
+    .edit-body {
+        padding: 28px;
+    }
 
-            usernameError.innerText =
-                'Username wajib diisi.';
+    .profile-section {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 24px;
+        margin-bottom: 28px;
+        border-bottom: 1px solid #f4f4f4;
+        animation: fadeDown .5s ease .15s both;
+    }
 
-            usernameError.style.display =
-                'block';
+    .avatar-placeholder {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        background: #dce4ff;
+        color: #263b78;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: 800;
+        flex-shrink: 0;
+        transition: transform .25s, box-shadow .25s;
+    }
 
-            valid = false;
+    .avatar-placeholder:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 12px rgba(45,51,107,.12);
+    }
 
+    .avatar-info h4 {
+        color: #17265d;
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .avatar-info p {
+        color: #70737d;
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        animation: fieldUp .45s ease both;
+    }
+
+    .form-group:nth-child(1) { animation-delay: .18s; }
+    .form-group:nth-child(2) { animation-delay: .22s; }
+    .form-group:nth-child(3) { animation-delay: .26s; }
+    .form-group:nth-child(4) { animation-delay: .30s; }
+    .form-group:nth-child(5) { animation-delay: .34s; }
+    .form-group:nth-child(6) { animation-delay: .38s; }
+
+    .form-group.full-width {
+        grid-column: span 2;
+    }
+
+    .form-label {
+        font-size: 13px;
+        font-weight: 700;
+        color: #41434c;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .form-label .required {
+        color: #e00000;
+    }
+
+    .form-control {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        background: #fbfbfb;
+        border: 1px solid #cfd2dc;
+        border-radius: 8px;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        color: #1f2937;
+        transition: border-color .2s, box-shadow .2s, background .2s, transform .2s;
+        outline: none;
+    }
+
+    .form-control:hover {
+        border-color: #aeb4c4;
+        background: #fff;
+    }
+
+    .form-control:focus {
+        background: #fff;
+        border-color: #4169ff;
+        box-shadow: 0 0 0 3px rgba(65,105,255,.12);
+        transform: translateY(-1px);
+    }
+
+    select.form-control {
+        cursor: pointer;
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: #858891;
+        transition: color .2s;
+    }
+
+    .form-group:focus-within .form-hint {
+        color: #626a84;
+    }
+
+    .error-message {
+        font-size: 12px;
+        color: #d00000;
+        margin-top: -2px;
+        animation: errorIn .3s ease both;
+    }
+
+    .form-control.error {
+        border-color: #e00000;
+    }
+
+    .form-control.error:focus {
+        box-shadow: 0 0 0 3px rgba(224,0,0,.1);
+    }
+
+    .validation-alert {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        background: #ffd9d5;
+        color: #a9211d;
+        border: 1px solid #f4b8b3;
+        border-radius: 8px;
+        font-size: 13px;
+        animation: fadeDown .4s ease both;
+    }
+
+    .validation-alert strong {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .validation-alert ul {
+        margin-left: 18px;
+    }
+
+    .edit-footer {
+        padding: 20px 28px;
+        background: #f8f9fc;
+        border-top: 1px solid #eeeeee;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .btn-cancel {
+        height: 42px;
+        padding: 0 20px;
+        border: 1px solid #cfd2dc;
+        border-radius: 8px;
+        background: #fff;
+        color: #484a53;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .2s, border-color .2s, transform .2s;
+    }
+
+    .btn-cancel:hover {
+        background: #f1f2f5;
+        border-color: #b9bdc8;
+        transform: translateY(-1px);
+    }
+
+    .btn-cancel:active,
+    .btn-save:active {
+        transform: translateY(0);
+    }
+
+    .btn-save {
+        height: 42px;
+        padding: 0 24px;
+        border: none;
+        border-radius: 8px;
+        background: #2d336b;
+        color: #fff;
+        font-family: 'Manrope', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: background .2s, transform .2s, box-shadow .2s;
+    }
+
+    .btn-save:hover {
+        background: #1e2450;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(45,51,107,.2);
+    }
+
+    .btn-save .material-symbols-outlined {
+        font-size: 18px;
+        transition: transform .2s;
+    }
+
+    .btn-save:hover .material-symbols-outlined {
+        transform: translateX(2px);
+    }
+
+    @keyframes pageFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes cardUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fieldUp {
+        from {
+            opacity: 0;
+            transform: translateY(7px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes errorIn {
+        from {
+            opacity: 0;
+            transform: translateX(-4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .edit-page,
+        .breadcrumb,
+        .edit-card,
+        .profile-section,
+        .form-group,
+        .validation-alert {
+            animation: none;
         }
 
+        * {
+            transition: none !important;
+        }
+    }
 
-        // Password
-        // Hanya dicek jika diisi
-        if (
-            password.value.length > 0 &&
-            password.value.length < 6
-        ) {
-
-            passwordError.style.display =
-                'block';
-
-            valid = false;
-
+    @media (max-width: 800px) {
+        .form-grid {
+            grid-template-columns: 1fr;
         }
 
-
-        // Role
-        if (role.value === '') {
-
-            alert(
-                'Silakan pilih Role / Hak Akses terlebih dahulu.'
-            );
-
-            valid = false;
-
+        .form-group.full-width {
+            grid-column: span 1;
         }
 
-
-        // Guru
-        if (
-            role.value === 'Guru' &&
-            idGuru.value === ''
-        ) {
-
-            guruError.style.display =
-                'block';
-
-            valid = false;
-
+        .edit-body {
+            padding: 20px;
         }
 
-
-        if (!valid) {
-
-            event.preventDefault();
-
+        .edit-header {
+            padding: 20px;
         }
 
-    });
+        .edit-footer {
+            padding: 18px 20px;
+        }
+    }
 
-</script>
+    @media (max-width: 600px) {
+        .breadcrumb {
+            margin-bottom: 18px;
+        }
+
+        .edit-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .profile-section {
+            align-items: flex-start;
+        }
+
+        .edit-footer {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="edit-page">
+    @if ($errors->any())
+        <div class="validation-alert">
+            <strong>Data belum dapat disimpan.</strong>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="breadcrumb">
+        <a href="{{ route('admin.user.index') }}">Manajemen User</a>
+        <span class="material-symbols-outlined">chevron_right</span>
+        <span>Edit User</span>
+    </div>
+
+    <section class="edit-card">
+        <div class="edit-header">
+            <div class="edit-header-info">
+                <h3>Perbarui Informasi Pengguna</h3>
+                <p>Ubah informasi akun pengguna dan penugasan role.</p>
+            </div>
+        </div>
+
+        <div class="edit-body">
+            <div class="profile-section">
+                <div class="avatar-placeholder">
+                    {{ strtoupper(substr($user->nama_user, 0, 1)) }}
+                </div>
+                <div class="avatar-info">
+                    <h4>{{ $user->nama_user }}</h4>
+                    <p>Akun pengguna Jurnify</p>
+                </div>
+            </div>
+
+            <form id="editUserForm" action="{{ route('admin.user.update', $user->id_user) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="nama_user">
+                            Nama Lengkap & Gelar <span class="required">*</span>
+                        </label>
+                        <input type="text" id="nama_user" name="nama_user"
+                            class="form-control @error('nama_user') error @enderror"
+                            value="{{ old('nama_user', $user->nama_user) }}" required>
+                        @error('nama_user')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="username">
+                            Username <span class="required">*</span>
+                        </label>
+                        <input type="text" id="username" name="username"
+                            class="form-control @error('username') error @enderror"
+                            value="{{ old('username', $user->username) }}" required>
+                        @error('username')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password">Kata Sandi</label>
+                        <input type="password" id="password" name="password"
+                            class="form-control @error('password') error @enderror"
+                            placeholder="Kosongkan jika tidak ingin mengubah">
+                        <span class="form-hint">Kosongkan jika kata sandi tidak ingin diubah.</span>
+                        @error('password')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="role">
+                            Role Pengguna <span class="required">*</span>
+                        </label>
+                        <select id="role" name="role"
+                            class="form-control @error('role') error @enderror" required>
+                            <option value="Guru" {{ old('role', $user->role) === 'Guru' ? 'selected' : '' }}>
+                                Guru Mata Pelajaran
+                            </option>
+                            <option value="Staff Piket" {{ old('role', $user->role) === 'Staff Piket' ? 'selected' : '' }}>
+                                Staff Piket
+                            </option>
+                            <option value="Sekretaris" {{ old('role', $user->role) === 'Sekretaris' ? 'selected' : '' }}>
+                                Sekretaris / Kurikulum
+                            </option>
+                            <option value="Admin" {{ old('role', $user->role) === 'Admin' ? 'selected' : '' }}>
+                                Administrator Sekolah
+                            </option>
+                        </select>
+                        @error('role')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="id_guru">Data Guru</label>
+                        <select id="id_guru" name="id_guru"
+                            class="form-control @error('id_guru') error @enderror">
+                            <option value="">Tidak terhubung ke guru</option>
+                            @foreach ($gurus as $guru)
+                                <option value="{{ $guru->id_guru }}"
+                                    {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}>
+                                    {{ $guru->nama_guru }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span class="form-hint">Pilih data guru jika akun ini digunakan oleh guru.</span>
+                        @error('id_guru')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label" for="id_kelas">Data Kelas</label>
+                        <select id="id_kelas" name="id_kelas"
+                            class="form-control @error('id_kelas') error @enderror">
+                            <option value="">Tidak terhubung ke kelas</option>
+                            @foreach ($kelases as $kelas)
+                                <option value="{{ $kelas->id_kelas }}"
+                                    {{ old('id_kelas', $user->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}>
+                                    {{ $kelas->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <span class="form-hint">Pilih kelas jika akun ini memiliki keterkaitan dengan kelas tertentu.</span>
+                        @error('id_kelas')
+                            <span class="error-message">{{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="edit-footer">
+            <a href="{{ route('admin.user.index') }}" class="btn-cancel">Batal</a>
+            <button type="submit" form="editUserForm" class="btn-save">
+                Simpan Perubahan
+            </button>
+        </div>
+    </section>
+</div>
 
 @endsection
