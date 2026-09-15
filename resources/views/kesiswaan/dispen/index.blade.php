@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.kesiswaan')
 
 @section('title', 'Persetujuan Dispen - Jurnify')
 @section('page-title', 'Persetujuan Dispen')
