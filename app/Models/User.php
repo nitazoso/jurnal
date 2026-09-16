@@ -24,6 +24,7 @@ class User extends Authenticatable implements PasskeyUser
         'password',
         'nama_user',
         'role',
+        'no_wa',
         'id_guru',
         'id_kelas',
     ];
@@ -40,6 +41,11 @@ class User extends Authenticatable implements PasskeyUser
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 
     public function initials(): string

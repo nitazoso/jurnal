@@ -2,19 +2,70 @@
 
 @section('title', 'Dashboard Admin')
 
-@section('content')
+@push('styles')
 
 <style>
     /* ============================================================
-       1. ANIMATION
+       ANIMATION
     ============================================================ */
+    @keyframes pageFadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-7px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
     @keyframes fadeInUp {
         from {
             opacity: 0;
             transform: translateY(16px);
         }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes cardUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes tableUp {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
         to {
             opacity: 1;
             transform: translateY(0);
@@ -35,42 +86,52 @@
         }
     }
 
-    .stats {
-        animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-
-    .activity-card {
-        animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) 0.1s ease-out both;
-        transition: box-shadow 0.3s ease;
-    }
-
-    .activity-card:hover {
-        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
-    }
-
-
     /* ============================================================
-       2. STAT CARD
+       STATISTICS
     ============================================================ */
+    .stats {
+        animation: pageFadeIn .45s ease both;
+    }
 
     .stat-card {
-        transition:
-            transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-            box-shadow 0.25s ease,
-            border-color 0.25s ease;
-
         position: relative;
         overflow: hidden;
+        animation: cardUp .45s ease both;
+        transition:
+            transform .25s cubic-bezier(.16, 1, .3, 1),
+            box-shadow .25s ease,
+            border-color .25s ease;
+    }
+
+    .stat-card:nth-child(2) {
+        animation-delay: .06s;
+    }
+
+    .stat-card:nth-child(3) {
+        animation-delay: .12s;
     }
 
     .stat-card:hover {
         transform: translateY(-3px);
-        box-shadow: 0 12px 20px -5px rgba(27, 35, 74, 0.08);
+        box-shadow: 0 12px 20px -5px rgba(27, 35, 74, .08);
         border-color: #cbd5e1;
     }
 
+    .stat-icon {
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease;
+    }
+
+    .stat-card:hover .stat-icon {
+        transform: scale(1.06);
+        box-shadow: 0 4px 10px rgba(48, 54, 111, .12);
+    }
+
     .stat-card .stat-icon span {
-        transition: transform 0.25s ease, color 0.25s ease;
+        transition:
+            transform .25s ease,
+            color .25s ease;
     }
 
     .stat-card:hover .stat-icon span {
@@ -79,312 +140,282 @@
     }
 
     .today-badge {
-        transition: all 0.2s ease;
+        transition:
+            transform .2s ease,
+            background .2s ease;
     }
 
     .stat-card:hover .today-badge {
+        transform: translateY(-1px);
         animation: pulseSoft 1.2s infinite ease-in-out;
     }
 
-
     /* ============================================================
-       3. ACTIVITY CARD
+       ACTIVITY CARD
     ============================================================ */
-
     .activity-card {
         padding: 24px 28px;
         background: #ffffff;
         border-radius: 16px;
+        animation: cardUp .5s ease .1s both;
+        transition: box-shadow .25s ease;
     }
-/* ============================================================
-   FILTER BAR
-============================================================ */
 
-.filters-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    margin-bottom: 22px;
-}
+    .activity-card:hover {
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, .05);
+    }
 
+    .activity-header {
+        animation: fadeDown .45s ease .15s both;
+    }
 
-/* ============================================================
-   SEARCH
-============================================================ */
-
-.search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-
-    flex: 1;
-    min-width: 0;
-}
-
-.search-box input {
-    width: 100%;
-    height: 42px;
-
-    padding: 10px 14px 10px 40px;
-
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 10px;
-
-    font-size: 13px;
-    color: #334155;
-
-    outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background-color 0.2s ease;
-}
-
-.search-box input:focus {
-    background-color: #ffffff;
-    border-color: #6366f1;
-
-    box-shadow:
-        0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
-.search-icon {
-    position: absolute;
-    left: 13px;
-
-    color: #94a3b8;
-    font-size: 19px;
-
-    pointer-events: none;
-}
-
-
-/* ============================================================
-   FILTER BAGIAN KANAN
-============================================================ */
-
-.filter-controls-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    flex: 1;
-    min-width: 0;
-}
-
-
-/* ============================================================
-   SELECT & DATE
-============================================================ */
-
-.filter-select {
-    height: 42px;
-
-    padding: 10px 14px;
-
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    border-radius: 10px;
-
-    font-size: 13px;
-    color: #475569;
-
-    outline: none;
-    cursor: pointer;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background-color 0.2s ease;
-}
-
-.filter-select:hover {
-    background-color: #e2e8f0;
-}
-
-.filter-select:focus {
-    background-color: #ffffff;
-    border-color: #6366f1;
-
-    box-shadow:
-        0 0 0 3px rgba(99, 102, 241, 0.15);
-}
-
-
-/* ============================================================
-   UKURAN FILTER
-============================================================ */
-
-select[name="status"] {
-    flex: 1.4;
-    min-width: 180px;
-}
-
-select[name="kelas_id"] {
-    flex: 1;
-    min-width: 145px;
-}
-
-input[name="tanggal"] {
-    flex: 1;
-    min-width: 150px;
-}
-
-
-/* ============================================================
-   RESET
-============================================================ */
-
-.btn-reset {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    gap: 6px;
-
-    height: 42px;
-
-    padding: 10px 18px;
-
-    min-width: 140px;
-
-    background-color: #f1f5f9;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-
-    color: #64748b;
-
-    font-size: 13px;
-    font-weight: 600;
-
-    text-decoration: none;
-    white-space: nowrap;
-
-    transition: all 0.2s ease;
-}
-
-.btn-reset span.material-symbols-outlined {
-    font-size: 18px;
-}
-
-.btn-reset:hover {
-    background-color: #ffe4e6;
-    border-color: #fecdd3;
-    color: #e11d48;
-
-    transform: translateY(-1px);
-
-    box-shadow:
-        0 2px 6px rgba(225, 29, 72, 0.1);
-}
-
-
-/* ============================================================
-   RESPONSIVE
-============================================================ */
-
-@media (max-width: 1000px) {
-
+    /* ============================================================
+       FILTER BAR
+    ============================================================ */
     .filters-container {
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        margin-bottom: 22px;
+        animation: fadeDown .45s ease .2s both;
     }
 
+    /* ============================================================
+       SEARCH
+    ============================================================ */
     .search-box {
-        flex-basis: 100%;
-    }
-
-    .filter-controls-right {
+        position: relative;
+        display: flex;
+        align-items: center;
         flex: 1;
+        min-width: 0;
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease;
     }
-}
 
+    .search-box input {
+        width: 100%;
+        height: 42px;
+        padding: 10px 14px 10px 40px;
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 13px;
+        color: #334155;
+        outline: none;
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease,
+            background-color .2s ease;
+    }
 
-@media (max-width: 700px) {
+    .search-box input:focus {
+        background-color: #ffffff;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, .15);
+    }
 
+    .search-box:focus-within {
+        border-color: #7886c7;
+        box-shadow: 0 0 0 3px rgba(120, 134, 199, .1);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 13px;
+        color: #94a3b8;
+        font-size: 19px;
+        pointer-events: none;
+        transition:
+            transform .2s ease,
+            color .2s ease;
+    }
+
+    .search-box:focus-within .search-icon {
+        color: #30366f;
+        transform: scale(1.08);
+    }
+
+    /* ============================================================
+       FILTER BAGIAN KANAN
+    ============================================================ */
     .filter-controls-right {
-        flex-wrap: wrap;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+        min-width: 0;
     }
 
-    select[name="status"],
-    select[name="kelas_id"],
+    /* ============================================================
+       SELECT & DATE
+    ============================================================ */
+    .filter-select {
+        height: 42px;
+        padding: 10px 14px;
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        font-size: 13px;
+        color: #475569;
+        outline: none;
+        cursor: pointer;
+        transition:
+            border-color .2s ease,
+            box-shadow .2s ease,
+            background-color .2s ease,
+            transform .2s ease;
+    }
+
+    .filter-select:hover {
+        background-color: #e2e8f0;
+        border-color: #c4c7d2;
+    }
+
+    .filter-select:focus {
+        background-color: #ffffff;
+        border-color: #7886c7;
+        box-shadow: 0 0 0 3px rgba(120, 134, 199, .1);
+        outline: none;
+    }
+
+    select[name="status"] {
+        flex: 1.4;
+        min-width: 180px;
+    }
+
+    select[name="kelas_id"] {
+        flex: 1;
+        min-width: 145px;
+    }
+
     input[name="tanggal"] {
         flex: 1;
-        min-width: 140px;
+        min-width: 150px;
     }
 
-    .btn-reset {
-        flex: 1;
-    }
-}
     /* ============================================================
-       7. TABLE
+       RESET
     ============================================================ */
-
-    tbody tr {
-        animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-
-        transition:
-            background-color 0.2s ease,
-            transform 0.15s ease;
-    }
-
-    tbody tr:hover {
-        background-color: #f8fafc !important;
-    }
-
-
-    /* Action button */
-
-    .action {
-        border: none;
-        background: transparent;
-
-        color: #64748b;
-
-        cursor: pointer;
-
-        padding: 6px;
-
-        border-radius: 8px;
-
-        transition: all 0.2s ease;
-
+    .btn-reset {
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        gap: 6px;
+        height: 42px;
+        padding: 10px 18px;
+        min-width: 140px;
+        background-color: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        color: #64748b;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        transition:
+            background .2s ease,
+            color .2s ease,
+            border-color .2s ease,
+            transform .2s ease,
+            box-shadow .2s ease;
+    }
+
+    .btn-reset span.material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .btn-reset:hover {
+        background-color: #ffe4e6;
+        border-color: #fecdd3;
+        color: #e11d48;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(225, 29, 72, .1);
+    }
+
+    /* ============================================================
+       TABLE
+    ============================================================ */
+    .table-wrapper {
+        animation: tableUp .5s ease .25s both;
+    }
+
+    tbody tr {
+        animation: fadeInUp .35s cubic-bezier(.16, 1, .3, 1) both;
+        transition:
+            background-color .18s ease,
+            transform .18s ease;
+    }
+
+    tbody tr:hover {
+        background-color: #fafbff !important;
+    }
+
+    .teacher {
+        transition: color .18s ease;
+    }
+
+    tbody tr:hover .teacher {
+        color: #30366f !important;
+    }
+
+    /* ============================================================
+       ACTION BUTTON
+    ============================================================ */
+    .action {
+        border: none;
+        background: transparent;
+        color: #64748b;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+            transform .2s ease,
+            background .2s ease,
+            color .2s ease;
     }
 
     .action:hover {
         background-color: #e0e7ff;
         color: #3730a3;
-
-        transform: scale(1.15);
+        transform: scale(1.08);
     }
 
     .action:active {
-        transform: scale(0.95);
+        transform: scale(.95);
     }
 
+    .action .material-symbols-outlined {
+        transition: transform .2s ease;
+    }
+
+    .action:hover .material-symbols-outlined {
+        transform: scale(1.08);
+    }
 
     /* ============================================================
-       8. STATUS BADGE
+       STATUS BADGE
     ============================================================ */
-
     .status {
         padding: 4px 12px;
-
         border-radius: 12px;
-
         font-weight: 700;
         font-size: 11px;
-
         text-transform: uppercase;
-        letter-spacing: 0.3px;
-
+        letter-spacing: .3px;
         display: inline-block;
+        transition:
+            transform .18s ease,
+            box-shadow .18s ease;
+    }
+
+    tbody tr:hover .status {
+        transform: translateY(-1px);
     }
 
     .status.valid {
@@ -402,36 +433,51 @@ input[name="tanggal"] {
         color: #be123c;
     }
 
-
     /* ============================================================
-       9. CLASS BADGE
+       CLASS BADGE
     ============================================================ */
-
     .class-badge {
         background-color: #f1f5f9;
         color: #334155;
-
         padding: 4px 10px;
-
         border-radius: 8px;
-
         font-weight: 600;
         font-size: 12px;
-
-        transition: background 0.2s ease;
+        transition:
+            transform .18s ease,
+            background .2s ease,
+            box-shadow .18s ease;
     }
 
-    tr:hover .class-badge {
+    tbody tr:hover .class-badge {
         background-color: #e2e8f0;
+        transform: translateY(-1px);
     }
-
 
     /* ============================================================
-       10. RESPONSIVE
+       BOTTOM / PAGINATION
     ============================================================ */
+    .bottom {
+        animation: fadeUp .45s ease .3s both;
+    }
 
+    .bottom a,
+    .bottom button {
+        transition:
+            transform .18s ease,
+            background .18s ease,
+            color .18s ease;
+    }
+
+    .bottom a:hover,
+    .bottom button:hover {
+        transform: translateY(-1px);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
     @media (max-width: 1100px) {
-
         .filters-container {
             flex-wrap: wrap;
         }
@@ -446,8 +492,22 @@ input[name="tanggal"] {
         }
     }
 
-    @media (max-width: 700px) {
+    @media (max-width: 1000px) {
+        .filters-container {
+            flex-wrap: wrap;
+        }
 
+        .search-box {
+            flex-basis: 100%;
+            max-width: none;
+        }
+
+        .filter-controls-right {
+            flex: 1;
+        }
+    }
+
+    @media (max-width: 700px) {
         .activity-card {
             padding: 18px;
         }
@@ -478,7 +538,43 @@ input[name="tanggal"] {
             flex: 1;
         }
     }
+
+    /* ============================================================
+       REDUCED MOTION
+    ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+        .stats,
+        .stat-card,
+        .activity-card,
+        .activity-header,
+        .filters-container,
+        .table-wrapper,
+        .bottom,
+        tbody tr {
+            animation: none;
+        }
+
+        .stat-card,
+        .stat-icon,
+        .today-badge,
+        .search-box,
+        .filter-select,
+        .btn-reset,
+        tbody tr,
+        .class-badge,
+        .status,
+        .action,
+        .action .material-symbols-outlined,
+        .bottom a,
+        .bottom button {
+            transition: none;
+        }
+    }
 </style>
+
+@endpush
+
+@section('content')
 
 <!-- ============================================================
      SECTION STATISTIK
@@ -494,7 +590,6 @@ input[name="tanggal"] {
     </div>
 
     <div class="stat-value">
-
         <strong>
             {{ $totalJurnalHariIni }}
         </strong>
@@ -502,7 +597,6 @@ input[name="tanggal"] {
         <span>
             Terisi
         </span>
-
     </div>
 
     <span class="today-badge">
@@ -511,7 +605,6 @@ input[name="tanggal"] {
 
 </div>
 
-
 <div class="stat-card">
 
     <div class="stat-title">
@@ -519,7 +612,6 @@ input[name="tanggal"] {
     </div>
 
     <div class="stat-value">
-
         <strong>
             {{ $totalGuru }}
         </strong>
@@ -527,19 +619,15 @@ input[name="tanggal"] {
         <span>
             Terdaftar
         </span>
-
     </div>
 
     <div class="stat-icon">
-
         <span class="material-symbols-outlined">
             person_add
         </span>
-
     </div>
 
 </div>
-
 
 <div class="stat-card">
 
@@ -548,7 +636,6 @@ input[name="tanggal"] {
     </div>
 
     <div class="stat-value">
-
         <strong>
             {{ $totalKelas }}
         </strong>
@@ -556,18 +643,16 @@ input[name="tanggal"] {
         <span>
             Kelas
         </span>
-
     </div>
 
     <div class="stat-icon">
-
         <span class="material-symbols-outlined">
             meeting_room
         </span>
-
     </div>
 
 </div>
+
 
 </section>
 
@@ -594,7 +679,6 @@ input[name="tanggal"] {
 <!-- ========================================================
      FILTER
 ========================================================= -->
-
 <form
     action="{{ route('admin.dashboard') }}"
     method="GET"
@@ -602,7 +686,6 @@ input[name="tanggal"] {
 >
 
     <!-- SEARCH -->
-
     <div class="search-box">
 
         <span class="material-symbols-outlined search-icon">
@@ -613,18 +696,15 @@ input[name="tanggal"] {
             type="text"
             name="search"
             value="{{ request('search') }}"
-            placeholder="Cari jurnal, guru, kelas, mapel..."
+            placeholder="Cari jurnal, nama guru, kelas, mapel..."
         >
 
     </div>
 
 
-    <!-- FILTER -->
-
     <div class="filter-controls-right">
 
         <!-- STATUS -->
-
         <select
             name="status"
             class="filter-select"
@@ -632,7 +712,7 @@ input[name="tanggal"] {
         >
 
             <option value="">
-                Semua Status
+                Semua Status Validasi
             </option>
 
             <option
@@ -660,7 +740,6 @@ input[name="tanggal"] {
 
 
         <!-- KELAS -->
-
         <select
             name="kelas_id"
             class="filter-select"
@@ -686,7 +765,6 @@ input[name="tanggal"] {
 
 
         <!-- TANGGAL -->
-
         <input
             type="date"
             name="tanggal"
@@ -697,13 +775,11 @@ input[name="tanggal"] {
 
 
         <!-- RESET -->
-
         <a
             href="{{ route('admin.dashboard') }}"
             class="btn-reset"
             title="Reset Semua Filter"
         >
-
             <span class="material-symbols-outlined">
                 restart_alt
             </span>
@@ -711,7 +787,6 @@ input[name="tanggal"] {
             <span>
                 Reset Filter
             </span>
-
         </a>
 
     </div>
@@ -722,7 +797,6 @@ input[name="tanggal"] {
 <!-- ========================================================
      TABLE
 ========================================================= -->
-
 <div class="table-wrapper">
 
     <table>
@@ -838,32 +912,18 @@ input[name="tanggal"] {
 
                     <td>
 
-                        <span
-                            class="status {{ strtolower($item->status) }}"
-                        >
+                        <span class="status {{ strtolower($item->status) }}">
                             {{ $item->status }}
                         </span>
 
                     </td>
 
 
-                    <td>
-
-                        <button
-                            class="action"
-                            title="Lihat Detail Jurnal"
-                        >
-
-                            <span
-                                class="material-symbols-outlined"
-                                style="font-size: 18px;"
-                            >
-                                visibility
-                            </span>
-
-                        </button>
-
-                    </td>
+                   <td>
+                <a href="{{ route('admin.jurnal.show', $item) }}" class="action" aria-label="Lihat detail jurnal">
+                    <span class="material-symbols-outlined">visibility</span>
+                </a>
+            </td>
 
                 </tr>
 
@@ -896,15 +956,13 @@ input[name="tanggal"] {
 <!-- ========================================================
      PAGINATION
 ========================================================= -->
-
 <div
     class="bottom"
     style="margin-top: 20px;"
 >
-
     {{ $jurnals->links() }}
-
 </div>
+
 
 </section>
 

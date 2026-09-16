@@ -24,7 +24,7 @@ class UserController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', '%' . $search . '%')
-                  ->orWhere('nama_user', 'like', '%' . $search . '%');
+                ->orWhere('nama_user', 'like', '%' . $search . '%');
             });
         }
 
@@ -41,6 +41,7 @@ class UserController extends Controller
         // Statistik
         $totalUser = User::count();
         $totalGuru = User::where('role', 'Guru')->count();
+        $totalKesiswaan = User::where('role', 'Kesiswaan')->count();
         $totalStaffPiket = User::where('role', 'Staff Piket')->count();
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
         $totalSiswa = \App\Models\Siswa::count();
@@ -49,6 +50,7 @@ class UserController extends Controller
             'users',
             'totalUser',
             'totalGuru',
+            'totalKesiswaan',
             'totalStaffPiket',
             'totalSekretaris',
             'totalSiswa'
@@ -77,19 +79,41 @@ class UserController extends Controller
         $validated = $request->validate([
             'username' => 'required|string|max:100|unique:users,username',
             'nama_user' => 'required|string|max:255',
-            'password' => 'required|string|min:6',
-            'role' => 'required|in:Admin,Guru,Sekretaris,Staff Piket',
+            'password' => 'required|string|min:8',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
+            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $plainPassword = $validated['password'];
+        $validated['password'] = Hash::make($plainPassword);
 
-        User::create($validated);
+        $user = User::create($validated);
 
         return redirect()
-            ->route('admin.user.index')
-            ->with('success', 'User berhasil ditambahkan.');
+            ->route('admin.user.receipt', $user->id_user)
+            ->with([
+                'password_awal' => $plainPassword,
+                'created_by' => auth()->user()->nama_user ?? 'Administrator',
+            ]);
+    }
+
+    public function receipt(User $user)
+    {
+        $passwordAwal = session('password_awal');
+
+        if (! $passwordAwal) {
+            return redirect()->route('admin.user.index')
+                ->with('error', 'Struk akun tidak tersedia.');
+        }
+
+        return view('admin.user.receipt', [
+            'user' => $user,
+            'passwordAwal' => $passwordAwal,
+            'createdBy' => session('created_by', auth()->user()->nama_user ?? 'Administrator'),
+            'tanggalDibuat' => now()->translatedFormat('d F Y'),
+        ]);
     }
 
     // =========================
@@ -119,16 +143,18 @@ class UserController extends Controller
         $validated = $request->validate([
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
             'nama_user' => 'required|string|max:255',
-            'password' => 'nullable|string|min:6',
-            'role' => 'required|in:Admin,Guru,Sekretaris,Staff Piket',
+            'password' => 'nullable|string|min:8',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
+            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
-        // Kalau password kosong, password lama tetap dipakai
+        // Kalau password diisi, hash password baru
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
+            // Kalau kosong, password lama tetap digunakan
             unset($validated['password']);
         }
 

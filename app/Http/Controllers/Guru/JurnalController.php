@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
+use App\Models\DetailAbsensi;
 use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Siswa;
@@ -14,41 +15,61 @@ class JurnalController extends Controller
     {
         $user = auth()->user();
 
-        $jadwals = Jadwal::with([
-            'mapel',
+        $jurnals = Jurnal::with([
+            'guru',
             'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+        ])
+        ->where('id_user', $user->id_user)
+        ->latest('tanggal')
+        ->get();
+
+        return view('guru.jurnal.index', compact('jurnals'));
+    }
+
+    public function create()
+    {
+        $user = auth()->user();
+
+        $jadwals = Jadwal::with([
+            'kelas',
+            'mapel',
             'jamMulai',
             'jamSelesai',
         ])
         ->where('id_guru', $user->id_guru)
+        ->orderBy('hari')
+        ->orderBy('id_jam_mulai')
         ->get();
 
-        $jurnals = Jurnal::where('id_user', $user->id_user)
-            ->latest('tanggal')
-            ->get();
-
-        return view('guru.jurnal.index', compact(
-            'jadwals',
-            'jurnals'
-        ));
+        return view('guru.jurnal.create', compact('jadwals'));
     }
 
-    public function create(Jadwal $jadwal)
+    public function form(Jadwal $jadwal)
     {
         $user = auth()->user();
 
+        // Pastikan jadwal memang milik guru yang sedang login
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
         }
 
+        // Ambil data relasi jadwal
+        $jadwal->load([
+            'kelas',
+            'mapel',
+            'jamMulai',
+            'jamSelesai',
+        ]);
+
+        // Ambil semua siswa dari kelas jadwal tersebut
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)
             ->orderBy('nama_siswa')
             ->get();
 
-        return view('guru.jurnal.create', compact(
-            'jadwal',
-            'siswa'
-        ));
+        return view('guru.jurnal.form', compact('jadwal', 'siswa'));
     }
 
     public function store(Request $request)
@@ -57,34 +78,114 @@ class JurnalController extends Controller
             'id_jadwal' => 'required|exists:jadwals,id_jadwal',
             'tanggal' => 'required|date',
             'materi' => 'required|string|max:255',
-            'status_guru' => 'required|in:Hadir,Izin,Sakit,Tanpa Keterangan',
-            'ada_tugas' => 'required|in:Ya,Tidak',
+
+            'status_guru' => [
+                'required',
+                'in:Hadir,Izin,Sakit,Tanpa Keterangan',
+            ],
+
+            'ada_tugas' => [
+                'required',
+                'in:Ya,Tidak',
+            ],
+
             'deskripsi_tugas' => 'nullable|string',
             'catatan_umum' => 'nullable|string|max:255',
+
+            'absensi' => 'required|array',
+            'absensi.*' => [
+                'required',
+                'in:Hadir,Sakit,Izin,Alpha,Dispen',
+            ],
         ]);
 
         $user = auth()->user();
 
+        // Ambil jadwal
         $jadwal = Jadwal::findOrFail($validated['id_jadwal']);
 
+        // Pastikan jadwal milik guru yang login
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
         }
 
-        $validated['id_kelas'] = $jadwal->id_kelas;
-        $validated['id_guru'] = $jadwal->id_guru;
-        $validated['id_user'] = $user->id_user;
-        $validated['id_jam_mulai'] = $jadwal->id_jam_mulai;
-        $validated['id_jam_selesai'] = $jadwal->id_jam_selesai;
-        $validated['status_validasi_guru'] = 'Menunggu';
+        // Hitung jumlah hadir dan tidak hadir
+        $jmlHadir = 0;
+        $jmlTidakHadir = 0;
 
-        $validated['jml_hadir'] = 0;
-        $validated['jml_tidak_hadir'] = 0;
+        foreach ($validated['absensi'] as $status) {
+            if ($status === 'Hadir') {
+                $jmlHadir++;
+            } else {
+                $jmlTidakHadir++;
+            }
+        }
 
-        Jurnal::create($validated);
+        // Simpan jurnal
+        $jurnal = Jurnal::create([
+            'id_jadwal' => $jadwal->id_jadwal,
+            'id_kelas' => $jadwal->id_kelas,
+            'id_guru' => $jadwal->id_guru,
+            'id_user' => $user->id_user,
+
+            'id_jam_mulai' => $jadwal->id_jam_mulai,
+            'id_jam_selesai' => $jadwal->id_jam_selesai,
+
+            'tanggal' => $validated['tanggal'],
+            'materi' => $validated['materi'],
+
+            'status_guru' => $validated['status_guru'],
+
+            'ada_tugas' => $validated['ada_tugas'],
+            'deskripsi_tugas' => $validated['deskripsi_tugas'] ?? null,
+
+            'jml_hadir' => $jmlHadir,
+            'jml_tidak_hadir' => $jmlTidakHadir,
+
+            'status_validasi_guru' => 'Menunggu',
+
+            'catatan_umum' => $validated['catatan_umum'] ?? null,
+        ]);
+
+        // Simpan detail siswa yang tidak hadir
+        foreach ($validated['absensi'] as $idSiswa => $status) {
+
+            // Hadir tidak perlu disimpan
+            // karena jumlah hadir sudah disimpan di jurnal
+            if ($status === 'Hadir') {
+                continue;
+            }
+
+            DetailAbsensi::create([
+                'id_jurnal' => $jurnal->id_jurnal,
+                'id_siswa' => $idSiswa,
+                'status' => $status,
+                'keterangan' => null,
+            ]);
+        }
 
         return redirect()
             ->route('guru.jurnal.index')
             ->with('success', 'Jurnal berhasil disimpan.');
+    }
+
+    public function show(Jurnal $jurnal)
+    {
+        $user = auth()->user();
+
+        // Guru hanya boleh melihat jurnal miliknya
+        if ($jurnal->id_user != $user->id_user) {
+            abort(403);
+        }
+
+        $jurnal->load([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+        ]);
+
+        return view('guru.jurnal.show', compact('jurnal'));
     }
 }

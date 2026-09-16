@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\Admin\DashboardController;
@@ -14,17 +16,25 @@ use App\Http\Controllers\Admin\SiswaController;
 
 use App\Http\Controllers\Guru\JurnalController as GuruJurnalController;
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
+use App\Http\Controllers\Guru\PiketController as GuruPiketController;
+use App\Http\Controllers\Kesiswaan\DashboardController as KesiswaanDashboardController;
+use App\Http\Controllers\Kesiswaan\DispenController as KesiswaanDispenController;
+use App\Http\Controllers\Piket\DispenController as PiketDispenController;
+use App\Http\Controllers\Piket\DashboardController as PiketDashboardController;
+use App\Http\Controllers\Piket\JadwalPiketController;
+
+Route::match(['get', 'post'], '/logout', function (Request $request) {
+    Auth::guard('web')->logout();
+
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    return redirect()->route('login');
+})->name('logout');
 
 use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
 
 // LOGIN
-Route::get('/login', function () {
-    return view('auth.login');
-})->name('login');
-
-Route::get('/', function () {
-    return redirect()->route('login');
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -32,146 +42,142 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-// Dashboard Admin
-Route::get('/admin/dashboard', [DashboardController::class, 'index'])
-    ->name('admin.dashboard');
+Route::middleware(['auth', 'role:Admin'])->group(function () {
+    // Dashboard Admin
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])
+        ->name('admin.dashboard');
 
+    // ====================
+    // JURNAL ADMIN
+    // ====================
 
-// ====================
-// JURNAL ADMIN
-// ====================
+    Route::get('/admin/jurnal', [JurnalController::class, 'index'])
+        ->name('admin.jurnal.index');
 
-Route::get('/admin/jurnal', [JurnalController::class, 'index'])
-    ->name('admin.jurnal.index');
+    // ====================
+    // USER ADMIN
+    // ====================
 
+    Route::get('/admin/user', [UserController::class, 'index'])
+        ->name('admin.user.index');
 
-// ====================
-// USER ADMIN
-// ====================
+    Route::get('/admin/user/create', [UserController::class, 'create'])
+        ->name('admin.user.create');
 
-Route::get('/admin/user', [UserController::class, 'index'])
-    ->name('admin.user.index');
+    Route::post('/admin/user', [UserController::class, 'store'])
+        ->name('admin.user.store');
 
-Route::get('/admin/user/create', [UserController::class, 'create'])
-    ->name('admin.user.create');
+    Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])
+        ->name('admin.user.edit');
 
-Route::post('/admin/user', [UserController::class, 'store'])
-    ->name('admin.user.store');
+    Route::get('/admin/user/{user}/receipt', [UserController::class, 'receipt'])
+        ->name('admin.user.receipt');
 
-Route::get('/admin/user/{user}/edit', [UserController::class, 'edit'])
-    ->name('admin.user.edit');
+    Route::put('/admin/user/{user}', [UserController::class, 'update'])
+        ->name('admin.user.update');
 
-Route::put('/admin/user/{user}', [UserController::class, 'update'])
-    ->name('admin.user.update');
+    Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])
+        ->name('admin.user.destroy');
 
-Route::delete('/admin/user/{user}', [UserController::class, 'destroy'])
-    ->name('admin.user.destroy');
+    // ====================
+    // GURU ADMIN
+    // ====================
 
+    Route::get('/admin/guru', [GuruController::class, 'index'])
+        ->name('admin.guru.index');
 
-// ====================
-// GURU ADMIN
-// ====================
+    Route::get('/admin/guru/create', [GuruController::class, 'create'])
+        ->name('admin.guru.create');
 
-Route::get('/admin/guru', [GuruController::class, 'index'])
-    ->name('admin.guru.index');
+    Route::post('/admin/guru', [GuruController::class, 'store'])
+        ->name('admin.guru.store');
 
-Route::get('/admin/guru/create', [GuruController::class, 'create'])
-    ->name('admin.guru.create');
+    Route::get('/admin/guru/{guru}/edit', [GuruController::class, 'edit'])
+        ->name('admin.guru.edit');
 
-Route::post('/admin/guru', [GuruController::class, 'store'])
-    ->name('admin.guru.store');
+    Route::put('/admin/guru/{guru}', [GuruController::class, 'update'])
+        ->name('admin.guru.update');
 
-Route::get('/admin/guru/{guru}/edit', [GuruController::class, 'edit'])
-    ->name('admin.guru.edit');
+    Route::delete('/admin/guru/{guru}', [GuruController::class, 'destroy'])
+        ->name('admin.guru.destroy');
 
-Route::put('/admin/guru/{guru}', [GuruController::class, 'update'])
-    ->name('admin.guru.update');
+    // ====================
+    // KELAS ADMIN
+    // ====================
 
-Route::delete('/admin/guru/{guru}', [GuruController::class, 'destroy'])
-    ->name('admin.guru.destroy');
+    Route::get('/admin/kelas', [KelasController::class, 'index'])
+        ->name('admin.kelas.index');
 
+    Route::get('/admin/kelas/create', [KelasController::class, 'create'])
+        ->name('admin.kelas.create');
 
-// ====================
-// KELAS ADMIN
-// ====================
+    Route::post('/admin/kelas', [KelasController::class, 'store'])
+        ->name('admin.kelas.store');
 
-Route::get('/admin/kelas', [KelasController::class, 'index'])
-    ->name('admin.kelas.index');
+    Route::get('/admin/kelas/{kelas}/edit', [KelasController::class, 'edit'])
+        ->name('admin.kelas.edit');
 
-Route::get('/admin/kelas/create', [KelasController::class, 'create'])
-    ->name('admin.kelas.create');
+    Route::put('/admin/kelas/{kelas}', [KelasController::class, 'update'])
+        ->name('admin.kelas.update');
 
-Route::post('/admin/kelas', [KelasController::class, 'store'])
-    ->name('admin.kelas.store');
+    Route::delete('/admin/kelas/{kelas}', [KelasController::class, 'destroy'])
+        ->name('admin.kelas.destroy');
 
-Route::get('/admin/kelas/{kelas}/edit', [KelasController::class, 'edit'])
-    ->name('admin.kelas.edit');
+    // ====================
+    // SISWA PER KELAS
+    // ====================
+    Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
+        ->name('admin.kelas.siswa');
 
-Route::put('/admin/kelas/{kelas}', [KelasController::class, 'update'])
-    ->name('admin.kelas.update');
+    Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
+        ->name('admin.siswa.create');
 
-Route::delete('/admin/kelas/{kelas}', [KelasController::class, 'destroy'])
-    ->name('admin.kelas.destroy');
+    Route::post('/admin/siswa', [SiswaController::class, 'store'])
+        ->name('admin.siswa.store');
 
+    Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
+        ->name('admin.siswa.edit');
 
-// ====================
-// SISWA PER KELAS
-// ====================
-Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
-    ->name('admin.kelas.siswa');
+    Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
+        ->name('admin.siswa.update');
 
-Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
-    ->name('admin.siswa.create');
+    Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
+        ->name('admin.siswa.destroy');
 
-Route::post('/admin/siswa', [SiswaController::class, 'store'])
-    ->name('admin.siswa.store');
+    // ====================
+    // MAPEL ADMIN
+    // ====================
 
-Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
-    ->name('admin.siswa.edit');
+    Route::get('/admin/mapel', [MapelController::class, 'index'])
+        ->name('admin.mapel.index');
 
-Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
-    ->name('admin.siswa.update');
+    Route::get('/admin/mapel/create', [MapelController::class, 'create'])
+        ->name('admin.mapel.create');
 
-Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
-    ->name('admin.siswa.destroy');
+    Route::post('/admin/mapel', [MapelController::class, 'store'])
+        ->name('admin.mapel.store');
 
+    Route::get('/admin/mapel/{mapel}/edit', [MapelController::class, 'edit'])
+        ->name('admin.mapel.edit');
 
-// ====================
-// MAPEL ADMIN
-// ====================
+    Route::put('/admin/mapel/{mapel}', [MapelController::class, 'update'])
+        ->name('admin.mapel.update');
 
-Route::get('/admin/mapel', [MapelController::class, 'index'])
-    ->name('admin.mapel.index');
+    Route::delete('/admin/mapel/{mapel}', [MapelController::class, 'destroy'])
+        ->name('admin.mapel.destroy');
 
-Route::get('/admin/mapel/create', [MapelController::class, 'create'])
-    ->name('admin.mapel.create');
+    // ====================
+    // JAM PELAJARAN ADMIN
+    // ====================
 
-Route::post('/admin/mapel', [MapelController::class, 'store'])
-    ->name('admin.mapel.store');
+    Route::get('/admin/jam', [JamPelController::class, 'index'])
+        ->name('admin.jam.index');
 
-Route::get('/admin/mapel/{mapel}/edit', [MapelController::class, 'edit'])
-    ->name('admin.mapel.edit');
+    Route::get('/admin/jam/create', [JamPelController::class, 'create'])
+        ->name('admin.jam.create');
 
-Route::put('/admin/mapel/{mapel}', [MapelController::class, 'update'])
-    ->name('admin.mapel.update');
-
-Route::delete('/admin/mapel/{mapel}', [MapelController::class, 'destroy'])
-    ->name('admin.mapel.destroy');
-
-
-// ====================
-// JAM PELAJARAN ADMIN
-// ====================
-
-Route::get('/admin/jam', [JamPelController::class, 'index'])
-    ->name('admin.jam.index');
-
-Route::get('/admin/jam/create', [JamPelController::class, 'create'])
-    ->name('admin.jam.create');
-
-Route::post('/admin/jam', [JamPelController::class, 'store'])
-    ->name('admin.jam.store');
-
+    Route::post('/admin/jam', [JamPelController::class, 'store'])
+        ->name('admin.jam.store');
 Route::get('/admin/jam/{klp_hari}/edit', [JamPelController::class, 'edit'])
     ->name('admin.jam.edit');
 
@@ -181,37 +187,38 @@ Route::put('/admin/jam/{klp_hari}', [JamPelController::class, 'update'])
 Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
     ->name('admin.jam.destroy');
 
+    // ====================
+    // JADWAL ADMIN
+    // ====================
 
-// ====================
-// JADWAL ADMIN
-// ====================
+    Route::get('/admin/jadwal', [JadwalController::class, 'index'])
+        ->name('admin.jadwal.index');
 
-Route::get('/admin/jadwal', [JadwalController::class, 'index'])
-    ->name('admin.jadwal.index');
-
-Route::get('/admin/jadwal/create', [JadwalController::class, 'create'])
-    ->name('admin.jadwal.create');
-
-Route::post('/admin/jadwal', [JadwalController::class, 'store'])
-    ->name('admin.jadwal.store');
-
-Route::get('/admin/jadwal/{jadwal}/edit', [JadwalController::class, 'edit'])
-    ->name('admin.jadwal.edit');
-
-Route::put('/admin/jadwal/{jadwal}', [JadwalController::class, 'update'])
-    ->name('admin.jadwal.update');
-
-Route::delete('/admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])
-    ->name('admin.jadwal.destroy');
+    Route::get('/admin/jadwal/create', [JadwalController::class, 'create'])
+        ->name('admin.jadwal.create');
 
 
-// ====================
-// PROFIL ADMIN
-// ====================
+    Route::post('/admin/jadwal', [JadwalController::class, 'store'])
+        ->name('admin.jadwal.store');
 
-Route::get('/admin/profil', function () {
-    return view('admin.profil');
-})->name('admin.profil');
+    Route::get('/admin/jadwal/{jadwal}/edit', [JadwalController::class, 'edit'])
+        ->name('admin.jadwal.edit');
+
+    Route::put('/admin/jadwal/{jadwal}', [JadwalController::class, 'update'])
+        ->name('admin.jadwal.update');
+
+
+    Route::delete('/admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])
+        ->name('admin.jadwal.destroy');
+
+    // ====================
+    // PROFIL ADMIN
+    // ====================
+
+    Route::get('/admin/profil', function () {
+        return view('admin.profil');
+    })->name('admin.profil');
+});
 
 
 /*
@@ -220,39 +227,88 @@ Route::get('/admin/profil', function () {
 |--------------------------------------------------------------------------
 */
 
-// Dashboard Guru
-Route::get('/guru/dashboard', [GuruDashboardController::class, 'index'])
-    ->name('guru.dashboard');
+Route::middleware(['auth', 'role:Guru'])->group(function () {
+    // Dashboard Guru
+    Route::get('/guru/dashboard', [GuruDashboardController::class, 'index'])
+        ->name('guru.dashboard');
 
+    // ====================
+    // JURNAL GURU
+    // ====================
+    Route::get('/guru/jurnal', [GuruJurnalController::class, 'index'])
+        ->name('guru.jurnal.index');
 
-// ====================
-// JURNAL GURU
-// ====================
+    Route::get('/guru/jurnal/create', [GuruJurnalController::class, 'create'])
+        ->name('guru.jurnal.create');
 
-Route::get('/guru/jurnal', [GuruJurnalController::class, 'index'])
-    ->name('guru.jurnal.index');
+    Route::get('/guru/jurnal/form/{jadwal}', [GuruJurnalController::class, 'form'])
+        ->name('guru.jurnal.form');
 
-Route::get('/guru/jurnal/create/{jadwal}', [GuruJurnalController::class, 'create'])
-    ->name('guru.jurnal.create');
+    Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
+        ->name('guru.jurnal.store');
 
-Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
-    ->name('guru.jurnal.store');
+    // ====================
+    // JADWAL PIKET GURU
+    // ====================
+    Route::get('/guru/piket', [GuruPiketController::class, 'index'])
+        ->name('guru.piket.index');
 
+    // ====================
+    // PROFIL GURU
+    // ====================
+    Route::get('/guru/profil', function () {
+        return view('guru.profil');
+    })->name('guru.profil');
+});
 
-// ====================
-// PROFIL GURU
-// ====================
+Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
+    Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
+        ->name('piket.dashboard');
 
-Route::get('/guru/profil', function () {
-    return view('guru.profil');
-})->name('guru.profil');
+    Route::get('/piket/jurnal', [PiketDashboardController::class, 'jurnalIndex'])
+        ->name('piket.jurnal.index');
 
-/*
-|--------------------------------------------------------------------------
-| STAFF PIKET
-|--------------------------------------------------------------------------
-*/
-Route::middleware(['auth'])->group(function () {
-    Route::get('/staffpiket/dashboard', [StaffPiketDashboardController::class, 'index'])
-        ->name('staffpiket.dashboard');
+    Route::get('/piket/profil', function () {
+        return view('piket.profil');
+    })->name('piket.profil');
+
+    Route::get('/piket/jadwal', [JadwalPiketController::class, 'index'])
+        ->name('piket.jadwal.index');
+
+    Route::get('/piket/jadwal/create', [JadwalPiketController::class, 'create'])
+        ->name('piket.jadwal.create');
+
+    Route::post('/piket/jadwal', [JadwalPiketController::class, 'store'])
+        ->name('piket.jadwal.store');
+
+    Route::get('/piket/jadwal/{jadwal}/edit', [JadwalPiketController::class, 'edit'])
+        ->name('piket.jadwal.edit');
+
+    Route::put('/piket/jadwal/{jadwal}', [JadwalPiketController::class, 'update'])
+        ->name('piket.jadwal.update');
+
+    Route::delete('/piket/jadwal/{jadwal}', [JadwalPiketController::class, 'destroy'])
+        ->name('piket.jadwal.destroy');
+
+    Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
+    Route::get('/piket/dispen/create', [PiketDispenController::class, 'create'])->name('piket.dispen.create');
+    Route::post('/piket/dispen', [PiketDispenController::class, 'store'])->name('piket.dispen.store');
+    Route::get('/piket/dispen/{dispen}/edit', [PiketDispenController::class, 'edit'])->name('piket.dispen.edit');
+    Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');
+    Route::delete('/piket/dispen/{dispen}', [PiketDispenController::class, 'destroy'])->name('piket.dispen.destroy');
+});
+
+Route::middleware(['auth', 'role:Kesiswaan'])->group(function () {
+    Route::get('/kesiswaan/dashboard', [KesiswaanDashboardController::class, 'index'])
+        ->name('kesiswaan.dashboard');
+
+    Route::get('/kesiswaan/profil', function () {
+        return view('kesiswaan.profil');
+    })->name('kesiswaan.profil');
+
+    Route::get('/kesiswaan/dispen', [KesiswaanDispenController::class, 'index'])->name('kesiswaan.dispen.index');
+    Route::get('/kesiswaan/dispen/{dispen}', [KesiswaanDispenController::class, 'show'])->name('kesiswaan.dispen.show');
+    Route::post('/kesiswaan/dispen/{dispen}/approve', [KesiswaanDispenController::class, 'approve'])->name('kesiswaan.dispen.approve');
+    Route::post('/kesiswaan/dispen/{dispen}/reject', [KesiswaanDispenController::class, 'reject'])->name('kesiswaan.dispen.reject');
+
 });
