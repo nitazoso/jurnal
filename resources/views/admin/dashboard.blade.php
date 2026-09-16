@@ -107,9 +107,9 @@
             </td>
             <td><span class="status {{ strtolower($item->status) }}">{{ $item->status }}</span></td>
             <td>
-                <button class="action">
+                <a href="{{ route('admin.jurnal.show', $item) }}" class="action" aria-label="Lihat detail jurnal">
                     <span class="material-symbols-outlined">visibility</span>
-                </button>
+                </a>
             </td>
         </tr>
     @empty

@@ -22,7 +22,9 @@ class JurnalController extends Controller
             'jamMulai',
             'jamSelesai',
         ])
-        ->where('id_user', $user->id_user)
+        // Jurnal dapat diisi langsung oleh guru atau dibantu sekretaris.
+        // Kepemilikan jurnal pembelajaran tetap mengikuti guru pengampu.
+        ->where('id_guru', $user->id_guru)
         ->latest('tanggal')
         ->get();
 
@@ -174,7 +176,7 @@ class JurnalController extends Controller
         $user = auth()->user();
 
         // Guru hanya boleh melihat jurnal miliknya
-        if ($jurnal->id_user != $user->id_user) {
+        if ($jurnal->id_guru != $user->id_guru) {
             abort(403);
         }
 

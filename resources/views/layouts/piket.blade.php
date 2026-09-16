@@ -85,6 +85,10 @@
             border-top: 1px solid #e5e7eb;
         }
 
+        .logout-wrap form {
+            margin: 0;
+        }
+
         .main {
             flex: 1;
             padding: 28px;
@@ -282,9 +286,17 @@
             <nav class="nav">
                 <a href="{{ route('piket.dashboard') }}" class="{{ request()->routeIs('piket.dashboard') ? 'active' : '' }}">Dashboard</a>
                 <a href="{{ route('piket.jurnal.index') }}" class="{{ request()->routeIs('piket.jurnal.index') ? 'active' : '' }}">Jurnal</a>
+                <a href="{{ route('piket.jadwal.index') }}" class="{{ request()->routeIs('piket.jadwal.*') ? 'active' : '' }}">Jadwal Piket</a>
                 <a href="{{ route('piket.dispen.index') }}" class="{{ request()->routeIs('piket.dispen.*') ? 'active' : '' }}">Dispen</a>
                 <a href="{{ route('piket.profil') }}" class="{{ request()->routeIs('piket.profil') ? 'active' : '' }}">Profil</a>
             </nav>
+
+            <div class="logout-wrap">
+                <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
+                    @csrf
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
 
         </aside>
 

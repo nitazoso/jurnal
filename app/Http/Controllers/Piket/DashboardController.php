@@ -25,13 +25,14 @@ class DashboardController extends Controller
         $today = now()->toDateString();
 
         $jurnals = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
+            ->where('status_validasi_guru', 'Disetujui')
             ->latest('tanggal')
             ->take(5)
             ->get();
 
-        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)->count();
-        $totalHadir = Jurnal::whereDate('tanggal', $today)->sum('jml_hadir');
-        $totalAbsen = Jurnal::whereDate('tanggal', $today)->sum('jml_tidak_hadir');
+        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->count();
+        $totalHadir = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_hadir');
+        $totalAbsen = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_tidak_hadir');
 
         $dispens = Dispen::with(['siswa.kelas', 'jamMulai', 'jamSelesai'])
             ->latest('tanggal')
@@ -39,6 +40,7 @@ class DashboardController extends Controller
             ->get();
 
         $piketHariIni = PiketJadwal::with('guru')
+            ->where('id_guru', $user->id_guru)
             ->where('tanggal', $today)
             ->orderBy('jam_mulai')
             ->get();
@@ -56,6 +58,7 @@ class DashboardController extends Controller
     public function jurnalIndex(Request $request)
     {
         $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
+            ->where('status_validasi_guru', 'Disetujui')
             ->latest('tanggal');
 
         if ($request->filled('search')) {
@@ -64,10 +67,6 @@ class DashboardController extends Controller
                 $q->orWhereHas('guru', fn ($g) => $g->where('nama_guru', 'like', "%{$search}%"))
                     ->orWhereHas('kelas', fn ($k) => $k->where('nama_kelas', 'like', "%{$search}%"));
             });
-        }
-
-        if ($request->filled('status')) {
-            $query->where('status_validasi_guru', $request->status);
         }
 
         if ($request->filled('kelas_id')) {

@@ -46,6 +46,7 @@
                     name="nip"
                     value="{{ old('nip') }}"
                     placeholder="Masukkan NIP guru"
+                    maxlength="18"
                     class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                 >
@@ -64,21 +65,6 @@
                     placeholder="Masukkan nama guru"
                     class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     required
-                >
-            </div>
-
-            {{-- NO HP --}}
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-slate-700 mb-2">
-                    No. HP
-                </label>
-
-                <input
-                    type="text"
-                    name="no_hp"
-                    value="{{ old('no_hp') }}"
-                    placeholder="Contoh: 081234567890"
-                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                 >
             </div>
 

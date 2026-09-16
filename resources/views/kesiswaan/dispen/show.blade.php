@@ -30,7 +30,7 @@
     <dd>{{ ucfirst($dispen->status) }}</dd>
 </dl>
 
-@if ($dispen->status === 'menunggu')
+@if ($dispen->status === 'menunggu' && $canApprove)
     <form action="{{ route('kesiswaan.dispen.approve', $dispen) }}" method="POST">
         @csrf
         <label for="approve-note">Catatan persetujuan (opsional)</label><br>
@@ -44,6 +44,8 @@
         <textarea id="reject-note" name="catatan_persetujuan" rows="3" required></textarea><br>
         <button type="submit">Tolak Dispen</button>
     </form>
+@elseif ($dispen->status === 'menunggu')
+    <p>Anda tidak dijadwalkan sebagai petugas kesiswaan untuk tanggal dispen ini.</p>
 @else
     <p>Pengajuan ini sudah {{ $dispen->status }}.</p>
     @if ($dispen->catatan_persetujuan)
