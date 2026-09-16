@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.piket')
 
 @section('title', 'Tambah Jadwal Piket - Jurnify')
 @section('page-title', 'Tambah Jadwal Piket')

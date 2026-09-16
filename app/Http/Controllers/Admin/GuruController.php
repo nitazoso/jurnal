@@ -45,7 +45,7 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nip' => 'required|string|max:50|unique:gurus,nip',
+            'nip' => 'required|string|max:18|unique:gurus,nip',
             'nama_guru' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
         ]);

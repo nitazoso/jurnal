@@ -675,6 +675,30 @@
 
             </a>
 
+            {{-- JADWAL PIKET --}}
+            <a href="{{ route('admin.jadwal-piket.index') }}"
+               class="nav-item {{ request()->routeIs('admin.jadwal-piket.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    event_available
+                </span>
+
+                <span>Jadwal Piket</span>
+
+            </a>
+
+            {{-- JADWAL KESISWAAN --}}
+            <a href="{{ route('admin.jadwal-kesiswaan.index') }}"
+               class="nav-item {{ request()->routeIs('admin.jadwal-kesiswaan.*') ? 'active' : '' }}">
+
+                <span class="material-symbols-outlined">
+                    event_available
+                </span>
+
+                <span>Jadwal Kesiswaan</span>
+
+            </a>
+
 
             {{-- USER --}}
             <a href="{{ route('admin.user.index') }}"

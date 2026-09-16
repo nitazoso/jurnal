@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Kesiswaan;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
+use App\Models\JadwalKesiswaan;
 use Illuminate\Http\Request;
 
 class DispenController extends Controller
@@ -25,11 +26,17 @@ class DispenController extends Controller
             ->where('data->dispen_id', $dispen->id_dispen)
             ->update(['read_at' => now()]);
 
-        return view('kesiswaan.dispen.show', compact('dispen'));
+        $canApprove = JadwalKesiswaan::where('tanggal', $dispen->tanggal)
+            ->where('id_user', auth()->id())
+            ->exists();
+
+        return view('kesiswaan.dispen.show', compact('dispen', 'canApprove'));
     }
 
     public function approve(Request $request, Dispen $dispen)
     {
+        $this->ensureScheduled($dispen);
+
         $validated = $request->validate([
             'catatan_persetujuan' => 'nullable|string|max:255',
         ]);
@@ -47,6 +54,8 @@ class DispenController extends Controller
 
     public function reject(Request $request, Dispen $dispen)
     {
+        $this->ensureScheduled($dispen);
+
         $validated = $request->validate([
             'catatan_persetujuan' => 'required|string|max:255',
         ]);
@@ -60,5 +69,14 @@ class DispenController extends Controller
 
         return redirect()->route('kesiswaan.dispen.index')
             ->with('success', 'Pengajuan dispen ditolak.');
+    }
+
+    private function ensureScheduled(Dispen $dispen): void
+    {
+        $scheduled = JadwalKesiswaan::where('tanggal', $dispen->tanggal)
+            ->where('id_user', auth()->id())
+            ->exists();
+
+        abort_unless($scheduled, 403, 'Anda tidak bertugas sebagai petugas kesiswaan pada tanggal dispen ini.');
     }
 }
