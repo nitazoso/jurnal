@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.kesiswaan')
 
 @section('title', 'Dashboard Kesiswaan - Jurnify')
 @section('page-title', 'Dashboard Kesiswaan')
