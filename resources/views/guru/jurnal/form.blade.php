@@ -1,227 +1,1294 @@
 @extends('layouts.guru')
-
 @section('title', 'Isi Jurnal Mengajar - Jurnify')
+@section('page-title', 'Isi Jurnal Mengajar')
+@section('page-subtitle', 'Catat kegiatan pembelajaran hari ini')
+@section('tahun_ajaran', $jadwal->tahun_ajaran ?? 'Ganjil 2026/2027')
+
+@section('head')
+<style>
+    .journal-form {
+        --primary: #2D336B;
+        --secondary: #7886C7;
+        --tertiary: #A9B5DF;
+        --soft-blue: #DCE4FF;
+        --surface: #FBFBFB;
+        --border: #E5E7EB;
+        --text: #1E293B;
+        --muted: #64748B;
+    }
+
+    .journal-page {
+        width: 100%;
+    }
+
+    .journal-hero {
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 20px;
+        padding: 30px 32px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #2D336B 0%, #7886C7 100%);
+        color: white;
+        box-shadow: 0 8px 24px rgba(45, 51, 107, .10);
+    }
+
+    .journal-hero::before,
+    .journal-hero::after {
+        content: "";
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.07);
+        pointer-events: none;
+    }
+
+    .journal-hero::before {
+        width: 220px;
+        height: 220px;
+        right: -70px;
+        top: -100px;
+    }
+
+    .journal-hero::after {
+        width: 130px;
+        height: 130px;
+        right: 110px;
+        bottom: -90px;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 7px 12px;
+        border: 1px solid rgba(255,255,255,.12);
+        border-radius: 999px;
+        background: rgba(255,255,255,.10);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .hero-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: white;
+    }
+
+    .hero-title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.3;
+        font-weight: 800;
+        letter-spacing: -.6px;
+    }
+
+    .hero-description {
+        margin: 8px 0 0;
+        color: rgba(255,255,255,.76);
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .form-card {
+        margin-bottom: 20px;
+        padding: 24px;
+        background: white;
+        border: 1px solid #EDF0F7;
+        border-radius: 18px;
+        box-shadow: 0 5px 20px rgba(45, 51, 107, .05);
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .section-icon {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: var(--soft-blue);
+        color: var(--primary);
+    }
+
+    .section-icon svg {
+        width: 21px;
+        height: 21px;
+    }
+
+    .section-title {
+        margin: 0;
+        color: var(--text);
+        font-size: 15px;
+        font-weight: 800;
+    }
+
+    .section-subtitle {
+        margin: 3px 0 0;
+        color: #94A3B8;
+        font-size: 11px;
+        line-height: 1.5;
+    }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+    }
+
+    .field-group {
+        min-width: 0;
+    }
+
+    .field-label {
+        display: block;
+        margin-bottom: 8px;
+        color: #64748B;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .field-input,
+    .field-select,
+    .field-textarea {
+        width: 100%;
+        border: 1px solid #DFE3EF;
+        border-radius: 10px;
+        background: white;
+        color: #334155;
+        font-family: inherit;
+        font-size: 13px;
+        outline: none;
+        transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .field-input,
+    .field-select {
+        min-height: 44px;
+        padding: 10px 13px;
+    }
+
+    .field-textarea {
+        min-height: 110px;
+        padding: 12px 13px;
+        resize: vertical;
+        line-height: 1.6;
+    }
+
+    .field-input:focus,
+    .field-select:focus,
+    .field-textarea:focus {
+        border-color: var(--secondary);
+        box-shadow: 0 0 0 3px rgba(120, 134, 199, .14);
+    }
+
+    .readonly-field {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        min-height: 44px;
+        padding: 10px 13px;
+        border: 1px solid #DFE3EF;
+        border-radius: 10px;
+        background: #F8FAFC;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .readonly-field svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        color: var(--secondary);
+    }
+
+    .divider {
+        height: 1px;
+        margin: 24px 0;
+        background: #EEF0F5;
+    }
+
+    .teacher-status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .teacher-status-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .status-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .status-btn {
+        min-width: 82px;
+        min-height: 38px;
+        padding: 8px 14px;
+        border: 1px solid #DFE3EF;
+        border-radius: 9px;
+        background: white;
+        color: #64748B;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .status-btn:hover {
+        border-color: var(--secondary);
+        transform: translateY(-1px);
+    }
+
+    .status-btn.active {
+        border-color: var(--secondary);
+        background: var(--secondary);
+        color: white;
+        box-shadow: 0 4px 10px rgba(120, 134, 199, .22);
+    }
+
+    .student-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .student-title-wrap {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .student-search {
+        position: relative;
+        width: 260px;
+        flex-shrink: 0;
+    }
+
+    .student-search svg {
+        position: absolute;
+        left: 13px;
+        top: 50%;
+        width: 17px;
+        height: 17px;
+        color: #94A3B8;
+        transform: translateY(-50%);
+        pointer-events: none;
+    }
+
+    .student-search .field-input {
+        padding-left: 40px;
+    }
+
+    .student-count {
+        margin-top: 4px;
+        color: #94A3B8;
+        font-size: 11px;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .summary-card {
+        padding: 14px 16px;
+        border-radius: 12px;
+        transition: transform .2s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .summary-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .summary-label {
+        color: #64748B;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .summary-icon {
+        width: 17px;
+        height: 17px;
+    }
+
+    .summary-number {
+        margin: 4px 0 0;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .summary-hadir {
+        background: #EEF8F1;
+    }
+
+    .summary-hadir .summary-icon,
+    .summary-hadir .summary-number {
+        color: #16A34A;
+    }
+
+    .summary-sakit {
+        background: #FFF8E8;
+    }
+
+    .summary-sakit .summary-icon,
+    .summary-sakit .summary-number {
+        color: #F59E0B;
+    }
+
+    .summary-izin {
+        background: #EEF5FF;
+    }
+
+    .summary-izin .summary-icon,
+    .summary-izin .summary-number {
+        color: #3B82F6;
+    }
+
+    .summary-alpha {
+        background: #FFF0F0;
+    }
+
+    .summary-alpha .summary-icon,
+    .summary-alpha .summary-number {
+        color: #EF4444;
+    }
+
+    .student-table-wrap {
+        overflow: hidden;
+        border: 1px solid #EEF0F5;
+        border-radius: 12px;
+    }
+
+    .student-table-scroll {
+        max-height: 390px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #CBD2E8 transparent;
+    }
+
+    .student-table-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .student-table-scroll::-webkit-scrollbar-thumb {
+        background: #CBD2E8;
+        border-radius: 10px;
+    }
+
+    .student-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+    }
+
+    .student-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 12px 14px;
+        background: #F8FAFC;
+        border-bottom: 1px solid #EEF0F5;
+        color: #94A3B8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .05em;
+        text-align: left;
+        text-transform: uppercase;
+    }
+
+    .student-table tbody td {
+        padding: 12px 14px;
+        border-bottom: 1px solid #F0F2F6;
+        color: #475569;
+        font-size: 12px;
+        vertical-align: middle;
+    }
+
+    .student-table tbody tr:last-child td {
+        border-bottom: 0;
+    }
+
+    .student-table tbody tr {
+        transition: background .2s ease;
+    }
+
+    .student-table tbody tr:hover {
+        background: #F8F9FD;
+    }
+
+    .student-number {
+        width: 55px;
+        color: #94A3B8 !important;
+        font-weight: 700;
+    }
+
+    .student-nis {
+        width: 120px;
+        color: #64748B !important;
+        font-weight: 600;
+    }
+
+    .student-name {
+        color: #334155 !important;
+        font-weight: 700;
+    }
+
+    .attendance-options {
+        display: flex;
+        gap: 7px;
+        flex-wrap: wrap;
+    }
+
+    .attendance-btn {
+        min-width: 65px;
+        min-height: 34px;
+        padding: 7px 10px;
+        border: 1px solid #DFE3EF;
+        border-radius: 8px;
+        background: white;
+        color: #64748B;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .18s ease;
+    }
+
+    .attendance-btn:hover {
+        border-color: var(--secondary);
+        transform: translateY(-1px);
+    }
+
+    .attendance-btn.active {
+        border-color: var(--secondary);
+        background: var(--secondary);
+        color: white;
+        box-shadow: 0 3px 8px rgba(120, 134, 199, .20);
+    }
+
+    .empty-students {
+        padding: 40px 20px;
+        color: #94A3B8;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .task-grid {
+        display: grid;
+        grid-template-columns: 220px 1fr;
+        gap: 16px;
+    }
+
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-bottom: 12px;
+    }
+
+    .btn {
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 800;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .btn svg {
+        width: 17px;
+        height: 17px;
+    }
+
+    .btn-secondary {
+        border: 1px solid #DFE3EF;
+        background: white;
+        color: #475569;
+    }
+
+    .btn-secondary:hover {
+        background: #F7F8FC;
+        transform: translateY(-1px);
+    }
+
+    .btn-primary {
+        border: 1px solid var(--primary);
+        background: var(--primary);
+        color: white;
+        box-shadow: 0 5px 14px rgba(45, 51, 107, .16);
+    }
+
+    .btn-primary:hover {
+        background: #232857;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 18px rgba(45, 51, 107, .20);
+    }
+
+    .hidden-row {
+        display: none !important;
+    }
+
+    .form-error {
+        margin-bottom: 20px;
+        padding: 14px 16px;
+        border: 1px solid #FECACA;
+        border-radius: 12px;
+        background: #FEF2F2;
+        color: #B91C1C;
+        font-size: 12px;
+    }
+
+    .form-error ul {
+        margin: 7px 0 0;
+        padding-left: 18px;
+    }
+
+    @media (max-width: 1100px) {
+        .schedule-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .task-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .journal-hero {
+            padding: 24px 20px;
+            border-radius: 14px;
+        }
+
+        .hero-title {
+            font-size: 22px;
+        }
+
+        .hero-description {
+            font-size: 12px;
+        }
+
+        .form-card {
+            padding: 18px;
+            border-radius: 14px;
+        }
+
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .teacher-status {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+        .student-header {
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .student-search {
+            width: 100%;
+        }
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .student-table-wrap {
+            overflow-x: auto;
+        }
+
+        .action-buttons {
+            flex-direction: column-reverse;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .summary-grid {
+            gap: 8px;
+        }
+
+        .summary-card {
+            padding: 12px;
+        }
+
+        .status-buttons {
+            width: 100%;
+        }
+
+        .status-btn {
+            flex: 1;
+        }
+    }
+</style>
+@endsection
 
 @section('content')
+<div class="journal-form">
+    <div class="journal-page">
 
-<div class="card">
+        {{-- HERO --}}
+        <section class="journal-hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    <span>Jurnal Pembelajaran</span>
+                </div>
 
-    <div class="card-title">
-        Isi Jurnal Mengajar
+                <h1 class="hero-title">
+                    Isi Jurnal Mengajar
+                </h1>
+
+                <p class="hero-description">
+                    Lengkapi data pembelajaran, materi, dan kehadiran siswa
+                    untuk mencatat kegiatan belajar mengajar hari ini.
+                </p>
+            </div>
+        </section>
+
+        {{-- VALIDATION ERROR --}}
+        @if($errors->any())
+            <div class="form-error">
+                <strong>Periksa kembali data yang diisi.</strong>
+
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form action="{{ route('guru.jurnal.store') }}" method="POST" id="journalForm">
+            @csrf
+
+            <input type="hidden" name="id_jadwal" value="{{ $jadwal->id_jadwal }}">
+
+            {{-- JADWAL --}}
+            <section class="form-card">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M6.75 3v2.25M17.25 3v2.25M3.75 9h16.5M5.25 4.5h13.5A1.5 1.5 0 0 1 20.25 6v13.5a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V6a1.5 1.5 0 0 1 1.5-1.5Z"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h3 class="section-title">Jadwal Pembelajaran</h3>
+                        <p class="section-subtitle">
+                            Informasi kelas dan mata pelajaran
+                        </p>
+                    </div>
+                </div>
+
+                <div class="schedule-grid">
+
+                    <div class="field-group">
+                        <label class="field-label">Tahun Ajaran</label>
+
+                        <div class="readonly-field">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M4.5 5.25A2.25 2.25 0 0 1 6.75 3h10.5A2.25 2.25 0 0 1 19.5 5.25v13.5A2.25 2.25 0 0 1 17.25 21H6.75a2.25 2.25 0 0 1-2.25-2.25V5.25Z"/>
+                            </svg>
+
+                            {{ $jadwal->tahun_ajaran ?? '-' }}
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Tanggal</label>
+
+                        <input
+                            type="date"
+                            name="tanggal"
+                            value="{{ old('tanggal', date('Y-m-d')) }}"
+                            class="field-input"
+                            required
+                        >
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Kelas</label>
+
+                        <div class="readonly-field">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M17 20h5v-2a4 4 0 0 0-4-4h-1M9 20H4v-2a4 4 0 0 1 4-4h1m4-4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm6 1a3 3 0 1 0 0-6"/>
+                            </svg>
+
+                            {{ $jadwal->kelas->nama_kelas ?? '-' }}
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Jam Pelajaran</label>
+
+                        <div class="readonly-field">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M12 6v6l4 2m6-2a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z"/>
+                            </svg>
+
+                            Jam Ke {{ $jadwal->jamMulai->jam_ke ?? '-' }}
+                            -
+                            {{ $jadwal->jamSelesai->jam_ke ?? '-' }}
+                        </div>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <div class="field-group">
+                        <label class="field-label">Mata Pelajaran</label>
+
+                        <div class="readonly-field">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 1 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+                            </svg>
+
+                            {{ $jadwal->mapel->nama_mapel ?? '-' }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {{-- STATUS GURU --}}
+            <section class="form-card">
+                <div class="teacher-status">
+
+                    <div class="teacher-status-info">
+                        <div class="section-icon">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"/>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3 class="section-title">Kehadiran Guru</h3>
+                            <p class="section-subtitle">
+                                Status kehadiran Anda pada jam pelajaran ini
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="status-buttons">
+                        <button
+                            type="button"
+                            class="status-btn active"
+                            data-teacher-status="Hadir"
+                            onclick="setTeacherStatus(this, 'Hadir')"
+                        >
+                            Hadir
+                        </button>
+
+                        <button
+                            type="button"
+                            class="status-btn"
+                            data-teacher-status="Izin"
+                            onclick="setTeacherStatus(this, 'Izin')"
+                        >
+                            Izin
+                        </button>
+
+                        <button
+                            type="button"
+                            class="status-btn"
+                            data-teacher-status="Sakit"
+                            onclick="setTeacherStatus(this, 'Sakit')"
+                        >
+                            Sakit
+                        </button>
+
+                        <button
+                            type="button"
+                            class="status-btn"
+                            data-teacher-status="Tanpa Keterangan"
+                            onclick="setTeacherStatus(this, 'Tanpa Keterangan')"
+                        >
+                            Tanpa Keterangan
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="status_guru" id="statusGuru" value="{{ old('status_guru', 'Hadir') }}">
+            </section>
+
+            {{-- MATERI --}}
+            <section class="form-card">
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 1 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h3 class="section-title">Materi Pembelajaran</h3>
+                        <p class="section-subtitle">
+                            Tuliskan materi yang disampaikan
+                        </p>
+                    </div>
+                </div>
+
+                <textarea
+                    name="materi"
+                    class="field-textarea"
+                    placeholder="Contoh: Pengenalan HTML dan struktur dasar halaman web"
+                    required
+                >{{ old('materi') }}</textarea>
+            </section>
+
+            {{-- KEHADIRAN SISWA --}}
+            <section class="form-card">
+
+                <div class="student-header">
+                    <div class="student-title-wrap">
+                        <div class="section-icon">
+                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M17 20h5v-2a4 4 0 0 0-4-4h-1M9 20H4v-2a4 4 0 0 1 4-4h1m4-4a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm6 1a3 3 0 1 0 0-6"/>
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3 class="section-title">Kehadiran Siswa</h3>
+
+                            <p class="section-subtitle">
+                                {{ $jadwal->kelas->nama_kelas ?? '-' }}
+                                ·
+                                <span id="studentTotal">{{ $siswa->count() }}</span> siswa
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="student-search">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z"/>
+                        </svg>
+
+                        <input
+                            type="text"
+                            id="studentSearch"
+                            class="field-input"
+                            placeholder="Cari nama siswa..."
+                            oninput="searchStudents()"
+                        >
+                    </div>
+                </div>
+
+                {{-- SUMMARY --}}
+                <div class="summary-grid">
+
+                    <div class="summary-card summary-hadir">
+                        <div class="summary-top">
+                            <span class="summary-label">Hadir</span>
+
+                            <svg class="summary-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="m5 12 4 4L19 6"/>
+                            </svg>
+                        </div>
+
+                        <p id="hadirCount" class="summary-number">0</p>
+                    </div>
+
+                    <div class="summary-card summary-sakit">
+                        <div class="summary-top">
+                            <span class="summary-label">Sakit</span>
+
+                            <svg class="summary-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M12 9v4m0 4h.01M10.3 3.6 2.8 17a2 2 0 0 0 1.75 3h14.9a2 2 0 0 0 1.75-3L13.7 3.6a2 2 0 0 0-3.4 0Z"/>
+                            </svg>
+                        </div>
+
+                        <p id="sakitCount" class="summary-number">0</p>
+                    </div>
+
+                    <div class="summary-card summary-izin">
+                        <div class="summary-top">
+                            <span class="summary-label">Izin</span>
+
+                            <svg class="summary-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path stroke-linecap="round" d="M12 11v5m0-8h.01"/>
+                            </svg>
+                        </div>
+
+                        <p id="izinCount" class="summary-number">0</p>
+                    </div>
+
+                    <div class="summary-card summary-alpha">
+                        <div class="summary-top">
+                            <span class="summary-label">Alpha</span>
+
+                            <svg class="summary-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path stroke-linecap="round" d="m9 9 6 6m0-6-6 6"/>
+                            </svg>
+                        </div>
+
+                        <p id="alpaCount" class="summary-number">0</p>
+                    </div>
+
+                </div>
+
+                {{-- STUDENT TABLE --}}
+                <div class="student-table-wrap">
+                    <div class="student-table-scroll">
+                        <table class="student-table">
+                            <thead>
+                                <tr>
+                                    <th class="student-number">No</th>
+                                    <th class="student-nis">NIS</th>
+                                    <th>Nama Siswa</th>
+                                    <th>Status Kehadiran</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                @forelse($siswa as $item)
+                                    <tr
+                                        class="student-row"
+                                        data-name="{{ strtolower($item->nama_siswa) }}"
+                                    >
+                                        <td class="student-number">
+                                            {{ sprintf('%02d', $loop->iteration) }}
+                                        </td>
+
+                                        <td class="student-nis">
+                                            {{ $item->nis }}
+                                        </td>
+
+                                        <td class="student-name">
+                                            {{ $item->nama_siswa }}
+                                        </td>
+
+                                        <td>
+                                            <div class="attendance-options">
+
+                                                <button
+                                                    type="button"
+                                                    class="attendance-btn active"
+                                                    data-status="Hadir"
+                                                    onclick="setStudentStatus(this)"
+                                                >
+                                                    Hadir
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="attendance-btn"
+                                                    data-status="Sakit"
+                                                    onclick="setStudentStatus(this)"
+                                                >
+                                                    Sakit
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="attendance-btn"
+                                                    data-status="Izin"
+                                                    onclick="setStudentStatus(this)"
+                                                >
+                                                    Izin
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="attendance-btn"
+                                                    data-status="Alpha"
+                                                    onclick="setStudentStatus(this)"
+                                                >
+                                                    Alpha
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    class="attendance-btn"
+                                                    data-status="Dispen"
+                                                    onclick="setStudentStatus(this)"
+                                                >
+                                                    Dispen
+                                                </button>
+
+                                                <input
+                                                    type="hidden"
+                                                    name="absensi[{{ $item->id_siswa }}]"
+                                                    value="Hadir"
+                                                    class="attendance-value"
+                                                >
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="empty-students">
+                                                Belum ada siswa di kelas ini.
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+            {{-- TUGAS & CATATAN --}}
+            <section class="form-card">
+
+                <div class="section-header">
+                    <div class="section-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M8 6h8M8 10h8M8 14h5M5 3h10l4 4v14H5V3Z"/>
+                        </svg>
+                    </div>
+
+                    <div>
+                        <h3 class="section-title">Tugas & Catatan</h3>
+                        <p class="section-subtitle">
+                            Tambahkan tugas atau catatan untuk jurnal
+                        </p>
+                    </div>
+                </div>
+
+                <div class="task-grid">
+
+                    <div class="field-group">
+                        <label class="field-label">Ada Tugas?</label>
+
+                        <select name="ada_tugas" class="field-select" id="adaTugas" required>
+                            <option value="Tidak" {{ old('ada_tugas', 'Tidak') === 'Tidak' ? 'selected' : '' }}>
+                                Tidak
+                            </option>
+
+                            <option value="Ya" {{ old('ada_tugas') === 'Ya' ? 'selected' : '' }}>
+                                Ya
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Deskripsi Tugas</label>
+
+                        <textarea
+                            name="deskripsi_tugas"
+                            class="field-textarea"
+                            placeholder="Tuliskan deskripsi tugas jika ada..."
+                        >{{ old('deskripsi_tugas') }}</textarea>
+                    </div>
+
+                </div>
+
+                <div style="margin-top: 16px;">
+                    <div class="field-group">
+                        <label class="field-label">Catatan Umum</label>
+
+                        <textarea
+                            name="catatan_umum"
+                            class="field-textarea"
+                            placeholder="Tambahkan catatan jika diperlukan..."
+                        >{{ old('catatan_umum') }}</textarea>
+                    </div>
+                </div>
+
+            </section>
+
+            {{-- ACTION --}}
+            <div class="action-buttons">
+
+                <a
+                    href="{{ route('guru.jurnal.create') }}"
+                    class="btn btn-secondary"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M10.5 19.5 3 12l7.5-7.5M3 12h18"/>
+                    </svg>
+
+                    Batal
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M4.5 12.75 10 18l9.5-12"/>
+                    </svg>
+
+                    Simpan Jurnal
+                </button>
+
+            </div>
+
+        </form>
     </div>
-
-    <div class="card-subtitle">
-        Silakan isi jurnal sesuai kegiatan pembelajaran
-    </div>
-
-    <form action="{{ route('guru.jurnal.store') }}" method="POST">
-        @csrf
-
-        <input type="hidden" name="id_jadwal" value="{{ $jadwal->id_jadwal }}">
-
-        <div>
-            <label>Tahun Ajaran</label>
-            <input
-                type="text"
-                value="{{ $jadwal->tahun_ajaran }}"
-                readonly
-            >
-        </div>
-
-        <div>
-            <label>Tanggal</label>
-            <input
-                type="date"
-                name="tanggal"
-                value="{{ date('Y-m-d') }}"
-                required
-            >
-        </div>
-
-        <div>
-            <label>Kelas</label>
-            <input
-                type="text"
-                value="{{ $jadwal->kelas->nama_kelas ?? '-' }}"
-                readonly
-            >
-        </div>
-
-        <div>
-            <label>Jam Pelajaran Ke-</label>
-            <input
-                type="text"
-                value="{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}"
-                readonly
-            >
-        </div>
-
-        <div>
-            <label>Mata Pelajaran</label>
-            <input
-                type="text"
-                value="{{ $jadwal->mapel->nama_mapel ?? '-' }}"
-                readonly
-            >
-        </div>
-
-        <div>
-            <label>Materi Pembelajaran</label>
-            <textarea
-                name="materi"
-                required
-            ></textarea>
-        </div>
-
-        <hr>
-
-        <h3>Absensi Siswa</h3>
-
-        <p>
-            Jumlah Siswa: {{ $siswa->count() }}
-        </p>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>NIS</th>
-                    <th>Nama Siswa</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-
-            <tbody>
-
-                @forelse($siswa as $item)
-
-                    <tr>
-
-                        <td>
-                            {{ $loop->iteration }}
-                        </td>
-
-                        <td>
-                            {{ $item->nis }}
-                        </td>
-
-                        <td>
-                            {{ $item->nama_siswa }}
-                        </td>
-
-                        <td>
-
-                            <select name="absensi[{{ $item->id_siswa }}]">
-
-                                <option value="Hadir">
-                                    Hadir
-                                </option>
-
-                                <option value="Sakit">
-                                    Sakit
-                                </option>
-
-                                <option value="Izin">
-                                    Izin
-                                </option>
-
-                                <option value="Alpha">
-                                    Alpha
-                                </option>
-
-                                <option value="Dispen">
-                                    Dispen
-                                </option>
-
-                            </select>
-
-                        </td>
-
-                    </tr>
-
-                @empty
-
-                    <tr>
-                        <td colspan="4" style="text-align: center; padding: 30px;">
-                            Belum ada siswa di kelas ini.
-                        </td>
-                    </tr>
-
-                @endforelse
-
-            </tbody>
-        </table>
-
-        <hr>
-
-        <div>
-            <label>Status Guru</label>
-
-            <select name="status_guru" required>
-
-                <option value="Hadir">
-                    Hadir
-                </option>
-
-                <option value="Izin">
-                    Izin
-                </option>
-
-                <option value="Sakit">
-                    Sakit
-                </option>
-
-                <option value="Tanpa Keterangan">
-                    Tanpa Keterangan
-                </option>
-
-            </select>
-        </div>
-
-        <div>
-            <label>Ada Tugas?</label>
-
-            <select name="ada_tugas" required>
-
-                <option value="Tidak">
-                    Tidak
-                </option>
-
-                <option value="Ya">
-                    Ya
-                </option>
-
-            </select>
-        </div>
-
-        <div>
-            <label>Deskripsi Tugas</label>
-
-            <textarea
-                name="deskripsi_tugas"
-            ></textarea>
-        </div>
-
-        <div>
-            <label>Catatan</label>
-
-            <textarea
-                name="catatan_umum"
-            ></textarea>
-        </div>
-
-        <br>
-
-        <a href="{{ route('guru.jurnal.create') }}">
-            Batal
-        </a>
-
-        <button type="submit">
-            Simpan Jurnal
-        </button>
-
-    </form>
-
 </div>
+@endsection
 
+@section('scripts')
+<script>
+    function setTeacherStatus(button, status) {
+        document.querySelectorAll('.status-btn').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        button.classList.add('active');
+
+        document.getElementById('statusGuru').value = status;
+    }
+
+    function setStudentStatus(button) {
+        const row = button.closest('.student-row');
+
+        if (!row) {
+            return;
+        }
+
+        row.querySelectorAll('.attendance-btn').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        button.classList.add('active');
+
+        const hiddenInput = row.querySelector('.attendance-value');
+
+        if (hiddenInput) {
+            hiddenInput.value = button.dataset.status;
+        }
+
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const counts = {
+            Hadir: 0,
+            Sakit: 0,
+            Izin: 0,
+            Alpha: 0,
+            Dispen: 0
+        };
+
+        document.querySelectorAll('.student-row').forEach(row => {
+            const activeButton = row.querySelector('.attendance-btn.active');
+
+            if (activeButton && counts.hasOwnProperty(activeButton.dataset.status)) {
+                counts[activeButton.dataset.status]++;
+            }
+        });
+
+        document.getElementById('hadirCount').textContent = counts.Hadir;
+        document.getElementById('sakitCount').textContent = counts.Sakit;
+        document.getElementById('izinCount').textContent = counts.Izin;
+        document.getElementById('alpaCount').textContent = counts.Alpha;
+    }
+
+    function searchStudents() {
+        const input = document.getElementById('studentSearch');
+
+        if (!input) {
+            return;
+        }
+
+        const keyword = input.value.toLowerCase().trim();
+
+        document.querySelectorAll('.student-row').forEach(row => {
+            const name = row.dataset.name || '';
+
+            if (name.includes(keyword)) {
+                row.classList.remove('hidden-row');
+            } else {
+                row.classList.add('hidden-row');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateSummary();
+
+        const form = document.getElementById('journalForm');
+
+        if (form) {
+            form.addEventListener('submit', function () {
+                const submitButton = form.querySelector('button[type="submit"]');
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.style.opacity = '.7';
+                    submitButton.style.cursor = 'not-allowed';
+                }
+            });
+        }
+
+        const currentTeacherStatus = document.getElementById('statusGuru')?.value;
+
+        if (currentTeacherStatus) {
+            document.querySelectorAll('.status-btn').forEach(button => {
+                button.classList.toggle(
+                    'active',
+                    button.dataset.teacherStatus === currentTeacherStatus
+                );
+            });
+        }
+    });
+</script>
 @endsection
