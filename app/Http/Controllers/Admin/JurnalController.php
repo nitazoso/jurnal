@@ -48,4 +48,17 @@ class JurnalController extends Controller
 
         return view('admin.jurnal.index', compact('jurnals'));
     }
+
+    public function show(Jurnal $jurnal)
+    {
+        $jurnal->load([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+        ]);
+
+        return view('admin.jurnal.show', compact('jurnal'));
+    }
 }

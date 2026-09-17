@@ -12,9 +12,9 @@
 
 <div class="profile-box">
     <div class="profile-header">
-        <div class="avatar">{{ strtoupper(substr(auth()->user()->nama_user ?? 'U', 0, 1)) }}</div>
+        <div class="avatar">{{ strtoupper(substr(auth()->user()->guru?->nama_guru ?? auth()->user()->nama_user ?? 'U', 0, 1)) }}</div>
         <div>
-            <p class="profile-name">{{ auth()->user()->nama_user ?? '-' }}</p>
+            <p class="profile-name">{{ auth()->user()->guru?->nama_guru ?? auth()->user()->nama_user ?? '-' }}</p>
             <span class="profile-role">{{ auth()->user()->role ?? '-' }}</span>
         </div>
     </div>
@@ -22,7 +22,7 @@
     <div class="profile-list">
         <div class="profile-item">
             <label>Nama</label>
-            <div>{{ auth()->user()->nama_user ?? '-' }}</div>
+            <div>{{ auth()->user()->guru?->nama_guru ?? auth()->user()->nama_user ?? '-' }}</div>
         </div>
 
         <div class="profile-item">
@@ -33,6 +33,11 @@
         <div class="profile-item">
             <label>Role</label>
             <div>{{ auth()->user()->role ?? '-' }}</div>
+        </div>
+
+        <div class="profile-item">
+            <label>NIP</label>
+            <div>{{ auth()->user()->guru?->nip ?? '-' }}</div>
         </div>
     </div>
 

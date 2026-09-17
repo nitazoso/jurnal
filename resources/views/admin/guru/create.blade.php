@@ -324,7 +324,10 @@
                     name="nip"
                     value="{{ old('nip') }}"
                     placeholder="Masukkan NIP guru"
-                    class="guru-form-input"
+
+                    maxlength="18"
+                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+
                     required
                 >
             </div>
@@ -344,17 +347,6 @@
                 >
             </div>
 
-            {{-- NO HP --}}
-            <div class="guru-form-group">
-                <label class="guru-form-label">No. HP</label>
-                <input
-                    type="text"
-                    name="no_hp"
-                    value="{{ old('no_hp') }}"
-                    placeholder="Contoh: 081234567890"
-                    class="guru-form-input"
-                >
-            </div>
 
             {{-- BUTTON --}}
             <div class="guru-form-actions">

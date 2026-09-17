@@ -376,72 +376,33 @@
                 </tr>
             </thead>
 
-            <tbody>
-
-                @forelse($jurnals as $index => $item)
-
-                    <tr>
-                        <td class="number">
-                            {{ $jurnals->firstItem() + $index }}
-                        </td>
-
-                        <td>
-                            <span class="date">
-                                {{ $item->created_at->format('d M Y') }}
-                            </span>
-
-                            <span class="time">
-                                {{ $item->jam_ke }}
-                            </span>
-                        </td>
-
-                        <td class="teacher">
-                            {{ $item->guru->nama }}
-                        </td>
-
-                        <td class="subject">
-                            {{ $item->jadwal->mapel->nama_mapel ?? '-' }}
-                        </td>
-
-                        <td>
-                            <span class="class-badge">
-                                {{ $item->kelas->nama_kelas }}
-                            </span>
-                        </td>
-
-                        <td class="attendance">
-                            <strong>
-                                {{ $item->jumlah_hadir }}/{{ $item->total_siswa }}
-                            </strong>
-                        </td>
-
-                        <td>
-                            <span class="status {{ strtolower($item->status) }}">
-                                {{ $item->status }}
-                            </span>
-                        </td>
-
-                        <td>
-                            <button class="action">
-                                <span class="material-symbols-outlined">
-                                    visibility
-                                </span>
-                            </button>
-                        </td>
-                    </tr>
-
-                @empty
-
-                    <tr>
-                        <td colspan="8" style="text-align: center;">
-                            Belum ada data jurnal.
-                        </td>
-                    </tr>
-
-                @endforelse
-
-            </tbody>
-
+           <tbody>
+    @forelse($jurnals as $index => $item)
+        <tr>
+            <td class="number">{{ $jurnals->firstItem() + $index }}</td>
+            <td>
+                <span class="date">{{ $item->created_at->format('d M Y') }}</span>
+                <span class="time">{{ $item->jam_ke }}</span>
+            </td>
+            <td class="teacher">{{ $item->guru->nama }}</td>
+            <td class="subject">{{ $item->jadwal->mapel->nama_mapel ?? '-' }}</td>
+            <td><span class="class-badge">{{ $item->kelas->nama_kelas }}</span></td>
+            <td class="attendance">
+                <strong>{{ $item->jumlah_hadir }}/{{ $item->total_siswa }}</strong>
+            </td>
+            <td><span class="status {{ strtolower($item->status) }}">{{ $item->status }}</span></td>
+            <td>
+                <a href="{{ route('admin.jurnal.show', $item) }}" class="action" aria-label="Lihat detail jurnal">
+                    <span class="material-symbols-outlined">visibility</span>
+                </a>
+            </td>
+        </tr>
+    @empty
+        <tr>
+            <td colspan="8" style="text-align: center;">Belum ada data jurnal.</td>
+        </tr>
+    @endforelse
+</tbody>
         </table>
 
     </div>

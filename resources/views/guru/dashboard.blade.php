@@ -23,7 +23,7 @@
     </div>
 
     <div class="card-subtitle">
-        Jumlah seluruh jurnal yang telah Anda buat
+        Jumlah seluruh jurnal yang tercatat atas nama Anda
     </div>
 
     <div class="total-number">
@@ -111,10 +111,10 @@
                                     Menunggu
                                 </span>
 
-                            @elseif($jurnal->status_validasi_guru === 'Valid')
+                            @elseif($jurnal->status_validasi_guru === 'Disetujui')
 
                                 <span class="status status-valid">
-                                    Valid
+                                    Disetujui
                                 </span>
 
                             @else
