@@ -6,7 +6,7 @@
 <div class="page-header">
     <div>
         <h2>Dashboard</h2>
-        <p>Selamat datang, {{ auth()->user()->nama_user ?? '-' }}</p>
+        <p>Selamat datang, {{ auth()->user()->guru?->nama_guru ?? auth()->user()->nama_user ?? '-' }}</p>
     </div>
 </div>
 

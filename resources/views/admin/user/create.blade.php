@@ -332,7 +332,7 @@
                 margin-top:5px;
             "
         >
-            Silakan pilih data Guru untuk akun dengan role Guru.
+            Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.
         </div>
 
         <div style="
@@ -543,7 +543,7 @@
 
     function updateGuruField() {
 
-        if (role.value === 'Guru') {
+        if (role.value === 'Guru' || role.value === 'Staff Piket') {
 
             guruContainer.style.display =
                 'block';
@@ -637,9 +637,9 @@
         }
 
 
-        // Jika Guru, Data Guru wajib dipilih
+        // Guru dan Staff Piket wajib terhubung ke data guru
         if (
-            role.value === 'Guru' &&
+            (role.value === 'Guru' || role.value === 'Staff Piket') &&
             idGuru.value === ''
         ) {
 

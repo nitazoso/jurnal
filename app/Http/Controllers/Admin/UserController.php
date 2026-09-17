@@ -24,7 +24,11 @@ class UserController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', '%' . $search . '%')
-                  ->orWhere('nama_user', 'like', '%' . $search . '%');
+                  ->orWhere('nama_user', 'like', '%' . $search . '%')
+                  ->orWhereHas('guru', function ($guruQuery) use ($search) {
+                      $guruQuery->where('nama_guru', 'like', '%' . $search . '%')
+                          ->orWhere('nip', 'like', '%' . $search . '%');
+                  });
             });
         }
 
@@ -82,7 +86,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
             'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
-            'id_guru' => 'nullable|exists:gurus,id_guru',
+            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
@@ -146,7 +150,7 @@ class UserController extends Controller
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
             'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
-            'id_guru' => 'nullable|exists:gurus,id_guru',
+            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 

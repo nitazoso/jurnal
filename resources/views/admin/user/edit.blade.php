@@ -340,7 +340,7 @@
             font-size:12px;
             margin-top:5px;
         ">
-            Hubungkan akun dengan data guru yang sudah terdaftar.
+            Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.
         </div>
 
     </div>
@@ -531,7 +531,7 @@
 
     function updateGuruField() {
 
-        if (role.value === 'Guru') {
+        if (role.value === 'Guru' || role.value === 'Staff Piket') {
 
             guruContainer.style.display =
                 'block';
@@ -629,9 +629,9 @@
         }
 
 
-        // Guru
+        // Guru dan Staff Piket wajib terhubung ke data guru
         if (
-            role.value === 'Guru' &&
+            (role.value === 'Guru' || role.value === 'Staff Piket') &&
             idGuru.value === ''
         ) {
 
