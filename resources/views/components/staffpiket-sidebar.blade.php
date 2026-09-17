@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>@yield('title', 'Admin - Jurnify')</title>
+    <title>@yield('title', 'Staff Piket - Jurnify')</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -625,7 +625,7 @@
 <body>
 
     {{-- =========================
-         SIDEBAR ADMIN
+         SIDEBAR Staff
     ========================= --}}
 
     <aside class="sidebar">
@@ -651,21 +651,17 @@
         <nav class="nav">
 
             {{-- DASHBOARD --}}
-            <a href="{{ route('admin.dashboard') }}"
-               class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('staff.dashboard') }}"
+               class="nav-item {{ request()->routeIs('staff.dashboard') ? 'active' : '' }}">
 
                 <span class="material-symbols-outlined">
                     home
                 </span>
-
                 <span>Dashboard</span>
-
             </a>
-
-
             {{-- DAFTAR JURNAL --}}
-            <a href="{{ route('admin.jurnal.index') }}"
-               class="nav-item {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
+            <a href="{{ route('staff.jurnal.index') }}"
+               class="nav-item {{ request()->routeIs('staff.jurnal.*') ? 'active' : '' }}">
 
                 <span class="material-symbols-outlined">
                     menu_book
@@ -675,125 +671,19 @@
 
             </a>
 
-            {{-- JADWAL PIKET --}}
-            <a href="{{ route('admin.jadwal-piket.index') }}"
-               class="nav-item {{ request()->routeIs('admin.jadwal-piket.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    event_available
-                </span>
-
-                <span>Jadwal Piket</span>
-
-            </a>
-
-            {{-- JADWAL KESISWAAN --}}
-            <a href="{{ route('admin.jadwal-kesiswaan.index') }}"
-               class="nav-item {{ request()->routeIs('admin.jadwal-kesiswaan.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    event_available
-                </span>
-
-                <span>Jadwal Kesiswaan</span>
-
-            </a>
-
-
-            {{-- USER --}}
-            <a href="{{ route('admin.user.index') }}"
-               class="nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    person_add
-                </span>
-
-                <span>Manajemen Akun</span>
-
-            </a>
-
-
-            {{-- GURU --}}
-            <a href="{{ route('admin.guru.index') }}"
-               class="nav-item {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    person
-                </span>
-
-                <span>Guru</span>
-
-            </a>
-
-
-            {{-- KELAS --}}
-            <a href="{{ route('admin.kelas.index') }}"
-               class="nav-item {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    groups
-                </span>
-
-                <span>Kelas</span>
-
-            </a>
-
-
-            {{-- MAPEL --}}
-            <a href="{{ route('admin.mapel.index') }}"
-               class="nav-item {{ request()->routeIs('admin.mapel.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    auto_stories
-                </span>
-
-                <span>Mapel</span>
-
-            </a>
-
-
-            {{-- JAM PELAJARAN --}}
-            <a href="{{ route('admin.jam.index') }}"
-               class="nav-item {{ request()->routeIs('admin.jam.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    schedule
-                </span>
-
-                <span>Jam Pelajaran</span>
-
-            </a>
-
-
-            {{-- JADWAL --}}
-            <a href="{{ route('admin.jadwal.index') }}"
-               class="nav-item {{ request()->routeIs('admin.jadwal.*') ? 'active' : '' }}">
-
-                <span class="material-symbols-outlined">
-                    calendar_month
-                </span>
-
-                <span>Jadwal</span>
-
-            </a>
 
 
             {{-- PROFIL --}}
-            <a href="{{ route('admin.profil') }}"
-               class="nav-item {{ request()->routeIs('admin.profil') ? 'active' : '' }}">
+            <a href="{{ route('staff.profil') }}"
+               class="nav-item {{ request()->routeIs('staff.profil') ? 'active' : '' }}">
 
                 <span class="material-symbols-outlined">
                     person
                 </span>
-
                 <span>Profil</span>
-
             </a>
-
         </nav>
-
     </aside>
-
 
     {{-- =========================
          MAIN CONTENT

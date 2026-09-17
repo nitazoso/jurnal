@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JamPel extends Model
 {
+    use softDeletes;
+
     protected $table = 'jam_pels';
 
     protected $primaryKey = 'id_jam';

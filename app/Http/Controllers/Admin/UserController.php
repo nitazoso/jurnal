@@ -154,10 +154,11 @@ class UserController extends Controller
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
-        // Kalau password kosong, password lama tetap dipakai
+        // Kalau password diisi, hash password baru
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
         } else {
+            // Kalau kosong, password lama tetap digunakan
             unset($validated['password']);
         }
 

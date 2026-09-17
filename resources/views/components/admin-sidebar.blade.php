@@ -22,12 +22,12 @@
             <span>Daftar Jurnal</span>
         </a>
 
-        <a href="#" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.user.index') }}" class="nav-item {{ request()->routeIs('admin.user.*') ? 'active' : '' }}">
             <span class="material-symbols-outlined">person_add</span>
             <span>User</span>
         </a>
 
-      <a href="{{ route('admin.kelas.index') }}" class="nav-item {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}">
+        <a href="{{ route('admin.kelas.index') }}" class="nav-item {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}">
             <span class="material-symbols-outlined">groups</span>
             <span>Kelas</span>
         </a>

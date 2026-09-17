@@ -9,59 +9,74 @@ use App\Models\Mapel;
 use App\Models\Kelas;
 use App\Models\JamPel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class JadwalController extends Controller
 {
-    public function index(Request $request)
-    {
-        $query = Jadwal::with([
-            'guru',
-            'mapel',
-            'kelas',
-            'jamMulai',
-            'jamSelesai',
-        ]);
+public function index(Request $request)
+{
+    $kelases = Kelas::orderBy('nama_kelas')->get();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
+    $selectedKelasId = $request->get(
+        'id_kelas',
+        $kelases->first()?->id_kelas
+    );
 
-            $query->where(function ($q) use ($search) {
-                $q->where('hari', 'like', '%' . $search . '%')
-                    ->orWhere('tahun_ajaran', 'like', '%' . $search . '%')
-                    ->orWhereHas('guru', function ($guru) use ($search) {
-                        $guru->where('nama_guru', 'like', '%' . $search . '%');
-                    })
-                    ->orWhereHas('mapel', function ($mapel) use ($search) {
-                        $mapel->where('nama_mapel', 'like', '%' . $search . '%');
-                    })
-                    ->orWhereHas('kelas', function ($kelas) use ($search) {
-                        $kelas->where('nama_kelas', 'like', '%' . $search . '%');
-                    });
-            });
-        }
+    $selectedKelas = $kelases
+        ->where('id_kelas', $selectedKelasId)
+        ->first();
 
-        $jadwals = $query
-            ->orderByRaw("FIELD(hari, 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu')")
-            ->get();
+    $allJamPels = JamPel::orderBy('jam_mulai', 'asc')->get();
 
-        return view('admin.jadwal.index', compact('jadwals'));
+    $jamPelsGrouped = [];
+    foreach ($allJamPels as $jam) {
+        $jamPelsGrouped[$jam->jam_ke][$jam->klp_hari] = $jam;
     }
 
-    public function create()
-    {
-        $gurus = Guru::orderBy('nama_guru')->get();
-        $mapels = Mapel::orderBy('nama_mapel')->get();
-        $kelases = Kelas::orderBy('nama_kelas')->get();
-        $jamPels = JamPel::orderBy('jam_ke')->get();
+    $jamPels = $allJamPels->pluck('jam_ke')->unique()->filter()->values();
 
-        return view('admin.jadwal.create', compact(
-            'gurus',
-            'mapels',
-            'kelases',
-            'jamPels'
-        ));
-    }
+    $maxJamQuery = DB::table('jadwals')
+        ->join('jam_pels', 'jadwals.id_jam_selesai', '=', 'jam_pels.id_jam')
+        ->whereNull('jadwals.deleted_at')
+        ->when($selectedKelasId, function ($q) use ($selectedKelasId) {
+            $q->where('jadwals.id_kelas', $selectedKelasId);
+        })
+        ->select('jadwals.hari', DB::raw('MAX(jam_pels.jam_ke) as max_jam'))
+        ->groupBy('jadwals.hari')
+        ->pluck('max_jam', 'hari')
+        ->toArray();
 
+    $defaultMaxJam = $jamPels->max() ?? 10;
+    $maxSeninKamis = $allJamPels->where('klp_hari', 'Senin-Kamis')->max('jam_ke') ?? 11;
+    $maxJumat      = $allJamPels->where('klp_hari', 'Jumat')->max('jam_ke') ?? 6;
+
+    $maxJamPerHari = [
+        'Senin'  => $maxSeninKamis,
+        'Selasa' => $maxSeninKamis,
+        'Rabu'   => $maxSeninKamis,
+        'Kamis'  => $maxSeninKamis,
+        'Jumat'  => $maxJumat,
+    ];
+    $jadwals = Jadwal::with(['guru', 'mapel', 'jamMulai', 'jamSelesai'])
+        ->when($selectedKelasId, function ($q) use ($selectedKelasId) {
+            $q->where('id_kelas', $selectedKelasId);
+        })
+        ->get();
+
+    $gurus = Guru::orderBy('nama_guru')->get();
+    $mapels = Mapel::orderBy('nama_mapel')->get();
+
+return view('admin.jadwal.index', compact(
+    'kelases', 
+    'selectedKelasId', 
+    'selectedKelas', 
+    'jamPels', 
+    'jamPelsGrouped', 
+    'jadwals', 
+    'mapels', 
+    'gurus', 
+    'maxJamPerHari'
+));}
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -70,34 +85,14 @@ class JadwalController extends Controller
             'id_kelas' => 'required|exists:kelases,id_kelas',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
-            'hari' => 'required|string|max:20',
-            'semester' => 'required|string|max:20',
-            'tahun_ajaran' => 'required|string|max:20',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat',
+            'semester' => 'required|in:Ganjil,Genap',
+            'tahun_ajaran' => 'required|string|max:9',
         ]);
 
         Jadwal::create($validated);
 
-        return redirect()
-            ->route('admin.jadwal.index')
-            ->with('success', 'Jadwal berhasil ditambahkan.');
-    }
-
-    public function edit($id)
-    {
-        $jadwal = Jadwal::findOrFail($id);
-
-        $gurus = Guru::orderBy('nama_guru')->get();
-        $mapels = Mapel::orderBy('nama_mapel')->get();
-        $kelases = Kelas::orderBy('nama_kelas')->get();
-        $jamPels = JamPel::orderBy('jam_ke')->get();
-
-        return view('admin.jadwal.edit', compact(
-            'jadwal',
-            'gurus',
-            'mapels',
-            'kelases',
-            'jamPels'
-        ));
+        return redirect()->back()->with('success', 'Jadwal berhasil ditambahkan.');
     }
 
     public function update(Request $request, $id)
@@ -110,26 +105,21 @@ class JadwalController extends Controller
             'id_kelas' => 'required|exists:kelases,id_kelas',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
-            'hari' => 'required|string|max:20',
-            'semester' => 'required|string|max:20',
-            'tahun_ajaran' => 'required|string|max:20',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat',
+            'semester' => 'required|in:Ganjil,Genap',
+            'tahun_ajaran' => 'required|string|max:9',
         ]);
 
         $jadwal->update($validated);
 
-        return redirect()
-            ->route('admin.jadwal.index')
-            ->with('success', 'Jadwal berhasil diperbarui.');
+        return redirect()->back()->with('success', 'Jadwal berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $jadwal = Jadwal::findOrFail($id);
-
         $jadwal->delete();
 
-        return redirect()
-            ->route('admin.jadwal.index')
-            ->with('success', 'Jadwal berhasil dihapus.');
+        return redirect()->back()->with('success', 'Jadwal berhasil dihapus.');
     }
 }
