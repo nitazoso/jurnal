@@ -24,7 +24,7 @@
     .dashboard-page {
         width: 100%;
         max-width: none;
-        margin: 0 ;
+        margin: 0;
         animation: pageFade .45s ease-out;
     }
 
@@ -33,6 +33,7 @@
             opacity: 0;
             transform: translateY(6px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -40,6 +41,7 @@
     }
 
     /* TOP SECTION */
+
     .overview-grid {
         display: grid;
         grid-template-columns: 1.4fr 1fr;
@@ -48,7 +50,10 @@
     }
 
     .dashboard-card {
-        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease,
+            border-color .2s ease;
     }
 
     .dashboard-card:hover {
@@ -98,7 +103,7 @@
         flex-shrink: 0;
         border-radius: 50%;
         background: #0891B2;
-        border: 2px solid rgba(255,255,255,.9);
+        border: 2px solid rgba(255, 255, 255, .9);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -132,13 +137,14 @@
 
     .welcome-text {
         margin: 6px 0 0;
-        color: rgba(219,234,254,.95);
+        color: rgba(219, 234, 254, .95);
         font-size: 13px;
         line-height: 1.6;
         font-weight: 500;
     }
 
     /* TOTAL */
+
     .total-card {
         min-height: 170px;
         padding: 28px;
@@ -150,7 +156,7 @@
         justify-content: space-between;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 14px rgba(45,51,107,.06);
+        box-shadow: 0 4px 14px rgba(45, 51, 107, .06);
     }
 
     .total-card::after {
@@ -161,7 +167,7 @@
         right: -45px;
         top: -45px;
         border-radius: 50%;
-        background: rgba(255,255,255,.2);
+        background: rgba(255, 255, 255, .2);
     }
 
     .total-content {
@@ -191,6 +197,7 @@
             opacity: 0;
             transform: translateY(8px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -210,14 +217,14 @@
         height: 56px;
         flex-shrink: 0;
         border-radius: 16px;
-        background: rgba(255,255,255,.7);
-        border: 1px solid rgba(255,255,255,.8);
+        background: rgba(255, 255, 255, .7);
+        border: 1px solid rgba(255, 255, 255, .8);
         display: flex;
         align-items: center;
         justify-content: center;
         position: relative;
         z-index: 1;
-        box-shadow: 0 2px 8px rgba(45,51,107,.06);
+        box-shadow: 0 2px 8px rgba(45, 51, 107, .06);
     }
 
     .total-icon svg {
@@ -227,6 +234,7 @@
     }
 
     /* SUMMARY */
+
     .summary-section {
         width: 100%;
     }
@@ -261,14 +269,18 @@
         font-weight: 700;
         text-decoration: none;
         white-space: nowrap;
-        transition: color .2s ease;
+        transition:
+            color .2s ease,
+            transform .2s ease;
     }
 
     .see-all:hover {
         color: var(--primary);
+        transform: translateX(2px);
     }
 
     /* JOURNAL LIST */
+
     .journal-list {
         display: flex;
         flex-direction: column;
@@ -278,15 +290,18 @@
     .journal-card {
         padding: 20px;
         background: white;
-        border: 1px solid rgba(204,214,252,.8);
+        border: 1px solid rgba(204, 214, 252, .8);
         border-radius: 16px;
-        box-shadow: 0 3px 10px rgba(45,51,107,.04);
-        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        box-shadow: 0 3px 10px rgba(45, 51, 107, .04);
+        transition:
+            transform .2s ease,
+            box-shadow .2s ease,
+            border-color .2s ease;
     }
 
     .journal-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba(45,51,107,.08);
+        box-shadow: 0 10px 24px rgba(45, 51, 107, .08);
         border-color: var(--accent);
     }
 
@@ -414,7 +429,9 @@
         font-size: 11px;
         font-weight: 700;
         text-decoration: none;
-        transition: color .2s ease, transform .2s ease;
+        transition:
+            color .2s ease,
+            transform .2s ease;
     }
 
     .detail-link:hover {
@@ -428,6 +445,7 @@
     }
 
     /* EMPTY */
+
     .empty-state {
         padding: 40px 20px;
         background: white;
@@ -440,6 +458,7 @@
     }
 
     /* TABLET */
+
     @media (min-width: 768px) and (max-width: 1100px) {
         .dashboard-page {
             padding: 32px;
@@ -464,6 +483,7 @@
     }
 
     /* MOBILE */
+
     @media (max-width: 767px) {
         .dashboard-page {
             max-width: none;
@@ -590,6 +610,7 @@
     }
 
     /* SMALL MOBILE */
+
     @media (max-width: 420px) {
         .dashboard-page {
             padding: 0;
@@ -642,6 +663,21 @@
             gap: 8px;
         }
     }
+
+    /* REDUCED MOTION */
+
+    @media (prefers-reduced-motion: reduce) {
+        .dashboard-page,
+        .total-number,
+        .dashboard-card,
+        .journal-card,
+        .welcome-avatar,
+        .see-all,
+        .detail-link {
+            animation: none;
+            transition: none;
+        }
+    }
 </style>
 
 <div class="guru-dashboard">
@@ -649,118 +685,246 @@
 
         {{-- TOP CARDS --}}
         <section class="overview-grid">
+
             <div class="welcome-card dashboard-card">
+
                 <div class="welcome-avatar">
-                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                        <path d="M15.75 6a3.75 3.75 0 1 1-7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.8"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            d="M15.75 6a3.75 3.75 0 1 1-7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        />
                     </svg>
                 </div>
+
                 <div class="welcome-content">
+
                     <h2 class="welcome-title">
                         Selamat datang, {{ auth()->user()->nama_user ?? '-' }}
                     </h2>
+
                     <p class="welcome-text">
                         Pantau dan kelola aktivitas pembelajaran Anda melalui Jurnify.
                     </p>
+
                 </div>
+
             </div>
 
             <div class="total-card dashboard-card">
+
                 <div class="total-content">
-                    <span class="total-label">Total Jurnal</span>
-                    <div class="total-number">{{ $totalJurnal }}</div>
-                    <span class="total-text">Jurnal yang telah dibuat</span>
+
+                    <span class="total-label">
+                        Total Jurnal
+                    </span>
+
+                    <div class="total-number">
+                        {{ $totalJurnal }}
+                    </div>
+
+                    <span class="total-text">
+                        Jurnal yang telah dibuat
+                    </span>
+
                 </div>
+
                 <div class="total-icon">
-                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"/>
+
+                    <svg
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
+                        />
                     </svg>
+
                 </div>
+
             </div>
+
         </section>
 
         {{-- RINGKASAN JURNAL --}}
         <section class="summary-section">
+
             <div class="summary-header">
+
                 <div>
-                    <h2 class="summary-title">Ringkasan Jurnal</h2>
-                    <p class="summary-subtitle">Menampilkan 5 jurnal terbaru yang telah Anda buat</p>
+
+                    <h2 class="summary-title">
+                        Ringkasan Jurnal
+                    </h2>
+
+                    <p class="summary-subtitle">
+                        Menampilkan 5 jurnal terbaru yang telah Anda buat
+                    </p>
+
                 </div>
 
                 @if($totalJurnal > 5)
-                    <a class="see-all" href="{{ route('guru.jurnal.index') }}">
+
+                    <a
+                        class="see-all"
+                        href="{{ route('guru.jurnal.index') }}"
+                    >
                         Lihat Semua Jurnal →
                     </a>
+
                 @endif
+
             </div>
 
             <div class="journal-list">
+
                 @forelse($jurnals as $index => $jurnal)
+
                     <article class="journal-card">
+
                         <div class="journal-top">
+
                             <div class="journal-heading">
+
                                 <div class="journal-number">
                                     {{ $index + 1 }}
                                 </div>
+
                                 <span class="journal-class">
                                     {{ $jurnal->kelas->nama_kelas ?? '-' }}
                                 </span>
+
                             </div>
 
+                            {{-- STATUS --}}
                             @if($jurnal->status_validasi_guru === 'Menunggu')
-                                <span class="status status-menunggu">Menunggu</span>
+
+                                <span class="status status-menunggu">
+                                    Menunggu
+                                </span>
+
                             @elseif($jurnal->status_validasi_guru === 'Valid')
-                                <span class="status status-valid">Valid</span>
+
+                                <span class="status status-valid">
+                                    Valid
+                                </span>
+
                             @else
+
                                 <span class="status status-default">
                                     {{ $jurnal->status_validasi_guru ?? '-' }}
                                 </span>
+
                             @endif
+
                         </div>
 
                         <div class="journal-meta">
+
                             <span class="meta-item">
-                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <rect width="18" height="18" x="3" y="4" rx="2"/>
-                                    <path d="M16 2v4M8 2v4M3 10h18"/>
+
+                                <svg
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <rect
+                                        width="18"
+                                        height="18"
+                                        x="3"
+                                        y="4"
+                                        rx="2"
+                                    />
+
+                                    <path d="M16 2v4M8 2v4M3 10h18" />
                                 </svg>
+
                                 {{ $jurnal->tanggal?->format('d M Y') ?? '-' }}
+
                             </span>
 
-                            <span class="meta-dot">•</span>
+                            <span class="meta-dot">
+                                •
+                            </span>
 
                             <span class="meta-item">
-                                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                    <circle cx="12" cy="12" r="10"/>
-                                    <polyline points="12 6 12 12 16 14"/>
+
+                                <svg
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                    />
+
+                                    <polyline points="12 6 12 12 16 14" />
                                 </svg>
-                                Jam Ke {{ $jurnal->jamMulai->jam_ke ?? '-' }}-{{ $jurnal->jamSelesai->jam_ke ?? '-' }}
+
+                                Jam Ke
+                                {{ $jurnal->jamMulai->jam_ke ?? '-' }}-{{ $jurnal->jamSelesai->jam_ke ?? '-' }}
+
                             </span>
 
                             @if($jurnal->jadwal?->mapel?->nama_mapel)
-                                <span class="meta-dot">•</span>
+
+                                <span class="meta-dot">
+                                    •
+                                </span>
+
                                 <span class="meta-item">
                                     {{ $jurnal->jadwal->mapel->nama_mapel }}
                                 </span>
+
                             @endif
+
                         </div>
 
                         <div class="journal-material">
-                            <span class="material-name" title="{{ $jurnal->materi }}">
+
+                            <span
+                                class="material-name"
+                                title="{{ $jurnal->materi }}"
+                            >
                                 Materi: {{ $jurnal->materi ?? '-' }}
                             </span>
 
-                            <a class="detail-link" href="{{ route('guru.jurnal.show', $jurnal->id_jurnal) }}">
-                                Detail <span class="detail-arrow">›</span>
+                            <a
+                                class="detail-link"
+                                href="{{ route('guru.jurnal.show', $jurnal->id_jurnal) }}"
+                            >
+                                Detail
+                                <span class="detail-arrow">
+                                    ›
+                                </span>
                             </a>
+
                         </div>
+
                     </article>
+
                 @empty
+
                     <div class="empty-state">
                         Belum ada jurnal yang dibuat.
                     </div>
+
                 @endforelse
+
             </div>
+
         </section>
 
     </div>

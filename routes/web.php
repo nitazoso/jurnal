@@ -12,6 +12,8 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\JamPelController;
 use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\JadwalPiketController as AdminJadwalPiketController;
+use App\Http\Controllers\Admin\JadwalKesiswaanController;
 use App\Http\Controllers\Admin\SiswaController;
 
 use App\Http\Controllers\Guru\JurnalController as GuruJurnalController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\Kesiswaan\DispenController as KesiswaanDispenController
 use App\Http\Controllers\Piket\DispenController as PiketDispenController;
 use App\Http\Controllers\Piket\DashboardController as PiketDashboardController;
 use App\Http\Controllers\Piket\JadwalPiketController;
+use App\Http\Controllers\Sekretaris\JurnalController as SekretarisJurnalController;
 
 Route::match(['get', 'post'], '/logout', function (Request $request) {
     Auth::guard('web')->logout();
@@ -32,6 +35,9 @@ Route::match(['get', 'post'], '/logout', function (Request $request) {
     return redirect()->route('login');
 })->name('logout');
 
+use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
+
+// LOGIN
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +56,9 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::get('/admin/jurnal', [JurnalController::class, 'index'])
         ->name('admin.jurnal.index');
+
+    Route::get('/admin/jurnal/{jurnal}', [JurnalController::class, 'show'])
+        ->name('admin.jurnal.show');
 
     // ====================
     // USER ADMIN
@@ -175,15 +184,14 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::post('/admin/jam', [JamPelController::class, 'store'])
         ->name('admin.jam.store');
+Route::get('/admin/jam/{klp_hari}/edit', [JamPelController::class, 'edit'])
+    ->name('admin.jam.edit');
 
-    Route::get('/admin/jam/{jam}/edit', [JamPelController::class, 'edit'])
-        ->name('admin.jam.edit');
+Route::put('/admin/jam/{klp_hari}', [JamPelController::class, 'update'])
+    ->name('admin.jam.update');
 
-    Route::put('/admin/jam/{jam}', [JamPelController::class, 'update'])
-        ->name('admin.jam.update');
-
-    Route::delete('/admin/jam/{jam}', [JamPelController::class, 'destroy'])
-        ->name('admin.jam.destroy');
+Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
+    ->name('admin.jam.destroy');
 
     // ====================
     // JADWAL ADMIN
@@ -195,6 +203,7 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::get('/admin/jadwal/create', [JadwalController::class, 'create'])
         ->name('admin.jadwal.create');
 
+
     Route::post('/admin/jadwal', [JadwalController::class, 'store'])
         ->name('admin.jadwal.store');
 
@@ -204,8 +213,35 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::put('/admin/jadwal/{jadwal}', [JadwalController::class, 'update'])
         ->name('admin.jadwal.update');
 
+
     Route::delete('/admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])
         ->name('admin.jadwal.destroy');
+
+    Route::get('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'index'])
+        ->name('admin.jadwal-piket.index');
+    Route::get('/admin/jadwal-piket/create', [AdminJadwalPiketController::class, 'create'])
+        ->name('admin.jadwal-piket.create');
+    Route::post('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'store'])
+        ->name('admin.jadwal-piket.store');
+    Route::get('/admin/jadwal-piket/{jadwal}/edit', [AdminJadwalPiketController::class, 'edit'])
+        ->name('admin.jadwal-piket.edit');
+    Route::put('/admin/jadwal-piket/{jadwal}', [AdminJadwalPiketController::class, 'update'])
+        ->name('admin.jadwal-piket.update');
+    Route::delete('/admin/jadwal-piket/{jadwal}', [AdminJadwalPiketController::class, 'destroy'])
+        ->name('admin.jadwal-piket.destroy');
+
+    Route::get('/admin/jadwal-kesiswaan', [JadwalKesiswaanController::class, 'index'])
+        ->name('admin.jadwal-kesiswaan.index');
+    Route::get('/admin/jadwal-kesiswaan/create', [JadwalKesiswaanController::class, 'create'])
+        ->name('admin.jadwal-kesiswaan.create');
+    Route::post('/admin/jadwal-kesiswaan', [JadwalKesiswaanController::class, 'store'])
+        ->name('admin.jadwal-kesiswaan.store');
+    Route::get('/admin/jadwal-kesiswaan/{jadwalKesiswaan}/edit', [JadwalKesiswaanController::class, 'edit'])
+        ->name('admin.jadwal-kesiswaan.edit');
+    Route::put('/admin/jadwal-kesiswaan/{jadwalKesiswaan}', [JadwalKesiswaanController::class, 'update'])
+        ->name('admin.jadwal-kesiswaan.update');
+    Route::delete('/admin/jadwal-kesiswaan/{jadwalKesiswaan}', [JadwalKesiswaanController::class, 'destroy'])
+        ->name('admin.jadwal-kesiswaan.destroy');
 
     // ====================
     // PROFIL ADMIN
@@ -243,6 +279,9 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
         ->name('guru.jurnal.store');
 
+    Route::get('/guru/jurnal/{jurnal}', [GuruJurnalController::class, 'show'])
+        ->name('guru.jurnal.show');
+
     // ====================
     // JADWAL PIKET GURU
     // ====================
@@ -271,20 +310,6 @@ Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
     Route::get('/piket/jadwal', [JadwalPiketController::class, 'index'])
         ->name('piket.jadwal.index');
 
-    Route::get('/piket/jadwal/create', [JadwalPiketController::class, 'create'])
-        ->name('piket.jadwal.create');
-
-    Route::post('/piket/jadwal', [JadwalPiketController::class, 'store'])
-        ->name('piket.jadwal.store');
-
-    Route::get('/piket/jadwal/{jadwal}/edit', [JadwalPiketController::class, 'edit'])
-        ->name('piket.jadwal.edit');
-
-    Route::put('/piket/jadwal/{jadwal}', [JadwalPiketController::class, 'update'])
-        ->name('piket.jadwal.update');
-
-    Route::delete('/piket/jadwal/{jadwal}', [JadwalPiketController::class, 'destroy'])
-        ->name('piket.jadwal.destroy');
 
     Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
     Route::get('/piket/dispen/create', [PiketDispenController::class, 'create'])->name('piket.dispen.create');
@@ -306,4 +331,20 @@ Route::middleware(['auth', 'role:Kesiswaan'])->group(function () {
     Route::get('/kesiswaan/dispen/{dispen}', [KesiswaanDispenController::class, 'show'])->name('kesiswaan.dispen.show');
     Route::post('/kesiswaan/dispen/{dispen}/approve', [KesiswaanDispenController::class, 'approve'])->name('kesiswaan.dispen.approve');
     Route::post('/kesiswaan/dispen/{dispen}/reject', [KesiswaanDispenController::class, 'reject'])->name('kesiswaan.dispen.reject');
+
 });
+
+/*
+|--------------------------------------------------------------------------
+| SEKRETARIS
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekretaris.')->group(function () {
+    Route::get('/dashboard', [SekretarisJurnalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/validasi-jurnal', [SekretarisJurnalController::class, 'index'])->name('validasi-jurnal');
+    Route::patch('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'validateJurnal'])->name('validasi-jurnal.update');
+    Route::get('/isi-jurnal', [SekretarisJurnalController::class, 'create'])->name('isi-jurnal');
+    Route::post('/isi-jurnal', [SekretarisJurnalController::class, 'store'])->name('isi-jurnal.store');
+    Route::view('/profil', 'sekretaris.profil')->name('profil');
+});
+

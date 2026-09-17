@@ -27,12 +27,12 @@ class DashboardController extends Controller
             'jamMulai',
             'jamSelesai',
         ])
-        ->where('id_user', $user->id_user)
+        ->where('id_guru', $user->id_guru)
         ->latest('tanggal')
         ->take(5)
         ->get();
 
-        $totalJurnal = Jurnal::where('id_user', $user->id_user)
+        $totalJurnal = Jurnal::where('id_guru', $user->id_guru)
             ->count();
 
         $piketTerdekat = PiketJadwal::with('guru')

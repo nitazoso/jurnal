@@ -685,35 +685,15 @@
 
 <div class="journal-page">
 
-    {{-- PAGE HEADER --}}
-    <section class="journal-page-header">
-        <h1 class="journal-page-title">Daftar Aktivitas Mengajar</h1>
-        <p class="journal-page-subtitle">
-            Pantau seluruh catatan jurnal yang telah Anda kirimkan ke kurikulum.
-        </p>
-    </section>
-
     {{-- FILTER --}}
     <section class="journal-filter-bar">
 
         {{-- SEARCH --}}
         <div class="journal-search">
-            <svg class="journal-search-icon"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2"
-                 viewBox="0 0 24 24">
-                <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"/>
+            <svg class="journal-search-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-
-            <input
-                type="text"
-                id="journalSearch"
-                placeholder="Cari materi atau topik jurnal..."
-                autocomplete="off"
-            >
+            <input type="text" id="journalSearch" placeholder="Cari materi atau topik jurnal..." autocomplete="off">
         </div>
 
         {{-- MONTH --}}
@@ -842,13 +822,11 @@
                     <p class="journal-material" title="{{ $materi }}">
                         {{ $materi }}
                     </p>
-
                     @if($mapel !== '-')
                         <p class="journal-mapel">
                             {{ $mapel }}
                         </p>
                     @endif
-
                 </div>
 
                 {{-- RIGHT: STATUS & ACTION --}}

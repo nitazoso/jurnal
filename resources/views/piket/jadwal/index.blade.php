@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+@extends('layouts.piket')
 
 @section('title', 'Jadwal Piket - Jurnify')
 @section('page-title', 'Jadwal Piket')
@@ -6,15 +6,10 @@
 @section('content')
 <div class="activity-header">
     <div>
-        <h3 class="activity-title">Jadwal Piket</h3>
-        <p class="activity-description">Daftar jadwal piket yang dikelola Admin.</p>
+        <h3 class="activity-title">Jadwal Piket Saya</h3>
+        <p class="activity-description">Jadwal piket yang ditugaskan kepada Anda.</p>
     </div>
-    <a href="{{ route('piket.jadwal.create') }}" class="btn btn-primary">+ Tambah Jadwal</a>
 </div>
-
-@if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
 
 <div class="table-wrapper">
     <table>
@@ -28,7 +23,6 @@
                 <th>Tugas</th>
                 <th>Posisi</th>
                 <th>Keterangan</th>
-                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -42,17 +36,9 @@
                     <td>{{ $jadwal->jenis_tugas }}</td>
                     <td>{{ $jadwal->posisi ?? '-' }}</td>
                     <td>{{ $jadwal->keterangan ?? '-' }}</td>
-                    <td>
-                        <a href="{{ route('piket.jadwal.edit', $jadwal->id_piket_jadwal) }}" class="btn btn-warning">Edit</a>
-                        <form action="{{ route('piket.jadwal.destroy', $jadwal->id_piket_jadwal) }}" method="POST" style="display:inline;" onsubmit="return confirm('Yakin hapus jadwal piket ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger">Hapus</button>
-                        </form>
-                    </td>
                 </tr>
             @empty
-                <tr><td colspan="9" class="empty">Belum ada jadwal piket.</td></tr>
+                <tr><td colspan="8" class="empty">Belum ada jadwal piket yang ditugaskan kepada Anda.</td></tr>
             @endforelse
         </tbody>
     </table>
