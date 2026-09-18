@@ -24,11 +24,13 @@ class UserController extends Controller
 
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', '%' . $search . '%')
+
                   ->orWhere('nama_user', 'like', '%' . $search . '%')
                   ->orWhereHas('guru', function ($guruQuery) use ($search) {
                       $guruQuery->where('nama_guru', 'like', '%' . $search . '%')
                           ->orWhere('nip', 'like', '%' . $search . '%');
                   });
+
             });
         }
 

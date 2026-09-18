@@ -702,7 +702,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateGuruField() {
         if (role.value === 'Guru' || role.value === 'Staff Piket') {
+
             guruContainer.style.display = 'flex';
+
             idGuru.required = true;
         } else {
             guruContainer.style.display = 'none';

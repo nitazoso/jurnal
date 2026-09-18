@@ -1,9 +1,11 @@
 @extends('layouts.admin')
 
 @section('title', 'Tambah Guru - Jurnify')
+
 @section('page-title', 'Tambah Guru')
 
 @push('styles')
+
 <style>
     .guru-create-page {
         width: 100%;
@@ -202,6 +204,7 @@
         from {
             opacity: 0;
         }
+
         to {
             opacity: 1;
         }
@@ -212,6 +215,7 @@
             opacity: 0;
             transform: translateY(-8px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -223,6 +227,7 @@
             opacity: 0;
             transform: translateY(12px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -234,6 +239,7 @@
             opacity: 0;
             transform: translateY(7px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -245,6 +251,7 @@
             opacity: 0;
             transform: translateY(-5px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -285,83 +292,124 @@
         }
     }
 </style>
+
 @endpush
 
 @section('content')
+
 <div class="guru-create-page">
 
-    {{-- PAGE HEADER --}}
-    <div class="guru-create-header">
-        <h2>Tambah Guru</h2>
-        <p>Tambahkan data guru baru ke sistem Jurnify.</p>
-    </div>
 
-    {{-- FORM CARD --}}
-    <div class="guru-form-card">
-
-        {{-- ERROR --}}
-        @if ($errors->any())
-            <div class="guru-error-alert">
-                <span class="material-symbols-outlined">error</span>
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        <form action="{{ route('admin.guru.store') }}" method="POST">
-            @csrf
-
-            {{-- NIP --}}
-            <div class="guru-form-group">
-                <label class="guru-form-label">
-                    NIP <span class="guru-required">*</span>
-                </label>
-                <input
-                    type="text"
-                    name="nip"
-                    value="{{ old('nip') }}"
-                    placeholder="Masukkan NIP guru"
-                    maxlength="18"
-                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                >
-            </div>
-
-            {{-- NAMA --}}
-            <div class="guru-form-group">
-                <label class="guru-form-label">
-                    Nama Guru <span class="guru-required">*</span>
-                </label>
-                <input
-                    type="text"
-                    name="nama_guru"
-                    value="{{ old('nama_guru') }}"
-                    placeholder="Masukkan nama guru"
-                    class="guru-form-input"
-                    required
-                >
-            </div>
-
-            {{-- BUTTON --}}
-            <div class="guru-form-actions">
-                <a
-                    href="{{ route('admin.guru.index') }}"
-                    class="guru-cancel-button"
-                >
-                    Batal
-                </a>
-                <button
-                    type="submit"
-                    class="guru-save-button"
-                >
-                    Simpan Guru
-                </button>
-            </div>
-        </form>
-
-    </div>
+{{-- PAGE HEADER --}}
+<div class="guru-create-header">
+    <h2>Tambah Guru</h2>
+    <p>Tambahkan data guru baru ke sistem Jurnify.</p>
 </div>
+
+{{-- FORM CARD --}}
+<div class="guru-form-card">
+
+    {{-- ERROR --}}
+    @if ($errors->any())
+        <div class="guru-error-alert">
+            <span class="material-symbols-outlined">error</span>
+
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form action="{{ route('admin.guru.store') }}" method="POST">
+        @csrf
+
+        {{-- NIP --}}
+        <div class="guru-form-group">
+
+            <label class="guru-form-label">
+                NIP <span class="guru-required">*</span>
+            </label>
+
+            <input
+                type="text"
+                name="nip"
+                value="{{ old('nip') }}"
+                placeholder="Masukkan NIP guru"
+                maxlength="18"
+                class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+            >
+
+        </div>
+
+        {{-- NAMA --}}
+        <div class="guru-form-group">
+
+            <label class="guru-form-label">
+                Nama Guru <span class="guru-required">*</span>
+            </label>
+
+            <input
+                type="text"
+                name="nama_guru"
+                value="{{ old('nama_guru') }}"
+                placeholder="Masukkan nama guru"
+                class="guru-form-input"
+                required
+            >
+
+        </div>
+
+        {{-- BUTTON --}}
+        <div class="guru-form-actions">
+
+            <a
+                href="{{ route('admin.guru.index') }}"
+                class="guru-cancel-button"
+            >
+                Batal
+            </a>
+
+            <button
+                type="submit"
+                class="guru-save-button"
+            >
+                Simpan Guru
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+</div>
+
 @endsection
+
+
+
+Setelah paste, **save**, lalu jalankan:
+
+bash
+git add resources/views/admin/guru/create.blade.php
+
+
+Terus cek:
+
+bash
+git status
+
+
+Kalau masih ada:
+
+text
+resources/views/piket/dashboard.blade.php
+
+
+berarti tinggal **1 conflict lagi**.
+
+Jangan git commit dulu.

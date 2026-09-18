@@ -23,6 +23,7 @@ use App\Http\Controllers\Kesiswaan\DashboardController as KesiswaanDashboardCont
 use App\Http\Controllers\Kesiswaan\DispenController as KesiswaanDispenController;
 use App\Http\Controllers\Piket\DispenController as PiketDispenController;
 use App\Http\Controllers\Piket\DashboardController as PiketDashboardController;
+use App\Http\Controllers\Piket\JurnalController as PiketJurnalController;
 use App\Http\Controllers\Piket\JadwalPiketController;
 use App\Http\Controllers\Sekretaris\JurnalController as SekretarisJurnalController;
 
@@ -268,7 +269,7 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     // JURNAL GURU
     // ====================
     Route::get('/guru/jurnal', [GuruJurnalController::class, 'index'])
-        ->name('guru.jurnal.index');
+        ->name('guru.jurnal.index');    
 
     Route::get('/guru/jurnal/create', [GuruJurnalController::class, 'create'])
         ->name('guru.jurnal.create');
@@ -300,7 +301,7 @@ Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
     Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
         ->name('piket.dashboard');
 
-    Route::get('/piket/jurnal', [PiketDashboardController::class, 'jurnalIndex'])
+    Route::get('/piket/jurnal', [PiketJurnalController::class, 'index'])
         ->name('piket.jurnal.index');
 
     Route::get('/piket/profil', function () {

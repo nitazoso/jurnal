@@ -800,64 +800,46 @@
 <div class="table-wrapper">
 
     <table>
-
         <thead>
-
             <tr>
-
                 <th>NO</th>
-
                 <th>
                     TANGGAL &<br>
                     JAM
                 </th>
-
                 <th>
                     GURU
                 </th>
-
                 <th>
                     MATA<br>
                     PELAJARAN
                 </th>
-
                 <th>
                     KELAS
                 </th>
-
                 <th>
                     KEHADIRAN
                 </th>
-
                 <th>
                     STATUS<br>
                     VALIDASI
                 </th>
-
                 <th>
                     AKSI
                 </th>
-
             </tr>
-
         </thead>
 
-
         <tbody>
-
             @forelse($jurnals as $index => $item)
 
-                <tr
-                    style="animation-delay: {{ $index * 0.04 }}s;"
-                >
+                <tr style="animation-delay: {{ $index * 0.04 }}s;">
 
                     <td class="number">
                         {{ $jurnals->firstItem() + $index }}
                     </td>
 
-
                     <td>
-
                         <span class="date">
                             {{ $item->created_at->format('d M Y') }}
                         </span>
@@ -872,9 +854,7 @@
                         >
                             {{ $item->jam_ke }}
                         </span>
-
                     </td>
-
 
                     <td
                         class="teacher"
@@ -886,51 +866,45 @@
                         {{ $item->guru->nama }}
                     </td>
 
-
                     <td class="subject">
                         {{ $item->jadwal->mapel->nama_mapel ?? '-' }}
                     </td>
 
-
                     <td>
-
                         <span class="class-badge">
                             {{ $item->kelas->nama_kelas }}
                         </span>
-
                     </td>
 
-
                     <td class="attendance">
-
                         <strong>
                             {{ $item->jumlah_hadir }}/{{ $item->total_siswa }}
                         </strong>
-
                     </td>
 
-
                     <td>
-
                         <span class="status {{ strtolower($item->status) }}">
                             {{ $item->status }}
                         </span>
-
                     </td>
 
-
-                   <td>
-                <a href="{{ route('admin.jurnal.show', $item) }}" class="action" aria-label="Lihat detail jurnal">
-                    <span class="material-symbols-outlined">visibility</span>
-                </a>
-            </td>
+                    <td>
+                        <a
+                            href="{{ route('admin.jurnal.show', $item) }}"
+                            class="action"
+                            aria-label="Lihat detail jurnal"
+                        >
+                            <span class="material-symbols-outlined">
+                                visibility
+                            </span>
+                        </a>
+                    </td>
 
                 </tr>
 
             @empty
 
                 <tr>
-
                     <td
                         colspan="8"
                         style="
@@ -941,18 +915,13 @@
                     >
                         Belum ada data jurnal yang sesuai dengan filter.
                     </td>
-
                 </tr>
 
             @endforelse
-
         </tbody>
-
     </table>
 
 </div>
-
-
 <!-- ========================================================
      PAGINATION
 ========================================================= -->
