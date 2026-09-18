@@ -522,6 +522,213 @@
 @endsection
 
 @push('scripts')
+        <div
+            id="passwordError"
+            style="
+                color:#d92d20;
+                font-size:13px;
+                display:none;
+                margin-top:5px;
+            "
+        >
+            Password minimal 8 karakter.
+        </div>
+
+        <div style="
+            color:#666;
+            font-size:12px;
+            margin-top:5px;
+        ">
+            Password digunakan untuk login dan minimal 8 karakter.
+        </div>
+
+    </div>
+
+
+
+    {{-- ==========================================
+         ROLE
+    =========================================== --}}
+
+    <div style="margin-bottom:20px;">
+
+        <label for="role">
+            <strong>Role / Hak Akses</strong>
+        </label>
+
+        <br>
+
+        <select
+            name="role"
+            id="role"
+            required
+        >
+
+            <option value="">
+                -- Pilih Role --
+            </option>
+
+            <option
+                value="Admin"
+                {{ old('role') == 'Admin' ? 'selected' : '' }}
+            >
+                Admin
+            </option>
+
+            <option
+                value="Guru"
+                {{ old('role') == 'Guru' ? 'selected' : '' }}
+            >
+                Guru
+            </option>
+
+            <option
+                value="Kesiswaan"
+                {{ old('role') == 'Kesiswaan' ? 'selected' : '' }}
+            >
+                Kesiswaan
+            </option>
+
+            <option
+                value="Sekretaris"
+                {{ old('role') == 'Sekretaris' ? 'selected' : '' }}
+            >
+                Sekretaris
+            </option>
+
+            <option
+                value="Staff Piket"
+                {{ old('role') == 'Staff Piket' ? 'selected' : '' }}
+            >
+                Staff Piket
+            </option>
+
+        </select>
+
+        <div style="
+            color:#666;
+            font-size:12px;
+            margin-top:5px;
+        ">
+            Role menentukan hak akses pengguna di dalam sistem.
+        </div>
+
+    </div>
+
+    <div id="waContainer" style="display:none; margin-bottom:20px;">
+        <label for="no_wa"><strong>Nomor WhatsApp Kesiswaan</strong></label>
+        <br>
+        <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa') }}"
+               placeholder="Contoh: 628123456789" inputmode="tel">
+        <div style="color:#666; font-size:12px; margin-top:5px;">
+            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
+        </div>
+    </div>
+
+    {{-- ==========================================
+         DATA GURU
+    =========================================== --}}
+
+    <div
+        id="guruContainer"
+        style="
+            display:none;
+            margin-bottom:20px;
+        "
+    >
+
+        <label for="id_guru">
+            <strong>Data Guru</strong>
+        </label>
+
+        <br>
+
+        <select
+            name="id_guru"
+            id="id_guru"
+        >
+
+            <option value="">
+                -- Pilih Guru --
+            </option>
+
+            @foreach ($gurus as $guru)
+
+                <option
+                    value="{{ $guru->id_guru }}"
+                    {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
+                >
+
+                    {{ $guru->nama_guru }}
+
+                    @if ($guru->nip)
+                        - NIP {{ $guru->nip }}
+                    @endif
+
+                </option>
+
+            @endforeach
+
+        </select>
+
+        <div
+            id="guruError"
+            style="
+                color:#d92d20;
+                font-size:13px;
+                display:none;
+                margin-top:5px;
+            "
+        >
+            Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.
+        </div>
+
+        <div style="
+            color:#666;
+            font-size:12px;
+            margin-top:5px;
+        ">
+            Hubungkan akun login ini dengan data guru yang sudah terdaftar.
+        </div>
+
+        <div style="
+            color:#666;
+            font-size:12px;
+            margin-top:5px;
+        ">
+            <strong>Catatan:</strong>
+            Penentuan Wali Kelas dilakukan melalui menu Kelas.
+        </div>
+
+    </div>
+
+
+
+    {{-- ==========================================
+         BUTTON
+    =========================================== --}}
+
+    <div style="margin-top:25px;">
+
+        <button
+            type="submit"
+            id="submitButton"
+        >
+            Simpan User
+        </button>
+
+        <a
+            href="{{ route('admin.user.index') }}"
+            style="margin-left:10px;"
+        >
+            Batal
+        </a>
+
+    </div>
+
+</form>
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const username = document.getElementById('username');
@@ -582,7 +789,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (role.value === 'Guru' || role.value === 'Staff Piket') {
             guruContainer.style.display = 'flex';
             guruContainer.classList.remove('show');
-
             requestAnimationFrame(() => {
                 guruContainer.classList.add('show');
             });

@@ -702,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateGuruField() {
         if (role.value === 'Guru' || role.value === 'Staff Piket') {
-            guruContainer.style.display = 'flex';
+            guruContainer.style.display = 'flex'; 
             idGuru.required = true;
         } else {
             guruContainer.style.display = 'none';
@@ -748,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
+        // Guru dan Staff Piket wajib terhubung ke data guru
         if ((role.value === 'Guru' || role.value === 'Staff Piket') && idGuru.value === '') {
             guruError.style.display = 'block';
             valid = false;
