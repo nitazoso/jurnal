@@ -4,6 +4,7 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
+
 <style>
     /* Reset & Base Styles */
     :root {
@@ -493,6 +494,6 @@
                 Belum ada jurnal yang tercatat hari ini.
             </div>
         @endforelse
-    </div>
+
 </div>
 @endsection
