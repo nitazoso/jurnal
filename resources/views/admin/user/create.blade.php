@@ -486,14 +486,17 @@
                         Data Guru <span class="required">*</span>
                     </label>
                     <select id="id_guru" name="id_guru" class="form-select">
-                        <option value="">Tidak terhubung ke guru</option>
+                        <option value="">-- Pilih Guru --</option>
                         @foreach ($gurus as $guru)
                             <option value="{{ $guru->id_guru }}" {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}>
                                 {{ $guru->nama_guru }}
+                                @if ($guru->nip)
+                                    - NIP {{ $guru->nip }}
+                                @endif
                             </option>
                         @endforeach
                     </select>
-                    <span id="guruError" class="field-error">Silakan pilih data Guru untuk akun dengan role Guru.</span>
+                    <span id="guruError" class="field-error">Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.</span>
                     <span class="form-helper">Hubungkan akun login ini dengan data guru yang sudah terdaftar.</span>
                 </div>
 
@@ -501,8 +504,7 @@
                     <div class="password-note">
                         <span class="material-symbols-outlined">info</span>
                         <div>
-                            Kata sandi digunakan untuk login ke sistem.
-                            Pastikan pengguna menyimpan kata sandinya dengan aman.
+                            Kata sandi digunakan untuk login ke sistem. Pastikan pengguna menyimpan kata sandinya dengan aman.
                         </div>
                     </div>
                 </div>
@@ -577,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     function updateGuruField() {
-        if (role.value === 'Guru') {
+        if (role.value === 'Guru' || role.value === 'Staff Piket') {
             guruContainer.style.display = 'flex';
             guruContainer.classList.remove('show');
 
@@ -632,7 +634,8 @@ document.addEventListener('DOMContentLoaded', function () {
             valid = false;
         }
 
-        if (role.value === 'Guru' && idGuru.value === '') {
+        // Guru dan Staff Piket wajib terhubung ke data guru
+        if ((role.value === 'Guru' || role.value === 'Staff Piket') && idGuru.value === '') {
             guruError.style.display = 'block';
             valid = false;
         }
