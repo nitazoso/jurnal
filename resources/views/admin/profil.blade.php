@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('title', 'Profil - Jurnify')
 @section('page-title', 'Profil')
 
@@ -51,32 +50,13 @@
     </div>
 
     {{-- LOGOUT --}}
-    <form action="{{ route('logout') }}" method="POST" class="logout-form">
+    <form action="{{ route('logout') }}" method="POST" class="logout-form" onsubmit="return confirm('Anda yakin ingin logout?');">
         @csrf
-
         <button type="submit" class="logout-btn">
             <span>Keluar</span>
             <span class="material-symbols-outlined logout-icon">logout</span>
         </button>
-    </form>
-
-</div>
-
-<div style="margin-top: 24px;">
-    <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
-        @csrf
-        <button type="submit" style="
-            background: #dc2626;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 18px;
-            font-weight: 600;
-            cursor: pointer;
-        ">
-            Logout
-        </button>
-    </form>
+    </form> 
 </div>
 
 @endsection
@@ -84,7 +64,7 @@
 @push('styles')
 <style>
     .profile-page {
-        padding: 37px 48px 34px;
+        padding: 10px;
         max-width: 1440px;
         margin: 0 auto;
         animation: profilePageIn 0.55s ease both;

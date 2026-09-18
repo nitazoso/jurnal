@@ -404,13 +404,7 @@
         <form action="{{ route('admin.jurnal.index') }}" method="GET" class="jurnal-filter">
             <div class="search-box">
                 <span class="material-symbols-outlined">search</span>
-
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari guru, mapel, kelas, atau materi..."
-                >
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari guru, mapel, kelas, atau materi...">
             </div>
 
             <button type="submit" class="search-btn">
