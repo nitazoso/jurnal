@@ -1,12 +1,9 @@
 @extends('layouts.admin')
-
 @section('title', 'Tambah Jadwal - Jurnify')
 @section('page-title', 'Tambah Jadwal')
 
 @section('content')
-
 <div class="p-8">
-
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-slate-800">
             Tambah Jadwal

@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('title', 'Data Guru - Jurnify')
 @section('page-title', 'Data Guru')
 
@@ -740,25 +739,25 @@ tbody tr:hover .guru-name {
                                 <div class="guru-name">{{ $guru->nama_guru }}</div>
                             </td>
                             <td>{{ $guru->no_hp ?? '-' }}</td>
-                     <td>
-    <div class="guru-actions">
-        <a href="{{ route('admin.guru.edit', $guru->id_guru) }}"
-            class="icon-action edit"
-            title="Edit guru">
-            <span class="material-symbols-outlined">edit</span>
-        </a>
+                            <td>
+                                <div class="guru-actions">
+                                    <a href="{{ route('admin.guru.edit', $guru->id_guru) }}"
+                                        class="icon-action edit"
+                                        title="Edit guru">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </a>
 
-        <button type="button"
-            class="icon-action delete guru-delete-btn"
-            title="Hapus guru"
-            data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
-            data-name="{{ $guru->nama_guru }}"
-            data-nip="{{ $guru->nip ?? '-' }}"
-            data-hp="{{ $guru->no_hp ?? '-' }}">
-            <span class="material-symbols-outlined">delete</span>
-        </button>
-    </div>
-</td>
+                                    <button type="button"
+                                        class="icon-action delete guru-delete-btn"
+                                        title="Hapus guru"
+                                        data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
+                                        data-name="{{ $guru->nama_guru }}"
+                                        data-nip="{{ $guru->nip ?? '-' }}"
+                                        data-hp="{{ $guru->no_hp ?? '-' }}">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
@@ -855,7 +854,7 @@ tbody tr:hover .guru-name {
         </div>
 
         <div class="delete-modal-footer">
-            <button type="button" class="cancel-btn" onclick="closeGuruDeleteModal()">
+            <button type="button" class="cancel-btn" id="cancelGuruDelete">
                 Batal
             </button>
 
@@ -871,38 +870,47 @@ tbody tr:hover .guru-name {
 </div>
 @endsection
 
+@push('scripts')
 <script>
-function openGuruDeleteModal(url, name, nip, hp) {
-    document.getElementById('guruDeleteForm').action = url;
-    document.getElementById('guruDeleteName').textContent = name;
-    document.getElementById('guruDeleteNip').textContent = nip;
-    document.getElementById('guruDeleteHp').textContent = hp;
-    document.getElementById('guruDeleteModal').classList.add('show');
-    document.body.style.overflow = 'hidden';
-}
+    function openGuruDeleteModal(url, name, nip, hp) {
+        document.getElementById('guruDeleteForm').action = url;
+        document.getElementById('guruDeleteName').textContent = name;
+        document.getElementById('guruDeleteNip').textContent = nip;
+        document.getElementById('guruDeleteHp').textContent = hp;
+        document.getElementById('guruDeleteModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
 
-function closeGuruDeleteModal() {
-    document.getElementById('guruDeleteModal').classList.remove('show');
-    document.body.style.overflow = '';
-}
+    function closeGuruDeleteModal() {
+        document.getElementById('guruDeleteModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
 
-document.getElementById('guruDeleteModal').addEventListener('click', function(e) {
-    if (e.target === this) closeGuruDeleteModal();
-});
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event listener tombol hapus
+        document.querySelectorAll('.guru-delete-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                openGuruDeleteModal(
+                    this.dataset.url,
+                    this.dataset.name,
+                    this.dataset.nip,
+                    this.dataset.hp
+                );
+            });
+        });
 
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeGuruDeleteModal();
-});
+        // Event listener tombol batal
+        document.getElementById('cancelGuruDelete').addEventListener('click', closeGuruDeleteModal);
 
+        // Event listener klik di luar modal
+        document.getElementById('guruDeleteModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGuruDeleteModal();
+        });
 
-document.querySelectorAll('.guru-delete-btn').forEach(button => {
-    button.addEventListener('click', function () {
-        openGuruDeleteModal(
-            this.dataset.url,
-            this.dataset.name,
-            this.dataset.nip,
-            this.dataset.hp
-        );
+        // Event listener tekan tombol Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeGuruDeleteModal();
+        });
     });
-});
 </script>
+@endpush
