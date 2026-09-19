@@ -1,5 +1,7 @@
 @extends('layouts.admin')
+
 @section('title', 'Tambah User Baru - Jurnify')
+
 @section('page-title', 'Tambah User Baru')
 
 @push('styles')
@@ -46,14 +48,14 @@
         background: #fff;
         border-radius: 12px;
         border: 1px solid #eaedf1;
-        box-shadow: 0 2px 6px rgba(0,0,0,.025);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, .025);
         overflow: hidden;
         animation: cardUp .5s .08s ease both;
         transition: box-shadow .25s ease;
     }
 
     .create-user-page .form-card:hover {
-        box-shadow: 0 5px 18px rgba(29,44,103,.06);
+        box-shadow: 0 5px 18px rgba(29, 44, 103, .06);
     }
 
     .create-user-page .form-header {
@@ -121,12 +123,29 @@
         animation: fieldUp .45s ease both;
     }
 
-    .create-user-page .form-group:nth-child(1) { animation-delay: .08s; }
-    .create-user-page .form-group:nth-child(2) { animation-delay: .12s; }
-    .create-user-page .form-group:nth-child(3) { animation-delay: .16s; }
-    .create-user-page .form-group:nth-child(4) { animation-delay: .20s; }
-    .create-user-page .form-group:nth-child(5) { animation-delay: .24s; }
-    .create-user-page .form-group:nth-child(6) { animation-delay: .28s; }
+    .create-user-page .form-group:nth-child(1) {
+        animation-delay: .08s;
+    }
+
+    .create-user-page .form-group:nth-child(2) {
+        animation-delay: .12s;
+    }
+
+    .create-user-page .form-group:nth-child(3) {
+        animation-delay: .16s;
+    }
+
+    .create-user-page .form-group:nth-child(4) {
+        animation-delay: .20s;
+    }
+
+    .create-user-page .form-group:nth-child(5) {
+        animation-delay: .24s;
+    }
+
+    .create-user-page .form-group:nth-child(6) {
+        animation-delay: .28s;
+    }
 
     .create-user-page .form-group.full-width {
         grid-column: span 2;
@@ -169,7 +188,7 @@
     .create-user-page .form-input:focus,
     .create-user-page .form-select:focus {
         border-color: #30366f;
-        box-shadow: 0 0 0 3px rgba(48,54,111,.1);
+        box-shadow: 0 0 0 3px rgba(48, 54, 111, .1);
         transform: translateY(-1px);
     }
 
@@ -297,7 +316,7 @@
 
     .create-user-page .btn-submit:hover {
         background: #182864;
-        box-shadow: 0 4px 10px rgba(24,40,100,.18);
+        box-shadow: 0 4px 10px rgba(24, 40, 100, .18);
         transform: translateY(-1px);
     }
 
@@ -312,28 +331,61 @@
 
     /* ANIMATION */
     @keyframes pageFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     @keyframes fadeDown {
-        from { opacity: 0; transform: translateY(-8px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes cardUp {
-        from { opacity: 0; transform: translateY(12px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes fieldUp {
-        from { opacity: 0; transform: translateY(7px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(7px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes errorIn {
-        from { opacity: 0; transform: translateY(-4px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* RESPONSIVE */
@@ -400,6 +452,7 @@
 
 @section('content')
 <div class="create-user-page">
+
     <nav class="breadcrumb">
         <a href="{{ route('admin.user.index') }}">Manajemen User</a>
         <span class="separator">/</span>
@@ -407,6 +460,7 @@
     </nav>
 
     <section class="form-card">
+
         <div class="form-header">
             <div class="form-header-text">
                 <h3>Informasi Pengguna Baru</h3>
@@ -426,6 +480,7 @@
         @endif
 
         <div class="form-body">
+
             <form id="addUserForm" action="{{ route('admin.user.store') }}" method="POST" class="form-grid" autocomplete="off">
                 @csrf
 
@@ -433,62 +488,151 @@
                     <label class="form-label" for="nama_user">
                         Nama Lengkap & Gelar <span class="required">*</span>
                     </label>
-                    <input type="text" id="nama_user" name="nama_user" class="form-input" placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd." value="{{ old('nama_user') }}" autocomplete="off" required>
-                    <span class="form-helper">Masukkan nama lengkap pemilik akun.</span>
+
+                    <input
+                        type="text"
+                        id="nama_user"
+                        name="nama_user"
+                        class="form-input"
+                        placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd."
+                        value="{{ old('nama_user') }}"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <span class="form-helper">
+                        Masukkan nama lengkap pemilik akun.
+                    </span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="username">
                         Username <span class="required">*</span>
                     </label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Masukkan username" value="{{ old('username') }}" autocomplete="off" required>
-                    <span id="usernameError" class="field-error">Username tidak boleh menggunakan spasi.</span>
-                    <span class="form-helper">Digunakan untuk login. Gunakan huruf kecil, angka, atau underscore.</span>
+
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        class="form-input"
+                        placeholder="Masukkan username"
+                        value="{{ old('username') }}"
+                        autocomplete="off"
+                        required
+                    >
+
+                    <span id="usernameError" class="field-error">
+                        Username tidak boleh menggunakan spasi.
+                    </span>
+
+                    <span class="form-helper">
+                        Digunakan untuk login. Gunakan huruf kecil, angka, atau underscore.
+                    </span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="password">
                         Kata Sandi <span class="required">*</span>
                     </label>
-                    <div style="position:relative;">
-                        <input type="password" id="password" name="password" class="form-input" placeholder="Minimal 8 karakter" autocomplete="new-password" style="padding-right:45px;" required>
-                        <button type="button" id="togglePassword" title="Tampilkan password" style="position:absolute; right:5px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; font-size:17px; padding:5px;">👁️</button>
+
+                    <div style="position: relative;">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            class="form-input"
+                            placeholder="Minimal 8 karakter"
+                            autocomplete="new-password"
+                            style="padding-right: 45px;"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            id="togglePassword"
+                            title="Tampilkan password"
+                            style="position: absolute; right: 5px; top: 50%; transform: translateY(-50%); border: none; background: transparent; cursor: pointer; font-size: 17px; padding: 5px;"
+                        >👁️</button>
                     </div>
-                    <span id="passwordError" class="field-error">Password minimal 8 karakter.</span>
-                    <span class="form-helper">Password digunakan untuk login dan minimal 8 karakter.</span>
+
+                    <span id="passwordError" class="field-error">
+                        Password minimal 8 karakter.
+                    </span>
+
+                    <span class="form-helper">
+                        Password digunakan untuk login dan minimal 8 karakter.
+                    </span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label" for="role">
                         Role Pengguna <span class="required">*</span>
                     </label>
+
                     <select id="role" name="role" class="form-select" required>
-                        <option value="" disabled {{ old('role') ? '' : 'selected' }}>Pilih Role Pengguna</option>
-                        <option value="Guru" {{ old('role') === 'Guru' ? 'selected' : '' }}>Guru Mata Pelajaran</option>
-                        <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>Kesiswaan</option>
-                        <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>Staff Piket</option>
-                        <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>Sekretaris / Kurikulum</option>
-                        <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>Administrator Sekolah</option>
+                        <option value="" disabled {{ old('role') ? '' : 'selected' }}>
+                            Pilih Role Pengguna
+                        </option>
+
+                        <option value="Guru" {{ old('role') === 'Guru' ? 'selected' : '' }}>
+                            Guru Mata Pelajaran
+                        </option>
+
+                        <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>
+                            Kesiswaan
+                        </option>
+
+                        <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>
+                            Staff Piket
+                        </option>
+
+                        <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
+                            Sekretaris / Kurikulum
+                        </option>
+
+                        <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>
+                            Administrator Sekolah
+                        </option>
                     </select>
-                    <span class="form-helper">Role menentukan hak akses pengguna di dalam sistem.</span>
+
+                    <span class="form-helper">
+                        Role menentukan hak akses pengguna di dalam sistem.
+                    </span>
                 </div>
 
-                <div class="form-group" id="waContainer" style="display:none;">
+                <div class="form-group" id="waContainer" style="display: none;">
                     <label class="form-label" for="no_wa">
                         Nomor WhatsApp Kesiswaan <span class="required">*</span>
                     </label>
-                    <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa') }}" placeholder="Contoh: 628123456789" inputmode="tel" class="form-input">
-                    <span class="form-helper">Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.</span>
+
+                    <input
+                        type="text"
+                        name="no_wa"
+                        id="no_wa"
+                        value="{{ old('no_wa') }}"
+                        placeholder="Contoh: 628123456789"
+                        inputmode="tel"
+                        class="form-input"
+                    >
+
+                    <span class="form-helper">
+                        Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
+                    </span>
                 </div>
 
                 <div class="form-group" id="guruContainer">
                     <label class="form-label" for="id_guru">
                         Data Guru <span class="required">*</span>
                     </label>
+
                     <select id="id_guru" name="id_guru" class="form-select">
                         <option value="">-- Pilih Guru --</option>
+
                         @foreach ($gurus as $guru)
-                            <option value="{{ $guru->id_guru }}" {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}>
+                            <option
+                                value="{{ $guru->id_guru }}"
+                                {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
+                            >
                                 {{ $guru->nama_guru }}
                                 @if ($guru->nip)
                                     - NIP {{ $guru->nip }}
@@ -496,239 +640,44 @@
                             </option>
                         @endforeach
                     </select>
-                    <span id="guruError" class="field-error">Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.</span>
-                    <span class="form-helper">Hubungkan akun login ini dengan data guru yang sudah terdaftar.</span>
+
+                    <span id="guruError" class="field-error">
+                        Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.
+                    </span>
+
+                    <span class="form-helper">
+                        Hubungkan akun login ini dengan data guru yang sudah terdaftar.
+                    </span>
                 </div>
 
                 <div class="form-group full-width">
                     <div class="password-note">
                         <span class="material-symbols-outlined">info</span>
+
                         <div>
                             Kata sandi digunakan untuk login ke sistem. Pastikan pengguna menyimpan kata sandinya dengan aman.
                         </div>
                     </div>
                 </div>
+
             </form>
         </div>
 
         <div class="form-footer">
-            <a href="{{ route('admin.user.index') }}" class="btn-cancel">Batal</a>
+            <a href="{{ route('admin.user.index') }}" class="btn-cancel">
+                Batal
+            </a>
+
             <button type="submit" form="addUserForm" class="btn-submit">
                 Simpan & Daftarkan User
             </button>
         </div>
+
     </section>
 </div>
 @endsection
 
 @push('scripts')
-        <div
-            id="passwordError"
-            style="
-                color:#d92d20;
-                font-size:13px;
-                display:none;
-                margin-top:5px;
-            "
-        >
-            Password minimal 8 karakter.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Password digunakan untuk login dan minimal 8 karakter.
-        </div>
-
-    </div>
-
-
-
-    {{-- ==========================================
-         ROLE
-    =========================================== --}}
-
-    <div style="margin-bottom:20px;">
-
-        <label for="role">
-            <strong>Role / Hak Akses</strong>
-        </label>
-
-        <br>
-
-        <select
-            name="role"
-            id="role"
-            required
-        >
-
-            <option value="">
-                -- Pilih Role --
-            </option>
-
-            <option
-                value="Admin"
-                {{ old('role') == 'Admin' ? 'selected' : '' }}
-            >
-                Admin
-            </option>
-
-            <option
-                value="Guru"
-                {{ old('role') == 'Guru' ? 'selected' : '' }}
-            >
-                Guru
-            </option>
-
-            <option
-                value="Kesiswaan"
-                {{ old('role') == 'Kesiswaan' ? 'selected' : '' }}
-            >
-                Kesiswaan
-            </option>
-
-            <option
-                value="Sekretaris"
-                {{ old('role') == 'Sekretaris' ? 'selected' : '' }}
-            >
-                Sekretaris
-            </option>
-
-            <option
-                value="Staff Piket"
-                {{ old('role') == 'Staff Piket' ? 'selected' : '' }}
-            >
-                Staff Piket
-            </option>
-
-        </select>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Role menentukan hak akses pengguna di dalam sistem.
-        </div>
-
-    </div>
-
-    <div id="waContainer" style="display:none; margin-bottom:20px;">
-        <label for="no_wa"><strong>Nomor WhatsApp Kesiswaan</strong></label>
-        <br>
-        <input type="text" name="no_wa" id="no_wa" value="{{ old('no_wa') }}"
-               placeholder="Contoh: 628123456789" inputmode="tel">
-        <div style="color:#666; font-size:12px; margin-top:5px;">
-            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
-        </div>
-    </div>
-
-    {{-- ==========================================
-         DATA GURU
-    =========================================== --}}
-
-    <div
-        id="guruContainer"
-        style="
-            display:none;
-            margin-bottom:20px;
-        "
-    >
-
-        <label for="id_guru">
-            <strong>Data Guru</strong>
-        </label>
-
-        <br>
-
-        <select
-            name="id_guru"
-            id="id_guru"
-        >
-
-            <option value="">
-                -- Pilih Guru --
-            </option>
-
-            @foreach ($gurus as $guru)
-
-                <option
-                    value="{{ $guru->id_guru }}"
-                    {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
-                >
-
-                    {{ $guru->nama_guru }}
-
-                    @if ($guru->nip)
-                        - NIP {{ $guru->nip }}
-                    @endif
-
-                </option>
-
-            @endforeach
-
-        </select>
-
-        <div
-            id="guruError"
-            style="
-                color:#d92d20;
-                font-size:13px;
-                display:none;
-                margin-top:5px;
-            "
-        >
-            Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            Hubungkan akun login ini dengan data guru yang sudah terdaftar.
-        </div>
-
-        <div style="
-            color:#666;
-            font-size:12px;
-            margin-top:5px;
-        ">
-            <strong>Catatan:</strong>
-            Penentuan Wali Kelas dilakukan melalui menu Kelas.
-        </div>
-
-    </div>
-
-
-
-    {{-- ==========================================
-         BUTTON
-    =========================================== --}}
-
-    <div style="margin-top:25px;">
-
-        <button
-            type="submit"
-            id="submitButton"
-        >
-            Simpan User
-        </button>
-
-        <a
-            href="{{ route('admin.user.index') }}"
-            style="margin-left:10px;"
-        >
-            Batal
-        </a>
-
-    </div>
-
-</form>
-
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const username = document.getElementById('username');
@@ -782,13 +731,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
     password.addEventListener('input', function () {
         passwordError.style.display =
-            this.value.length > 0 && this.value.length < 8 ? 'block' : 'none';
+            this.value.length > 0 && this.value.length < 8
+                ? 'block'
+                : 'none';
     });
 
     function updateGuruField() {
         if (role.value === 'Guru' || role.value === 'Staff Piket') {
             guruContainer.style.display = 'flex';
             guruContainer.classList.remove('show');
+
             requestAnimationFrame(() => {
                 guruContainer.classList.add('show');
             });
@@ -841,7 +793,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         // Guru dan Staff Piket wajib terhubung ke data guru
-        if ((role.value === 'Guru' || role.value === 'Staff Piket') && idGuru.value === '') {
+        if (
+            (role.value === 'Guru' || role.value === 'Staff Piket') &&
+            idGuru.value === ''
+        ) {
             guruError.style.display = 'block';
             valid = false;
         }

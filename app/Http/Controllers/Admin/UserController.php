@@ -21,13 +21,14 @@ class UserController extends Controller
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
+
             $query->where(function ($q) use ($search) {
                 $q->where('username', 'like', '%' . $search . '%')
-                ->orWhere('nama_user', 'like', '%' . $search . '%')
-                ->orWhereHas('guru', function ($guruQuery) use ($search) {
-                $guruQuery->where('nama_guru', 'like', '%' . $search . '%')
-                ->orWhere('nip', 'like', '%' . $search . '%');
-                });
+                    ->orWhere('nama_user', 'like', '%' . $search . '%')
+                    ->orWhereHas('guru', function ($guruQuery) use ($search) {
+                        $guruQuery->where('nama_guru', 'like', '%' . $search . '%')
+                            ->orWhere('nip', 'like', '%' . $search . '%');
+                    });
             });
         }
 
@@ -90,6 +91,7 @@ class UserController extends Controller
         ]);
 
         $plainPassword = $validated['password'];
+
         $validated['password'] = Hash::make($plainPassword);
 
         $user = User::create($validated);
@@ -102,19 +104,26 @@ class UserController extends Controller
             ]);
     }
 
+    // =========================
+    // RECEIPT
+    // =========================
     public function receipt(User $user)
     {
         $passwordAwal = session('password_awal');
 
-        if (! $passwordAwal) {
-            return redirect()->route('admin.user.index')
+        if (!$passwordAwal) {
+            return redirect()
+                ->route('admin.user.index')
                 ->with('error', 'Struk akun tidak tersedia.');
         }
 
         return view('admin.user.receipt', [
             'user' => $user,
             'passwordAwal' => $passwordAwal,
-            'createdBy' => session('created_by', auth()->user()->nama_user ?? 'Administrator'),
+            'createdBy' => session(
+                'created_by',
+                auth()->user()->nama_user ?? 'Administrator'
+            ),
             'tanggalDibuat' => now()->translatedFormat('d F Y'),
         ]);
     }
@@ -125,7 +134,6 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::findOrFail($id);
-
         $gurus = Guru::orderBy('nama_guru')->get();
         $kelases = Kelas::orderBy('nama_kelas')->get();
 
