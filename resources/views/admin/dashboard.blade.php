@@ -862,7 +862,7 @@
                             color: #1e293b;
                         "
                     >
-                        {{ $item->guru->nama }}
+                        {{ $item->guru?->nama_guru ?? '-' }}
                     </td>
 
                     <td class="subject">

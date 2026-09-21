@@ -26,8 +26,7 @@ class UserController extends Controller
                 $q->where('username', 'like', '%' . $search . '%')
                     ->orWhere('nama_user', 'like', '%' . $search . '%')
                     ->orWhereHas('guru', function ($guruQuery) use ($search) {
-                        $guruQuery->where('nama_guru', 'like', '%' . $search . '%')
-                            ->orWhere('nip', 'like', '%' . $search . '%');
+                        $guruQuery->where('nama_guru', 'like', '%' . $search . '%');
                     });
             });
         }

@@ -28,15 +28,6 @@ use App\Http\Controllers\Piket\JadwalPiketController;
 use App\Http\Controllers\DispenVerificationController;
 use App\Http\Controllers\Sekretaris\JurnalController as SekretarisJurnalController;
 
-Route::match(['get', 'post'], '/logout', function (Request $request) {
-    Auth::guard('web')->logout();
-
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-
-    return redirect()->route('login');
-})->name('logout');
-
 use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
 
 // LOGIN
@@ -296,6 +287,25 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     Route::get('/guru/profil', function () {
         return view('guru.profil');
     })->name('guru.profil');
+
+    Route::put('/guru/profil', function (Request $request) {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.($user->id_user ?? 0).',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('guru.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('guru.profil.update');
 });
 
 Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
@@ -352,6 +362,7 @@ Route::middleware(['auth', 'role:Kesiswaan'])->group(function () {
 Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekretaris.')->group(function () {
     Route::get('/dashboard', [SekretarisJurnalController::class, 'dashboard'])->name('dashboard');
     Route::get('/validasi-jurnal', [SekretarisJurnalController::class, 'index'])->name('validasi-jurnal');
+    Route::get('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'show'])->name('validasi-jurnal.show');
     Route::patch('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'validateJurnal'])->name('validasi-jurnal.update');
     Route::get('/isi-jurnal', [SekretarisJurnalController::class, 'create'])->name('isi-jurnal');
     Route::post('/isi-jurnal', [SekretarisJurnalController::class, 'store'])->name('isi-jurnal.store');

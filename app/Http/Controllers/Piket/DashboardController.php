@@ -26,14 +26,20 @@ class DashboardController extends Controller
         $today = now()->toDateString();
 
         $jurnals = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
-            ->where('status_validasi_guru', 'Disetujui')
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
             ->latest('tanggal')
             ->take(5)
             ->get();
 
-        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->count();
-        $totalHadir = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_hadir');
-        $totalAbsen = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_tidak_hadir');
+        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->count();
+        $totalHadir = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->sum('jml_hadir');
+        $totalAbsen = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->sum('jml_tidak_hadir');
 
         $dispens = Dispen::with(['siswa.kelas', 'jamMulai', 'jamSelesai'])
             ->latest('tanggal')

@@ -12,14 +12,11 @@ class GuruController extends Controller
     {
         $query = Guru::query();
 
-        // Pencarian NIP atau nama guru
+        // Pencarian nama guru
         if ($request->filled('search')) {
             $search = $request->search;
 
-            $query->where(function ($q) use ($search) {
-                $q->where('nip', 'like', '%' . $search . '%')
-                  ->orWhere('nama_guru', 'like', '%' . $search . '%');
-            });
+            $query->where('nama_guru', 'like', '%' . $search . '%');
         }
 
         // Data guru terbaru
@@ -45,7 +42,6 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nip' => 'required|string|max:18|unique:gurus,nip',
             'nama_guru' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
         ]);
@@ -69,7 +65,6 @@ class GuruController extends Controller
         $guru = Guru::findOrFail($id);
 
         $validated = $request->validate([
-            'nip' => 'required|string|max:50|unique:gurus,nip,' . $guru->id_guru . ',id_guru',
             'nama_guru' => 'required|string|max:255',
             'no_hp' => 'nullable|string|max:20',
         ]);

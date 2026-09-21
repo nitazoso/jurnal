@@ -14,9 +14,9 @@ class JurnalController extends Controller
         // Ambil semua kelas
         $kelases = Kelas::orderBy('nama_kelas', 'asc')->get();
 
-        // Ambil jurnal yang sudah disetujui
+        // Ambil jurnal yang sudah masuk dan menunggu validasi agar staf piket bisa melihat data baru
         $jurnalQuery = Jurnal::with(['guru', 'kelas'])
-            ->where('status_validasi_guru', 'Disetujui');
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui']);
 
         if ($request->filled('id_kelas')) {
             $jurnalQuery->where('id_kelas', $request->integer('id_kelas'));
@@ -55,10 +55,7 @@ class JurnalController extends Controller
 
         // Filter tahun
         if ($request->filled('tahun')) {
-            $jurnalQuery->whereYear(
-                'tanggal',
-                $request->tahun
-            );
+            $jurnalQuery->whereYear('tanggal', $request->integer('tahun'));
         }
 
         $jurnals = $jurnalQuery
@@ -70,33 +67,33 @@ class JurnalController extends Controller
             : null;
 
         // Jumlah jurnal per kelas
-        $jumlahJurnalPerKelas = Jurnal::where(
+        $jumlahJurnalPerKelas = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
         ->selectRaw('id_kelas, COUNT(*) as total')
         ->groupBy('id_kelas')
         ->pluck('total', 'id_kelas');
 
         // Statistik
-        $totalJurnal = Jurnal::where(
+        $totalJurnal = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )->count();
 
         $totalKelas = Kelas::count();
 
-        $jurnalHariIni = Jurnal::where(
+        $jurnalHariIni = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
         ->whereDate('tanggal', today())
         ->count();
 
         // Tahun yang tersedia
-        $tahunList = Jurnal::where(
+        $tahunList = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
         ->selectRaw('YEAR(tanggal) as tahun')
         ->distinct()

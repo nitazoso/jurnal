@@ -208,12 +208,6 @@
             @csrf
             @method('PUT')
 
-            {{-- NIP --}}
-            <div class="edit-guru-field">
-                <label for="nip">NIP</label>
-                <input id="nip" type="text" name="nip" value="{{ old('nip', $guru->nip) }}" placeholder="Masukkan NIP guru" required>
-            </div>
-
             {{-- NAMA --}}
             <div class="edit-guru-field">
                 <label for="nama_guru">Nama Guru</label>

@@ -4,6 +4,12 @@
 
 @section('content')
 
+@php
+    $user = auth()->user();
+    $profileName = $user->nama_user ?? '-';
+    $profilePhone = $user->no_wa ?? $user->guru?->no_hp ?? '-';
+@endphp
+
 <div class="profile-page">
 
     {{-- HERO PROFILE --}}
@@ -18,7 +24,7 @@
         </div>
 
         <h1 class="profile-name">
-            {{ auth()->user()->nama_user ?? 'Admin' }}
+            {{ $profileName }}
         </h1>
 
     </div>
@@ -29,21 +35,21 @@
         <div class="profile-info-item">
             <span class="profile-label">Nama Lengkap</span>
             <span class="profile-value">
-                {{ auth()->user()->nama_user ?? '-' }}
+                {{ $profileName }}
             </span>
         </div>
 
         <div class="profile-info-item">
-            <span class="profile-label">Email</span>
+            <span class="profile-label">Username</span>
             <span class="profile-value">
-                {{ auth()->user()->email ?? '-' }}
+                {{ $user->username ?? '-' }}
             </span>
         </div>
 
         <div class="profile-info-item">
             <span class="profile-label">Nomor Telepon</span>
             <span class="profile-value">
-                {{ auth()->user()->no_hp ?? '-' }}
+                {{ $profilePhone }}
             </span>
         </div>
 

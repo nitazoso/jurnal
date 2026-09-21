@@ -695,7 +695,7 @@ tbody tr:hover .guru-name {
         <div class="filters">
             <form action="{{ route('admin.guru.index') }}" method="GET" class="search-box">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIP guru...">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama guru...">
             </form>
 
             @if(request('search'))
@@ -712,16 +712,14 @@ tbody tr:hover .guru-name {
             <table>
                 <colgroup>
                     <col style="width: 50px;">
-                    <col style="width: 22%;">
-                    <col style="width: 33%;">
-                    <col style="width: 25%;">
+                    <col style="width: 38%;">
+                    <col style="width: 28%;">
                     <col style="width: 15%;">
                 </colgroup>
 
                 <thead>
                     <tr>
                         <th class="no-column">NO</th>
-                        <th>NIP</th>
                         <th>NAMA GURU</th>
                         <th>NO. HP</th>
                         <th>AKSI</th>
@@ -732,9 +730,6 @@ tbody tr:hover .guru-name {
                     @forelse($gurus as $guru)
                         <tr>
                             <td class="no-column">{{ $loop->iteration }}</td>
-                            <td>
-                                <span class="guru-nip">{{ $guru->nip ?? '-' }}</span>
-                            </td>
                             <td>
                                 <div class="guru-name">{{ $guru->nama_guru }}</div>
                             </td>
@@ -752,7 +747,6 @@ tbody tr:hover .guru-name {
                                         title="Hapus guru"
                                         data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
                                         data-name="{{ $guru->nama_guru }}"
-                                        data-nip="{{ $guru->nip ?? '-' }}"
                                         data-hp="{{ $guru->no_hp ?? '-' }}">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
@@ -761,7 +755,7 @@ tbody tr:hover .guru-name {
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="empty-row">
+                            <td colspan="4" class="empty-row">
                                 @if(request('search'))
                                     Guru dengan pencarian "{{ request('search') }}" tidak ditemukan.
                                 @else
@@ -832,13 +826,6 @@ tbody tr:hover .guru-name {
 
             <div class="delete-detail">
                 <span>
-                    <strong>NIP:</strong>
-                    <span id="guruDeleteNip">-</span>
-                </span>
-
-                <span class="dot">•</span>
-
-                <span>
                     <strong>No. HP:</strong>
                     <span id="guruDeleteHp">-</span>
                 </span>
@@ -872,10 +859,9 @@ tbody tr:hover .guru-name {
 
 @push('scripts')
 <script>
-    function openGuruDeleteModal(url, name, nip, hp) {
+    function openGuruDeleteModal(url, name, hp) {
         document.getElementById('guruDeleteForm').action = url;
         document.getElementById('guruDeleteName').textContent = name;
-        document.getElementById('guruDeleteNip').textContent = nip;
         document.getElementById('guruDeleteHp').textContent = hp;
         document.getElementById('guruDeleteModal').classList.add('show');
         document.body.style.overflow = 'hidden';
@@ -893,7 +879,6 @@ tbody tr:hover .guru-name {
                 openGuruDeleteModal(
                     this.dataset.url,
                     this.dataset.name,
-                    this.dataset.nip,
                     this.dataset.hp
                 );
             });

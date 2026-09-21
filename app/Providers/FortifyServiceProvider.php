@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
@@ -28,7 +29,6 @@ class FortifyServiceProvider extends ServiceProvider
         {
             $role = Auth::user()->role;
 
-            // Menggunakan route() biasa agar selalu langsung ke dashboard
             return match ($role) {
                 'Admin'       => redirect()->route('admin.dashboard'),
                 'Guru'        => redirect()->route('guru.dashboard'),
@@ -37,6 +37,13 @@ class FortifyServiceProvider extends ServiceProvider
                 'Staff Piket' => redirect()->route('piket.dashboard'),
                 default       => redirect()->route('dashboard'),
             };
+        }
+    });
+
+    $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+        public function toResponse($request)
+        {
+            return redirect()->route('login');
         }
     });
 }
@@ -50,13 +57,12 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureViews();
         $this->configureRateLimiting();
 
-        Route::middleware(['web'])->group(function () {
-            Route::get('/login', [AuthenticatedSessionController::class, 'create'])
-                ->name('login');
-
-            Route::post('/login', [AuthenticatedSessionController::class, 'store'])
-                ->middleware(['throttle:login'])
-                ->name('login.store');
+        Route::group([
+            'namespace' => 'Laravel\Fortify\Http\Controllers',
+            'domain' => config('fortify.domain', null),
+            'prefix' => config('fortify.prefix'),
+        ], function () {
+            $this->loadRoutesFrom(base_path('vendor/laravel/fortify/routes/routes.php'));
         });
     }
 

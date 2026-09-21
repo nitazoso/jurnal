@@ -11,6 +11,8 @@
 
 @php
     $user = auth()->user();
+    $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
+    $profilePhone = $user->guru?->no_hp ?? $user->no_wa ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -48,7 +50,7 @@
 
         {{-- Name --}}
         <h3 class="profile-name">
-            {{ $user->nama_user ?? '-' }}
+            {{ $profileName }}
         </h3>
 
         {{-- Role --}}
@@ -68,7 +70,7 @@
             </p>
 
             <p class="personal-value">
-                {{ $user->nama_user ?? '-' }}
+                {{ $profileName }}
             </p>
         </div>
 
@@ -107,10 +109,45 @@
             </p>
 
             <p class="personal-value">
-                {{ $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
+                {{ $profilePhone }}
             </p>
         </div>
 
+    </section>
+
+    {{-- EDIT PROFILE FORM --}}
+    <section class="personal-card edit-card">
+        <div class="section-header">
+            <h4 class="section-title">Edit Profil</h4>
+        </div>
+
+        <form action="{{ route('guru.profil.update') }}" method="POST" class="profile-form">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required>
+                @error('username')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password Baru</label>
+                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password">
+                @error('password')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation">Konfirmasi Password</label>
+                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru">
+            </div>
+
+            <button type="submit" class="submit-btn">Simpan Perubahan</button>
+        </form>
     </section>
 
     {{-- LOGOUT --}}
@@ -141,6 +178,77 @@
     .profile-page * {
         font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         box-sizing: border-box;
+    }
+
+    .edit-card {
+        padding: 24px;
+    }
+
+    .section-header {
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        margin: 0;
+        color: #2D336B;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        color: #2D336B;
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        border: 1px solid #D7DDF5;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.97rem;
+        color: #2D336B;
+        background: #F9FAFF;
+    }
+
+    .form-group input:focus {
+        outline: 2px solid rgba(72, 96, 206, 0.18);
+        border-color: #7F8ED8;
+        background: white;
+    }
+
+    .submit-btn {
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2D336B 0%, #47539B 100%);
+        color: white;
+        font-weight: 700;
+        padding: 12px 18px;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 10px 18px rgba(45, 51, 107, 0.15);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .error-text {
+        color: #C81E1E;
+        font-weight: 600;
+        font-size: 0.8rem;
     }
 
     .profile-page {
