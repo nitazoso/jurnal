@@ -12,15 +12,25 @@ use Illuminate\Support\Str;
 
 class DispenController extends Controller
 {
+    /**
+     * Menampilkan daftar dispen.
+     */
     public function index()
     {
-        $dispens = Dispen::with('siswa', 'jamMulai', 'jamSelesai')
+        $dispens = Dispen::with([
+            'siswa',
+            'jamMulai',
+            'jamSelesai'
+        ])
             ->latest('tanggal')
             ->paginate(10);
 
         return view('piket.dispen.index', compact('dispens'));
     }
 
+    /**
+     * Form tambah dispen.
+     */
     public function create()
     {
         $siswa = Siswa::orderBy('nama_siswa')->get();
@@ -29,9 +39,15 @@ class DispenController extends Controller
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.create', compact('siswa', 'jamPels'));
+        return view('piket.dispen.create', compact(
+            'siswa',
+            'jamPels'
+        ));
     }
 
+    /**
+     * Simpan dispen baru.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -42,11 +58,12 @@ class DispenController extends Controller
             'alasan' => 'required|string|max:255',
         ]);
 
-        $jadwal = JadwalKesiswaan::with('user')
-            ->whereDate('tanggal', $validated['tanggal'])
-            ->first();
-
-        $dispen = Dispen::create($validated + [
+        $dispen = Dispen::create([
+            'id_siswa' => $validated['id_siswa'],
+            'tanggal' => $validated['tanggal'],
+            'id_jam_mulai' => $validated['id_jam_mulai'],
+            'id_jam_selesai' => $validated['id_jam_selesai'],
+            'alasan' => $validated['alasan'],
             'token_verifikasi' => Str::random(64),
         ]);
 
@@ -55,31 +72,110 @@ class DispenController extends Controller
             ->with('success', 'Data dispen berhasil ditambahkan.');
     }
 
+    /**
+     * Membuka WhatsApp untuk mengirim permohonan verifikasi ke Waka.
+     */
     public function whatsapp(Dispen $dispen)
     {
-        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
+        $dispen->load([
+            'siswa.kelas',
+            'jamMulai',
+            'jamSelesai'
+        ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cari Waka berdasarkan jadwal Kesiswaan pada tanggal dispen
+        |--------------------------------------------------------------------------
+        */
 
         $waka = JadwalKesiswaan::with('user')
             ->whereDate('tanggal', $dispen->tanggal)
             ->first()?->user;
 
-        abort_unless($waka?->no_wa, 422, 'Nomor WhatsApp Waka untuk tanggal tersebut belum tersedia.');
+        abort_unless(
+            $waka,
+            422,
+            'Waka untuk tanggal tersebut belum memiliki jadwal.'
+        );
 
-        $message = "Permohonan Dispensasi Siswa\n\n"
-            .'Nama Siswa: '.$dispen->siswa->nama_siswa."\n"
-            .'Kelas: '.($dispen->siswa->kelas->nama_kelas ?? '-')."\n"
-            .'Tanggal: '.$dispen->tanggal->format('d-m-Y')."\n"
-            .'Jam: '.($dispen->jamMulai->jam_mulai ?? '-').' - '.($dispen->jamSelesai->jam_selesai ?? '-')."\n"
-            .'Alasan: '.$dispen->alasan."\n\n"
-            .'Silakan lakukan verifikasi melalui link berikut:\n'
-            .route('dispen.verifikasi', $dispen->token_verifikasi);
+        /*
+        |--------------------------------------------------------------------------
+        | Cek nomor WhatsApp
+        |--------------------------------------------------------------------------
+        */
+
+        abort_unless(
+            $waka->no_wa,
+            422,
+            'Nomor WhatsApp Waka untuk tanggal tersebut belum tersedia.'
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Buat link verifikasi
+        |--------------------------------------------------------------------------
+        */
+
+        $linkVerifikasi = route(
+            'dispen.verifikasi',
+            $dispen->token_verifikasi
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Buat pesan WhatsApp
+        |--------------------------------------------------------------------------
+        */
+
+        $message =
+            "Permohonan Dispensasi Siswa\n\n"
+            . "Nama Siswa: " . $dispen->siswa->nama_siswa . "\n"
+            . "Kelas: " . ($dispen->siswa->kelas->nama_kelas ?? '-') . "\n"
+            . "Tanggal: " . $dispen->tanggal->format('d-m-Y') . "\n"
+            . "Jam: "
+            . ($dispen->jamMulai->jam_mulai ?? '-')
+            . " - "
+            . ($dispen->jamSelesai->jam_selesai ?? '-')
+            . "\n"
+            . "Alasan: " . $dispen->alasan . "\n\n"
+            . "Silakan lakukan verifikasi melalui link berikut:\n"
+            . $linkVerifikasi;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bersihkan nomor WhatsApp
+        |--------------------------------------------------------------------------
+        |
+        | Contoh:
+        | 081234567890 -> 6281234567890
+        |
+        */
 
         $phone = preg_replace('/\D+/', '', $waka->no_wa);
-        $phone = str_starts_with($phone, '0') ? '62'.substr($phone, 1) : $phone;
 
-        return redirect('https://wa.me/'.$phone.'?text='.rawurlencode($message));
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Buka WhatsApp
+        |--------------------------------------------------------------------------
+        */
+
+        $whatsappUrl =
+            'https://wa.me/'
+            . $phone
+            . '?text='
+            . rawurlencode($message);
+
+        return redirect()->away($whatsappUrl);
     }
 
+    /**
+     * Form edit dispen.
+     */
     public function edit(Dispen $dispen)
     {
         $siswa = Siswa::orderBy('nama_siswa')->get();
@@ -95,6 +191,9 @@ class DispenController extends Controller
         ));
     }
 
+    /**
+     * Update dispen.
+     */
     public function update(Request $request, Dispen $dispen)
     {
         $validated = $request->validate([
@@ -112,6 +211,9 @@ class DispenController extends Controller
             ->with('success', 'Data dispen berhasil diperbarui.');
     }
 
+    /**
+     * Hapus dispen.
+     */
     public function destroy(Dispen $dispen)
     {
         $dispen->delete();

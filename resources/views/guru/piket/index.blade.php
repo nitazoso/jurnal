@@ -1,5 +1,4 @@
 @extends('layouts.guru')
-
 @section('title', 'Jadwal Piket - Jurnify')
 @section('tahun_ajaran', '2026/2027 Ganjil')
 
