@@ -20,13 +20,11 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Data guru utama
         $guruSendang = Guru::create([
-            'nip' => '197905151998031002',
             'nama_guru' => 'Sendang',
             'no_hp' => '081234567890',
         ]);
 
         $guruBudi = Guru::create([
-            'nip' => '198501012010011001',
             'nama_guru' => 'Budi Santoso, S.Pd',
             'no_hp' => '081298765432',
         ]);

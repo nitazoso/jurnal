@@ -39,12 +39,32 @@ class JurnalController extends Controller
         return view('sekretaris.validasi-jurnal', compact('jurnals', 'kelases'));
     }
 
+    public function show(Jurnal $jurnal)
+    {
+        $jurnal->load([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+            'user',
+        ]);
+
+        return view('sekretaris.jurnal-show', compact('jurnal'));
+    }
+
     public function validateJurnal(Request $request, Jurnal $jurnal)
     {
         $validated = $request->validate([
             'status_validasi_guru' => 'required|in:Disetujui,Ditolak,Perlu Diperbaiki',
             'catatan_revisi' => 'nullable|string|max:1000',
         ]);
+
+        if (blank($jurnal->materi) || blank($jurnal->status_guru)) {
+            return back()->withErrors([
+                'status_validasi_guru' => 'Jurnal belum diisi dengan lengkap oleh guru. Lihat isi jurnal terlebih dahulu sebelum validasi.',
+            ]);
+        }
 
         if ($validated['status_validasi_guru'] !== 'Disetujui' && blank($validated['catatan_revisi'] ?? null)) {
             return back()->withErrors(['catatan_revisi' => 'Catatan revisi wajib diisi saat jurnal tidak disetujui.']);

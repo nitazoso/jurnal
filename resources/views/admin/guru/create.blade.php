@@ -321,14 +321,6 @@
         <form action="{{ route('admin.guru.store') }}" method="POST">
             @csrf
 
-            {{-- NIP --}}
-            <div class="guru-form-group">
-                <label class="guru-form-label">
-                    NIP <span class="guru-required">*</span>
-                </label>
-                <input type="text" name="nip" value="{{ old('nip') }}" placeholder="Masukkan NIP guru" maxlength="18" class="guru-form-input" required>
-            </div>
-
             {{-- NAMA --}}
             <div class="guru-form-group">
                 <label class="guru-form-label">

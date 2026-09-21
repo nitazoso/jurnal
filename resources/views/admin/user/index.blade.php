@@ -863,7 +863,7 @@
                 <input
                     type="text"
                     name="search"
-                    placeholder="Cari nama, username, NIP..."
+                    placeholder="Cari nama atau username..."
                     value="{{ request('search') }}"
                 >
             </div>
@@ -926,7 +926,7 @@
                 <thead>
                     <tr>
                         <th>USER</th>
-                        <th>NIP / ID</th>
+                        <th>USERNAME</th>
                         <th>ROLE</th>
                         <th>AKSI</th>
                     </tr>

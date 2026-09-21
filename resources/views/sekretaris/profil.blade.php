@@ -288,6 +288,8 @@
 
 @php
     $user = auth()->user();
+    $profileName = $user->nama_user ?? '-';
+    $profilePhone = $user->no_wa ?? $user->guru?->no_hp ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -311,7 +313,7 @@
 
         {{-- Name --}}
         <h3 class="profile-name">
-            {{ $user->nama_user ?? '-' }}
+            {{ $profileName }}
         </h3>
 
         {{-- Role --}}
@@ -326,7 +328,7 @@
         {{-- Nama --}}
         <div class="personal-field">
             <p class="personal-label">Nama Lengkap</p>
-            <p class="personal-value">{{ $user->nama_user ?? '-' }}</p>
+            <p class="personal-value">{{ $profileName }}</p>
         </div>
 
         <hr class="personal-divider">
@@ -351,7 +353,7 @@
         <div class="personal-field">
             <p class="personal-label">Nomor Telepon</p>
             <p class="personal-value">
-                {{ $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
+                {{ $profilePhone }}
             </p>
         </div>
     </section>

@@ -281,8 +281,8 @@
                                                             id_jam_mulai: '{{ $matchJadwal->id_jam_mulai }}',
                                                             id_jam_selesai: '{{ $matchJadwal->id_jam_selesai }}',
                                                             hari: '{{ $matchJadwal->hari }}',
-                                                            mapel_nama: '{{ $matchJadwal->mapel?->nama_mapel }}',
-                                                            guru_nama: '{{ $matchJadwal->guru?->nama_guru }}',
+                                                            mapel_nama: '{{ e($matchJadwal->mapel?->nama_mapel) }}',
+                                                            guru_nama: '{{ e($matchJadwal->guru?->nama_guru) }}',
                                                             jam_mulai_ke: '{{ $matchJadwal->jamMulai?->jam_ke }}',
                                                             jam_selesai_ke: '{{ $matchJadwal->jamSelesai?->jam_ke }}',
                                                             waktu: '{{ $matchJadwal->jamMulai?->jam_mulai }} - {{ $matchJadwal->jamSelesai?->jam_selesai }}'
@@ -329,7 +329,7 @@
 
                                                                     @click.stop="openDeleteModal({
                                                                         id_jadwal: '{{ $matchJadwal->id_jadwal }}',
-                                                                        mapel_nama: '{{ $matchJadwal->mapel?->nama_mapel }}',
+                                                                        mapel_nama: '{{ e($matchJadwal->mapel?->nama_mapel) }}',
                                                                         hari: '{{ $matchJadwal->hari }}',
                                                                         jam_range: '{{ $matchJadwal->jamMulai?->jam_ke }} - {{ $matchJadwal->jamSelesai?->jam_ke }}'
                                                                     })"
@@ -446,7 +446,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
 
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
 
             x-cloak
         >
@@ -560,6 +560,7 @@
                             class="w-full"
                         >
 
+                            <option value="">-- Pilih Mata Pelajaran --</option>
                             @foreach($mapels as $mapel)
 
                                 <option value="{{ $mapel->id_mapel }}">
@@ -591,6 +592,7 @@
                             class="w-full"
                         >
 
+                            <option value="">-- Pilih Guru Pengampu --</option>
                             @foreach($gurus as $guru)
 
                                 <option value="{{ $guru->id_guru }}">
@@ -605,27 +607,26 @@
 
 
                     <!-- RANGE JAM -->
-<div
-    class="grid grid-cols-2 gap-3"
-    x-data="{
-        get filteredJamList() {
+                    <div
+                        class="grid grid-cols-2 gap-3"
+                        x-data="{
+                            get filteredJamList() {
 
-            let klpHari = activeData.hari === 'Jumat'
-                ? 'Jumat'
-                : 'Senin-Kamis';
+                                let klpHari = activeData.hari === 'Jumat'
+                                    ? 'Jumat'
+                                    : 'Senin-Kamis';
 
-            return Object.values(jamPelsMap)
-                .map(group => group[klpHari] ?? null)
-                .filter(item =>
-                    item !== null &&
-                    item !== undefined &&
-                    item.id_jam &&
-                    item.jam_ke
-                )
-                .sort((a, b) => a.jam_ke - b.jam_ke);
-        }
-    }"
-
+                                return Object.values(jamPelsMap)
+                                    .map(group => group[klpHari] ?? null)
+                                    .filter(item =>
+                                        item !== null &&
+                                        item !== undefined &&
+                                        item.id_jam &&
+                                        item.jam_ke
+                                    )
+                                    .sort((a, b) => a.jam_ke - b.jam_ke);
+                            }
+                        }"
                     >
 
                         <!-- MULAI JAM -->
@@ -896,10 +897,8 @@
 
 @push('scripts')
 
-<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 
 <script>
 
@@ -918,26 +917,7 @@ function jadwalManager() {
 
         isEdit: false,
 
-
-        /*
-         * Data jam dari Laravel.
-         *
-         * Bentuk data:
-         *
-         * {
-         *     1: {
-         *         "Senin-Kamis": {...},
-         *         "Jumat": {...}
-         *     },
-         *     2: {
-         *         "Senin-Kamis": {...},
-         *         "Jumat": {...}
-         *     }
-         * }
-         */
-
         jamPelsMap: @json($jamPelsGrouped),
-
 
         activeData: {
 
@@ -975,32 +955,19 @@ function jadwalManager() {
 
             this.isEdit = true;
 
-
             this.activeData = {
                 ...this.activeData,
                 ...data
             };
 
-
-            // Set mapel
+            // Sync ke TomSelect
             if (selectMapelInstance) {
-
-                selectMapelInstance.setValue(
-                    data.id_mapel
-                );
-
+                selectMapelInstance.setValue(data.id_mapel, true);
             }
 
-
-            // Set guru
             if (selectGuruInstance) {
-
-                selectGuruInstance.setValue(
-                    data.id_guru
-                );
-
+                selectGuruInstance.setValue(data.id_guru, true);
             }
-
 
             this.showEditModal = true;
 
@@ -1009,14 +976,10 @@ function jadwalManager() {
 
         /*
          * TAMBAH JADWAL
-         *
-         * Hari berasal langsung dari slot
-         * yang diklik.
          */
         openCreateModal(hari, idJam, jamKe) {
 
             this.isEdit = false;
-
 
             this.activeData = {
 
@@ -1026,9 +989,10 @@ function jadwalManager() {
 
                 id_mapel: '',
 
-                id_jam_mulai: idJam,
+                id_jam_mulai: idJam || '',
 
-                id_jam_selesai: idJam,
+                id_jam_selesai: idJam || '',
+
                 hari: hari,
 
                 jam_mulai_ke: jamKe,
@@ -1046,16 +1010,13 @@ function jadwalManager() {
             };
 
             if (selectMapelInstance) {
-
-                selectMapelInstance.clear();
-
+                selectMapelInstance.clear(true);
             }
 
             if (selectGuruInstance) {
-
-                selectGuruInstance.clear();
-
+                selectGuruInstance.clear(true);
             }
+
             this.showEditModal = true;
 
         },
@@ -1066,7 +1027,6 @@ function jadwalManager() {
                 ...this.activeData,
                 ...data
             };
-
 
             this.showDeleteModal = true;
 
@@ -1088,19 +1048,12 @@ document.addEventListener(
         selectKelasInstance = new TomSelect(
             "#select-kelas-dropdown",
             {
-
                 create: false,
-
                 onChange: function(url) {
-
                     if (url) {
-
                         window.location.href = url;
-
                     }
-
                 }
-
             }
         );
 
@@ -1111,7 +1064,14 @@ document.addEventListener(
         selectMapelInstance = new TomSelect(
             "#select-mapel",
             {
-                create: false
+                create: false,
+                onChange: function(value) {
+                    // Update AlpineJS state secara manual
+                    const rootDiv = document.querySelector('[x-data]');
+                    if (rootDiv && Alpine) {
+                        Alpine.$data(rootDiv).activeData.id_mapel = value;
+                    }
+                }
             }
         );
 
@@ -1122,7 +1082,14 @@ document.addEventListener(
         selectGuruInstance = new TomSelect(
             "#select-guru",
             {
-                create: false
+                create: false,
+                onChange: function(value) {
+                    // Update AlpineJS state secara manual
+                    const rootDiv = document.querySelector('[x-data]');
+                    if (rootDiv && Alpine) {
+                        Alpine.$data(rootDiv).activeData.id_guru = value;
+                    }
+                }
             }
         );
 

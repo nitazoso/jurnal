@@ -172,9 +172,6 @@
                                 <option value="{{ $guru->id_guru }}"
                                     {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}>
                                     {{ $guru->nama_guru }}
-                                    @if ($guru->nip)
-                                        - NIP {{ $guru->nip }}
-                                    @endif
                                 </option>
                             @endforeach
                         </select>
