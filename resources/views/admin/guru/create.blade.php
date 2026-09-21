@@ -31,7 +31,7 @@
     .guru-form-card {
         width: 100%;
         max-width: 700px;
-        padding: 28px;
+        padding: 36px;
         background: #ffffff;
         border: 1px solid #eeeeee;
         border-radius: 14px;
@@ -319,15 +319,7 @@
                 <label class="guru-form-label">
                     NIP <span class="guru-required">*</span>
                 </label>
-                <input
-                    type="text"
-                    name="nip"
-                    value="{{ old('nip') }}"
-                    placeholder="Masukkan NIP guru"
-                    maxlength="18"
-                    class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                >
+                <input type="text" name="nip" value="{{ old('nip') }}" placeholder="Masukkan NIP guru" maxlength="18" class="guru-form-input" required>
             </div>
 
             {{-- NAMA --}}

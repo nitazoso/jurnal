@@ -604,8 +604,8 @@
 
                                 @if($jumlahJurnal > 0)
 
-                                    <button
-                                        type="button"
+                                    <a
+                                        href="{{ route('piket.jurnal.index', ['id_kelas' => $item->id_kelas]) }}"
                                         class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#1B234A] text-white text-sm font-medium hover:bg-[#151b3a] transition"
                                     >
 
@@ -615,7 +615,7 @@
 
                                         Lihat Jurnal
 
-                                    </button>
+                                    </a>
 
                                 @else
 
@@ -678,6 +678,55 @@
         </div>
 
     </div>
+
+    @if($kelasTerpilih)
+        <div class="jurnal-card overflow-hidden fade-in">
+            <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">
+                        Jurnal Kelas {{ $kelasTerpilih->nama_kelas }}
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Menampilkan jurnal yang sudah disetujui untuk kelas ini.
+                    </p>
+                </div>
+                <a href="{{ route('piket.jurnal.index') }}" class="text-sm text-[#1B234A] font-medium hover:underline">
+                    Semua Kelas
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Tanggal</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Guru</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Materi</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Jam</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @forelse($jurnals as $jurnal)
+                            <tr class="table-row">
+                                <td class="px-6 py-4 text-sm text-slate-600">{{ $jurnal->tanggal?->format('d-m-Y') }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-700">{{ $jurnal->guru->nama_guru ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-700">{{ $jurnal->materi }}</td>
+                                <td class="px-6 py-4 text-sm text-slate-600">
+                                    {{ $jurnal->jamMulai->jam_mulai ?? '-' }} - {{ $jurnal->jamSelesai->jam_selesai ?? '-' }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-sm text-slate-500">
+                                    Belum ada jurnal untuk kelas ini.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
 </div>
 

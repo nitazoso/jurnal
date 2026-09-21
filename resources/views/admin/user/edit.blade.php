@@ -184,7 +184,7 @@
                         @error('id_guru')
                             <span class="error-message">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Hubungkan akun dengan data guru yang sudah terdaftar.</span>
+                        <span class="form-hint">Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.</span>
                     </div>
 
                     {{-- DATA KELAS --}}
@@ -640,6 +640,7 @@
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     const username = document.getElementById('username');
     const usernameError = document.getElementById('usernameError');
     const password = document.getElementById('password');
@@ -700,8 +701,8 @@
     });
 
     function updateGuruField() {
-        if (role.value === 'Guru') {
-            guruContainer.style.display = 'flex';
+        if (role.value === 'Guru' || role.value === 'Staff Piket') {
+            guruContainer.style.display = 'flex'; 
             idGuru.required = true;
         } else {
             guruContainer.style.display = 'none';
@@ -747,7 +748,8 @@
             valid = false;
         }
 
-        if (role.value === 'Guru' && idGuru.value === '') {
+        // Guru dan Staff Piket wajib terhubung ke data guru
+        if ((role.value === 'Guru' || role.value === 'Staff Piket') && idGuru.value === '') {
             guruError.style.display = 'block';
             valid = false;
         }
@@ -756,5 +758,6 @@
             event.preventDefault();
         }
     });
+});
 </script>
 @endpush

@@ -70,6 +70,12 @@
                         <td class="px-4 py-3">
          <div class="flex gap-2">
 
+        <a href="{{ route('piket.dispen.whatsapp', $dispen->id_dispen) }}"
+           class="px-3 py-1 rounded-lg bg-green-600 text-white"
+           target="_blank">
+            Kirim ke Waka
+        </a>
+
         <a href="{{ route('piket.dispen.edit', $dispen->id_dispen) }}"
            class="px-3 py-1 rounded-lg bg-yellow-500 text-white">
             Edit

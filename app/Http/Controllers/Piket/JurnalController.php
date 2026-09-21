@@ -18,6 +18,10 @@ class JurnalController extends Controller
         $jurnalQuery = Jurnal::with(['guru', 'kelas'])
             ->where('status_validasi_guru', 'Disetujui');
 
+        if ($request->filled('id_kelas')) {
+            $jurnalQuery->where('id_kelas', $request->integer('id_kelas'));
+        }
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -61,6 +65,10 @@ class JurnalController extends Controller
             ->orderByDesc('tanggal')
             ->get();
 
+        $kelasTerpilih = $request->filled('id_kelas')
+            ? $kelases->firstWhere('id_kelas', $request->integer('id_kelas'))
+            : null;
+
         // Jumlah jurnal per kelas
         $jumlahJurnalPerKelas = Jurnal::where(
             'status_validasi_guru',
@@ -103,6 +111,7 @@ class JurnalController extends Controller
             'totalKelas',
             'jurnalHariIni',
             'tahunList'
+            , 'kelasTerpilih'
         ));
     }
 }

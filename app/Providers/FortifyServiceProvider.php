@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -47,6 +48,21 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+        $this->configureAuthenticatedRedirect();
+    }
+
+    private function configureAuthenticatedRedirect(): void
+    {
+        RedirectIfAuthenticated::redirectUsing(function (): string {
+            return match (Auth::user()?->role) {
+                'Admin' => route('admin.dashboard'),
+                'Guru' => route('guru.dashboard'),
+                'Kesiswaan' => route('kesiswaan.dashboard'),
+                'Sekretaris' => route('sekretaris.dashboard'),
+                'Staff Piket' => route('piket.dashboard'),
+                default => '/',
+            };
+        });
     }
 
     /**

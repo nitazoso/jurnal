@@ -847,9 +847,7 @@
 
             @forelse($jurnals as $index => $item)
 
-                <tr
-                    style="animation-delay: {{ $index * 0.04 }}s;"
-                >
+                <tr style="animation-delay: {{ $index * 0.04 }};">
 
                     <td class="number">
                         {{ $jurnals->firstItem() + $index }}
@@ -902,11 +900,9 @@
 
 
                     <td class="attendance">
-
                         <strong>
                             {{ $item->jumlah_hadir }}/{{ $item->total_siswa }}
                         </strong>
-
                     </td>
 
 

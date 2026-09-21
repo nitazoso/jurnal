@@ -14,6 +14,7 @@ return new class extends Migration
 
         Schema::table('dispens', function (Blueprint $table) {
             $table->string('status', 20)->default('menunggu')->after('alasan');
+            $table->string('token_verifikasi', 64)->nullable()->unique()->after('status');
             $table->foreignId('disetujui_oleh')->nullable()->after('status')
                 ->constrained('users', 'id_user')->nullOnDelete();
             $table->timestamp('disetujui_pada')->nullable()->after('disetujui_oleh');

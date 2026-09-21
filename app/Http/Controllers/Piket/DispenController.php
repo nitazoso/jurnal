@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
+use App\Models\JadwalKesiswaan;
 use App\Models\JamPel;
 use App\Models\Siswa;
-use App\Models\User;
-use App\Notifications\DispenDiajukanNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class DispenController extends Controller
 {
@@ -42,15 +42,42 @@ class DispenController extends Controller
             'alasan' => 'required|string|max:255',
         ]);
 
-        $dispen = Dispen::with('siswa')->create($validated);
+        $jadwal = JadwalKesiswaan::with('user')
+            ->whereDate('tanggal', $validated['tanggal'])
+            ->first();
 
-        User::where('role', 'Kesiswaan')
-            ->get()
-            ->each(fn (User $user) => $user->notify(new DispenDiajukanNotification($dispen)));
+        $dispen = Dispen::create($validated + [
+            'token_verifikasi' => Str::random(64),
+        ]);
 
         return redirect()
             ->route('piket.dispen.index')
             ->with('success', 'Data dispen berhasil ditambahkan.');
+    }
+
+    public function whatsapp(Dispen $dispen)
+    {
+        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
+
+        $waka = JadwalKesiswaan::with('user')
+            ->whereDate('tanggal', $dispen->tanggal)
+            ->first()?->user;
+
+        abort_unless($waka?->no_wa, 422, 'Nomor WhatsApp Waka untuk tanggal tersebut belum tersedia.');
+
+        $message = "Permohonan Dispensasi Siswa\n\n"
+            .'Nama Siswa: '.$dispen->siswa->nama_siswa."\n"
+            .'Kelas: '.($dispen->siswa->kelas->nama_kelas ?? '-')."\n"
+            .'Tanggal: '.$dispen->tanggal->format('d-m-Y')."\n"
+            .'Jam: '.($dispen->jamMulai->jam_mulai ?? '-').' - '.($dispen->jamSelesai->jam_selesai ?? '-')."\n"
+            .'Alasan: '.$dispen->alasan."\n\n"
+            .'Silakan lakukan verifikasi melalui link berikut:\n'
+            .route('dispen.verifikasi', $dispen->token_verifikasi);
+
+        $phone = preg_replace('/\D+/', '', $waka->no_wa);
+        $phone = str_starts_with($phone, '0') ? '62'.substr($phone, 1) : $phone;
+
+        return redirect('https://wa.me/'.$phone.'?text='.rawurlencode($message));
     }
 
     public function edit(Dispen $dispen)
