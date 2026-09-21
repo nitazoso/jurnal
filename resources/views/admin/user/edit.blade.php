@@ -2,58 +2,110 @@
 
 @section('title', 'Edit User - Jurnify')
 @section('page-title', 'Edit Data User')
+@section('page-subtitle', 'Perbarui informasi akun pengguna di dalam sistem Jurnify')
 
 @section('content')
 
-<div class="edit-page">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<div id="jurnify-user-edit" class="user-edit-page">
+
+    {{-- BREADCRUMB --}}
+    <nav class="breadcrumb-nav">
+        <a href="{{ route('admin.user.index') }}">Manajemen User</a>
+
+        <span class="breadcrumb-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+
+        <span class="current">Edit User</span>
+    </nav>
+
+    {{-- VALIDATION ERROR --}}
     @if ($errors->any())
-        <div class="validation-alert">
-            <strong>Data belum dapat disimpan.</strong>
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+        <div class="alert-box-danger">
+            <div class="icon-danger">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+
+            <div>
+                <strong>Data belum dapat diperbarui:</strong>
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         </div>
     @endif
 
-    <div class="breadcrumb">
-        <a href="{{ route('admin.user.index') }}">Manajemen User</a>
-        <span class="material-symbols-outlined">chevron_right</span>
-        <span>Edit User</span>
-    </div>
+    {{-- MAIN CARD --}}
+    <div class="main-form-card">
 
-    <section class="edit-card">
-        <div class="edit-header">
-            <div class="edit-header-info">
-                <h3>Perbarui Informasi Pengguna</h3>
-                <p>Ubah informasi akun pengguna dan penugasan role.</p>
+        {{-- CARD HEADER --}}
+        <div class="card-header-box">
+            <div class="header-icon-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </div>
+
+            <div>
+                <h2 class="header-title-text">Perbarui Informasi Pengguna</h2>
+                <p class="header-sub-text">
+                    Ubah informasi akun, role, dan penugasan pengguna di bawah ini.
+                </p>
             </div>
         </div>
 
-        <div class="edit-body">
-            <div class="profile-section">
-                <div class="avatar-placeholder">
-                    {{ strtoupper(substr($user->nama_user, 0, 1)) }}
-                </div>
-                <div class="avatar-info">
-                    <h4>{{ $user->nama_user }}</h4>
-                    <p>Akun pengguna Jurnify</p>
-                </div>
+        {{-- PROFILE INFO --}}
+        <div class="profile-box">
+            <div class="avatar">
+                {{ strtoupper(substr($user->nama_user, 0, 1)) }}
             </div>
 
-            <form id="editUserForm" action="{{ route('admin.user.update', $user->id_user) }}" method="POST" autocomplete="off" data-form-type="other">
-                @csrf
-                @method('PUT')
+            <div class="profile-info">
+                <h3>{{ $user->nama_user }}</h3>
+                <p>Akun pengguna Jurnify</p>
+            </div>
+        </div>
 
-                <div class="form-grid">
+        <div class="section-divider"></div>
+
+        {{-- FORM --}}
+        <form
+            id="editUserForm"
+            action="{{ route('admin.user.update', $user->id_user) }}"
+            method="POST"
+            autocomplete="off"
+        >
+            @csrf
+            @method('PUT')
+
+            <div class="card-body-box">
+
+                <div class="input-grid">
+
                     {{-- USERNAME --}}
-                    <div class="form-group">
-                        <label class="form-label" for="username">
-                            Username <span class="required">*</span>
+                    <div class="field-group">
+                        <label class="field-label" for="username">
+                            Username <span class="req">*</span>
                         </label>
-                        <input type="text" id="username" name="username"
-                            class="form-control @error('username') error @enderror"
+
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="custom-input @error('username') is-invalid @enderror"
                             value="{{ old('username', $user->username) }}"
                             autocomplete="new-password"
                             autocapitalize="none"
@@ -62,38 +114,59 @@
                             data-lpignore="true"
                             data-1p-ignore="true"
                             data-protonpass-ignore="true"
-                            required>
-                        <div id="usernameError" class="error-message" style="display:none;">
+                            required
+                        >
+
+                        <span id="usernameError" class="err-text" style="display:none;">
                             Username tidak boleh menggunakan spasi.
-                        </div>
+                        </span>
+
                         @error('username')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="err-text">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Username digunakan untuk login. Tidak boleh menggunakan spasi.</span>
+
+                        <span class="field-hint">
+                            Username digunakan untuk login. Tidak boleh menggunakan spasi.
+                        </span>
                     </div>
 
                     {{-- NAMA USER --}}
-                    <div class="form-group">
-                        <label class="form-label" for="nama_user">
-                            Nama Lengkap & Gelar <span class="required">*</span>
+                    <div class="field-group">
+                        <label class="field-label" for="nama_user">
+                            Nama Lengkap & Gelar <span class="req">*</span>
                         </label>
-                        <input type="text" id="nama_user" name="nama_user"
-                            class="form-control @error('nama_user') error @enderror"
+
+                        <input
+                            type="text"
+                            id="nama_user"
+                            name="nama_user"
+                            class="custom-input @error('nama_user') is-invalid @enderror"
                             value="{{ old('nama_user', $user->nama_user) }}"
                             autocomplete="off"
-                            required>
+                            required
+                        >
+
                         @error('nama_user')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="err-text">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Nama lengkap pemilik akun.</span>
+
+                        <span class="field-hint">
+                            Nama lengkap pemilik akun.
+                        </span>
                     </div>
 
                     {{-- PASSWORD --}}
-                    <div class="form-group">
-                        <label class="form-label" for="password">Password Baru</label>
-                        <div style="position:relative;">
-                            <input type="password" id="password" name="password"
-                                class="form-control @error('password') error @enderror"
+                    <div class="field-group">
+                        <label class="field-label" for="password">
+                            Password Baru
+                        </label>
+
+                        <div class="pw-input-wrapper">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="custom-input @error('password') is-invalid @enderror"
                                 placeholder="Kosongkan jika tidak ingin mengubah"
                                 autocomplete="new-password"
                                 autocapitalize="none"
@@ -102,75 +175,128 @@
                                 data-lpignore="true"
                                 data-1p-ignore="true"
                                 data-protonpass-ignore="true"
-                                style="padding-right:45px;">
-                            <button type="button"
+                            >
+
+                            <button
+                                type="button"
                                 id="togglePassword"
+                                class="btn-toggle-eye"
                                 title="Tampilkan password"
                                 aria-label="Tampilkan password"
-                                style="position:absolute; right:5px; top:50%; transform:translateY(-50%); border:none; background:transparent; cursor:pointer; font-size:17px; padding:5px;">
-                                👁️
+                            >
+                                <svg
+                                    id="eyeIcon"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                >
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
                             </button>
                         </div>
-                        <div id="passwordError" class="error-message" style="display:none;">
+
+                        <span id="passwordError" class="err-text" style="display:none;">
                             Password minimal 8 karakter.
-                        </div>
+                        </span>
+
                         @error('password')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="err-text">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Kosongkan jika password tidak ingin diubah. Jika diisi, minimal 8 karakter.</span>
+
+                        <span class="field-hint">
+                            Kosongkan jika password tidak ingin diubah. Jika diisi, minimal 8 karakter.
+                        </span>
                     </div>
 
                     {{-- ROLE --}}
-                    <div class="form-group">
-                        <label class="form-label" for="role">
-                            Role / Hak Akses <span class="required">*</span>
+                    <div class="field-group">
+                        <label class="field-label" for="role">
+                            Role / Hak Akses <span class="req">*</span>
                         </label>
-                        <select id="role" name="role"
-                            class="form-control @error('role') error @enderror"
-                            required>
+
+                        <select
+                            id="role"
+                            name="role"
+                            class="custom-select @error('role') is-invalid @enderror"
+                            required
+                        >
                             <option value="">-- Pilih Role --</option>
+
                             <option value="Admin" {{ old('role', $user->role) == 'Admin' ? 'selected' : '' }}>
                                 Admin
                             </option>
+
                             <option value="Guru" {{ old('role', $user->role) == 'Guru' ? 'selected' : '' }}>
                                 Guru
                             </option>
+
                             <option value="Kesiswaan" {{ old('role', $user->role) == 'Kesiswaan' ? 'selected' : '' }}>
                                 Kesiswaan
                             </option>
+
                             <option value="Sekretaris" {{ old('role', $user->role) == 'Sekretaris' ? 'selected' : '' }}>
                                 Sekretaris
                             </option>
+
                             <option value="Staff Piket" {{ old('role', $user->role) == 'Staff Piket' ? 'selected' : '' }}>
                                 Staff Piket
                             </option>
                         </select>
+
                         @error('role')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="err-text">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Role menentukan hak akses pengguna.</span>
+
+                        <span class="field-hint">
+                            Role menentukan hak akses pengguna di sistem.
+                        </span>
                     </div>
 
                     {{-- WHATSAPP KESISWAAN --}}
-                    <div class="form-group" id="waContainer" style="display:none;">
-                        <label class="form-label" for="no_wa">Nomor WhatsApp Kesiswaan</label>
-                        <input type="text" name="no_wa" id="no_wa"
+                    <div class="field-group" id="waContainer" style="display:none;">
+                        <label class="field-label" for="no_wa">
+                            Nomor WhatsApp Kesiswaan
+                        </label>
+
+                        <input
+                            type="text"
+                            name="no_wa"
+                            id="no_wa"
                             value="{{ old('no_wa', $user->no_wa) }}"
                             placeholder="Contoh: 628123456789"
                             inputmode="tel"
-                            class="form-control">
-                        <span class="form-hint">Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.</span>
+                            class="custom-input @error('no_wa') is-invalid @enderror"
+                        >
+
+                        @error('no_wa')
+                            <span class="err-text">{{ $message }}</span>
+                        @enderror
+
+                        <span class="field-hint">
+                            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
+                        </span>
                     </div>
 
                     {{-- DATA GURU --}}
-                    <div class="form-group full-width" id="guruContainer" style="display:none;">
-                        <label class="form-label" for="id_guru">Data Guru</label>
-                        <select id="id_guru" name="id_guru"
-                            class="form-control @error('id_guru') error @enderror">
+                    <div class="field-group" id="guruContainer" style="display:none;">
+                        <label class="field-label" for="id_guru">
+                            Data Guru
+                        </label>
+
+                        <select
+                            id="id_guru"
+                            name="id_guru"
+                            class="custom-select @error('id_guru') is-invalid @enderror"
+                        >
                             <option value="">-- Pilih Guru --</option>
+
                             @foreach ($gurus as $guru)
-                                <option value="{{ $guru->id_guru }}"
-                                    {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}>
+                                <option
+                                    value="{{ $guru->id_guru }}"
+                                    {{ old('id_guru', $user->id_guru) == $guru->id_guru ? 'selected' : '' }}
+                                >
                                     {{ $guru->nama_guru }}
                                     @if ($guru->nip)
                                         - NIP {{ $guru->nip }}
@@ -178,521 +304,612 @@
                                 </option>
                             @endforeach
                         </select>
-                        <div id="guruError" class="error-message" style="display:none;">
+
+                        <span id="guruError" class="err-text" style="display:none;">
                             Silakan pilih data Guru.
-                        </div>
+                        </span>
+
                         @error('id_guru')
-                            <span class="error-message">{{ $message }}</span>
+                            <span class="err-text">{{ $message }}</span>
                         @enderror
-                        <span class="form-hint">Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.</span>
+
+                        <span class="field-hint">
+                            Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.
+                        </span>
                     </div>
 
                     {{-- DATA KELAS --}}
-                    <div class="form-group full-width">
-                        <label class="form-label" for="id_kelas">Data Kelas</label>
-                        <select id="id_kelas" name="id_kelas"
-                            class="form-control @error('id_kelas') error @enderror">
+                    <div class="field-group full-width">
+                        <label class="field-label" for="id_kelas">
+                            Data Kelas
+                        </label>
+
+                        <select
+                            id="id_kelas"
+                            name="id_kelas"
+                            class="custom-select @error('id_kelas') is-invalid @enderror"
+                        >
                             <option value="">Tidak terhubung ke kelas</option>
+
                             @foreach ($kelases as $kelas)
-                                <option value="{{ $kelas->id_kelas }}"
-                                    {{ old('id_kelas', $user->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}>
+                                <option
+                                    value="{{ $kelas->id_kelas }}"
+                                    {{ old('id_kelas', $user->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}
+                                >
                                     {{ $kelas->nama_kelas }}
                                 </option>
                             @endforeach
                         </select>
-                        <span class="form-hint">Pilih kelas jika akun ini memiliki keterkaitan dengan kelas tertentu.</span>
-                        @error('id_kelas')
-                            <span class="error-message">{{ $message }}</span>
-                        @enderror
-                    </div>
-                </div>
-            </form>
-        </div>
 
-        <div class="edit-footer">
-            <a href="{{ route('admin.user.index') }}" class="btn-cancel">Batal</a>
-            <button type="submit" form="editUserForm" class="btn-save">
-                Simpan Perubahan
-            </button>
-        </div>
-    </section>
+                        @error('id_kelas')
+                            <span class="err-text">{{ $message }}</span>
+                        @enderror
+
+                        <span class="field-hint">
+                            Pilih kelas jika akun ini memiliki keterkaitan dengan kelas tertentu.
+                        </span>
+                    </div>
+
+                    {{-- INFO NOTE --}}
+                    <div class="field-group full-width">
+                        <div class="info-note-card">
+                            <div class="icon-info">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="10" x2="12" y2="16"/>
+                                    <circle cx="12" cy="7" r="0.5" fill="currentColor"/>
+                                </svg>
+                            </div>
+
+                            <div>
+                                Password hanya akan diperbarui jika kolom password baru diisi.
+                                Jika dikosongkan, password lama tetap digunakan.
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {{-- FOOTER --}}
+            <div class="card-footer-box">
+
+                <a href="{{ route('admin.user.index') }}" class="btn-cancel-custom">
+                    Batal
+                </a>
+
+                <button type="submit" class="btn-submit-custom">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M5 12l4 4L19 6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+
+                    <span>Simpan Perubahan</span>
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
 </div>
 
-@endsection
-
-@push('styles')
 <style>
-    .edit-page {
-        max-width: 1080px;
-        animation: pageFadeIn .45s ease both;
+    #jurnify-user-edit,
+    #jurnify-user-edit * {
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        box-sizing: border-box !important;
     }
 
-    .breadcrumb {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #70737d;
-        margin-bottom: 24px;
-        animation: fadeDown .4s ease both;
+    #jurnify-user-edit {
+        width: 100% !important;
+        max-width: 1100px !important;
+        margin: 0 auto !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
     }
 
-    .breadcrumb a {
-        color: #4169ff;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color .2s;
+    /* BREADCRUMB */
+    #jurnify-user-edit .breadcrumb-nav {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        font-size: 13.5px !important;
+        color: #64748B !important;
+        font-weight: 500 !important;
     }
 
-    .breadcrumb a:hover {
-        color: #2d336b;
-        text-decoration: underline;
+    #jurnify-user-edit .breadcrumb-nav a {
+        color: #7886C7 !important;
+        text-decoration: none !important;
+        font-weight: 700 !important;
     }
 
-    .breadcrumb .material-symbols-outlined {
-        font-size: 16px;
-        transition: transform .2s;
+    #jurnify-user-edit .breadcrumb-nav a:hover {
+        color: #2D336B !important;
     }
 
-    .breadcrumb:hover .material-symbols-outlined {
-        transform: translateX(2px);
+    #jurnify-user-edit .breadcrumb-nav .current {
+        color: #1E293B !important;
+        font-weight: 700 !important;
     }
 
-    .edit-card {
-        background: #fff;
-        border-radius: 9px;
-        box-shadow: 0 1px 4px rgba(0,0,0,.025);
-        border: 1px solid #f0f0f0;
-        overflow: hidden;
-        animation: cardUp .5s ease .08s both;
-        transition: box-shadow .25s, transform .25s;
+    #jurnify-user-edit .breadcrumb-icon {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: #94A3B8 !important;
     }
 
-    .edit-card:hover {
-        box-shadow: 0 5px 18px rgba(29,44,103,.07);
+    #jurnify-user-edit .breadcrumb-icon svg {
+        width: 16px !important;
+        height: 16px !important;
     }
 
-    .edit-header {
-        padding: 24px 28px;
-        border-bottom: 1px solid #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+    /* ALERT */
+    #jurnify-user-edit .alert-box-danger {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 16px 20px !important;
+        border-radius: 16px !important;
+        background: #FEF2F2 !important;
+        border: 1px solid #FECACA !important;
+        color: #991B1B !important;
+        font-size: 13.5px !important;
+        line-height: 1.5 !important;
     }
 
-    .edit-header-info h3 {
-        color: #1d2c67;
-        font-size: 20px;
-        font-weight: 800;
-        margin-bottom: 4px;
+    #jurnify-user-edit .icon-danger {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
     }
 
-    .edit-header-info p {
-        color: #4b4d56;
-        font-size: 14px;
+    #jurnify-user-edit .icon-danger svg {
+        width: 20px !important;
+        height: 20px !important;
     }
 
-    .edit-body {
-        padding: 28px;
+    #jurnify-user-edit .alert-box-danger strong {
+        display: block !important;
+        margin-bottom: 4px !important;
+        font-weight: 800 !important;
     }
 
-    .profile-section {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        padding-bottom: 24px;
-        margin-bottom: 28px;
-        border-bottom: 1px solid #f4f4f4;
-        animation: fadeDown .5s ease .15s both;
+    #jurnify-user-edit .alert-box-danger ul {
+        margin: 0 !important;
+        padding-left: 18px !important;
     }
 
-    .avatar-placeholder {
-        width: 72px;
-        height: 72px;
-        border-radius: 50%;
-        background: #dce4ff;
-        color: #263b78;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: 800;
-        flex-shrink: 0;
-        transition: transform .25s, box-shadow .25s;
+    #jurnify-user-edit .alert-box-danger li {
+        margin: 2px 0 !important;
     }
 
-    .avatar-placeholder:hover {
-        transform: scale(1.05);
-        box-shadow: 0 5px 12px rgba(45,51,107,.12);
+    /* MAIN CARD */
+    #jurnify-user-edit .main-form-card {
+        width: 100% !important;
+        background: #FFFFFF !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 20px !important;
+        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03) !important;
+        overflow: hidden !important;
     }
 
-    .avatar-info h4 {
-        color: #17265d;
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 4px;
+    /* CARD HEADER */
+    #jurnify-user-edit .card-header-box {
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+        padding: 28px 32px !important;
+        background: #FAFAFC !important;
+        border-bottom: 1px solid #E2E8F0 !important;
     }
 
-    .avatar-info p {
-        color: #70737d;
-        font-size: 13px;
-        margin-bottom: 10px;
+    #jurnify-user-edit .header-icon-box {
+        width: 52px !important;
+        height: 52px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        border-radius: 16px !important;
+        background: #F0F3FF !important;
+        color: #7886C7 !important;
     }
 
-    .form-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 22px;
+    #jurnify-user-edit .header-icon-box svg {
+        width: 26px !important;
+        height: 26px !important;
     }
 
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        animation: fieldUp .45s ease both;
+    #jurnify-user-edit .header-title-text {
+        margin: 0 !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        color: #1E293B !important;
     }
 
-    .form-group:nth-child(1) { animation-delay: .18s; }
-    .form-group:nth-child(2) { animation-delay: .22s; }
-    .form-group:nth-child(3) { animation-delay: .26s; }
-    .form-group:nth-child(4) { animation-delay: .30s; }
-    .form-group:nth-child(5) { animation-delay: .34s; }
-    .form-group:nth-child(6) { animation-delay: .38s; }
-
-    .form-group.full-width {
-        grid-column: span 2;
+    #jurnify-user-edit .header-sub-text {
+        margin: 4px 0 0 !important;
+        font-size: 13.5px !important;
+        color: #64748B !important;
+        font-weight: 500 !important;
     }
 
-    .form-label {
-        font-size: 13px;
-        font-weight: 700;
-        color: #41434c;
-        display: flex;
-        align-items: center;
-        gap: 4px;
+    /* PROFILE */
+    #jurnify-user-edit .profile-box {
+        display: flex !important;
+        align-items: center !important;
+        gap: 16px !important;
+        padding: 24px 32px !important;
+        background: #FFFFFF !important;
     }
 
-    .form-label .required {
-        color: #e00000;
+    #jurnify-user-edit .avatar {
+        width: 52px !important;
+        height: 52px !important;
+        flex-shrink: 0 !important;
+        border-radius: 14px !important;
+        background: #DCE4FF !important;
+        color: #2D336B !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 20px !important;
+        font-weight: 800 !important;
     }
 
-    .form-control {
-        width: 100%;
-        height: 44px;
-        padding: 0 14px;
-        background: #fbfbfb;
-        border: 1px solid #cfd2dc;
-        border-radius: 8px;
-        font-family: 'Manrope', sans-serif;
-        font-size: 14px;
-        color: #1f2937;
-        transition: border-color .2s, box-shadow .2s, background .2s, transform .2s;
-        outline: none;
-        box-sizing: border-box;
+    #jurnify-user-edit .profile-info h3 {
+        margin: 0 !important;
+        font-size: 15px !important;
+        font-weight: 800 !important;
+        color: #1E293B !important;
     }
 
-    .form-control:hover {
-        border-color: #aeb4c4;
-        background: #fff;
+    #jurnify-user-edit .profile-info p {
+        margin: 4px 0 0 !important;
+        font-size: 12.5px !important;
+        color: #64748B !important;
+        font-weight: 500 !important;
     }
 
-    .form-control:focus {
-        background: #fff;
-        border-color: #4169ff;
-        box-shadow: 0 0 0 3px rgba(65,105,255,.12);
-        transform: translateY(-1px);
+    #jurnify-user-edit .section-divider {
+        height: 1px !important;
+        background: #E2E8F0 !important;
     }
 
-    select.form-control {
-        cursor: pointer;
+    /* FORM BODY */
+    #jurnify-user-edit .card-body-box {
+        padding: 32px !important;
     }
 
-    .form-hint {
-        font-size: 12px;
-        color: #858891;
-        transition: color .2s;
+    #jurnify-user-edit .input-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 24px !important;
+        width: 100% !important;
     }
 
-    .form-group:focus-within .form-hint {
-        color: #626a84;
+    #jurnify-user-edit .field-group {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        width: 100% !important;
+        min-width: 0 !important;
     }
 
-    .error-message {
-        font-size: 12px;
-        color: #d00000;
-        margin-top: -2px;
-        animation: errorIn .3s ease both;
+    #jurnify-user-edit .field-group.full-width {
+        grid-column: span 2 !important;
     }
 
-    .form-control.error {
-        border-color: #e00000;
+    #jurnify-user-edit .field-label {
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        color: #334155 !important;
     }
 
-    .form-control.error:focus {
-        box-shadow: 0 0 0 3px rgba(224,0,0,.1);
+    #jurnify-user-edit .req {
+        color: #EF4444 !important;
     }
 
-    .validation-alert {
-        margin-bottom: 20px;
-        padding: 14px 16px;
-        background: #ffd9d5;
-        color: #a9211d;
-        border: 1px solid #f4b8b3;
-        border-radius: 8px;
-        font-size: 13px;
-        animation: fadeDown .4s ease both;
+    /* INPUT & SELECT */
+    #jurnify-user-edit .custom-input,
+    #jurnify-user-edit .custom-select {
+        width: 100% !important;
+        height: 44px !important;
+        padding: 0 16px !important;
+        background: #FFFFFF !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 12px !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #0F172A !important;
+        outline: none !important;
+        transition: all 0.2s ease !important;
     }
 
-    .validation-alert strong {
-        display: block;
-        margin-bottom: 5px;
+    #jurnify-user-edit .custom-input:hover,
+    #jurnify-user-edit .custom-select:hover {
+        border-color: #AEB6C5 !important;
     }
 
-    .validation-alert ul {
-        margin-left: 18px;
+    #jurnify-user-edit .custom-input:focus,
+    #jurnify-user-edit .custom-select:focus {
+        border-color: #7886C7 !important;
+        box-shadow: 0 0 0 4px rgba(120, 134, 199, 0.15) !important;
     }
 
-    .edit-footer {
-        padding: 20px 28px;
-        background: #f8f9fc;
-        border-top: 1px solid #eeeeee;
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
+    #jurnify-user-edit .custom-input.is-invalid,
+    #jurnify-user-edit .custom-select.is-invalid {
+        border-color: #DC2626 !important;
     }
 
-    .btn-cancel {
-        height: 42px;
-        padding: 0 20px;
-        border: 1px solid #cfd2dc;
-        border-radius: 8px;
-        background: #fff;
-        color: #484a53;
-        font-family: 'Manrope', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: background .2s, border-color .2s, transform .2s;
+    #jurnify-user-edit .custom-input::placeholder {
+        color: #94A3B8 !important;
     }
 
-    .btn-cancel:hover {
-        background: #f1f2f5;
-        border-color: #b9bdc8;
-        transform: translateY(-1px);
+    /* PASSWORD */
+    #jurnify-user-edit .pw-input-wrapper {
+        position: relative !important;
+        width: 100% !important;
     }
 
-    .btn-cancel:active,
-    .btn-save:active {
-        transform: translateY(0);
+    #jurnify-user-edit .pw-input-wrapper .custom-input {
+        padding-right: 48px !important;
     }
 
-    .btn-save {
-        height: 42px;
-        padding: 0 24px;
-        border: none;
-        border-radius: 8px;
-        background: #2d336b;
-        color: #fff;
-        font-family: 'Manrope', sans-serif;
-        font-size: 14px;
-        font-weight: 700;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        transition: background .2s, transform .2s, box-shadow .2s;
+    #jurnify-user-edit .btn-toggle-eye {
+        position: absolute !important;
+        top: 50% !important;
+        right: 12px !important;
+        transform: translateY(-50%) !important;
+        width: 32px !important;
+        height: 32px !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        color: #64748B !important;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
     }
 
-    .btn-save:hover {
-        background: #1e2450;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 12px rgba(45,51,107,.2);
+    #jurnify-user-edit .btn-toggle-eye:hover {
+        background: #F1F5F9 !important;
+        color: #2D336B !important;
     }
 
-    .btn-save .material-symbols-outlined {
-        font-size: 18px;
-        transition: transform .2s;
+    #jurnify-user-edit .btn-toggle-eye svg {
+        width: 19px !important;
+        height: 19px !important;
     }
 
-    .btn-save:hover .material-symbols-outlined {
-        transform: translateX(2px);
+    /* HINT & ERROR */
+    #jurnify-user-edit .field-hint {
+        font-size: 12.5px !important;
+        color: #64748B !important;
+        font-weight: 500 !important;
+        line-height: 1.4 !important;
     }
 
-    @keyframes pageFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    #jurnify-user-edit .err-text {
+        font-size: 12.5px !important;
+        color: #DC2626 !important;
+        font-weight: 700 !important;
+        line-height: 1.4 !important;
     }
 
-    @keyframes fadeDown {
-        from {
-            opacity: 0;
-            transform: translateY(-8px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    /* INFO */
+    #jurnify-user-edit .info-note-card {
+        background: #F8FAFC !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        font-size: 13.5px !important;
+        color: #475569 !important;
+        font-weight: 500 !important;
+        line-height: 1.5 !important;
     }
 
-    @keyframes cardUp {
-        from {
-            opacity: 0;
-            transform: translateY(12px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    #jurnify-user-edit .icon-info {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        color: #4F46E5 !important;
     }
 
-    @keyframes fieldUp {
-        from {
-            opacity: 0;
-            transform: translateY(7px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    #jurnify-user-edit .icon-info svg {
+        width: 21px !important;
+        height: 21px !important;
     }
 
-    @keyframes errorIn {
-        from {
-            opacity: 0;
-            transform: translateX(-4px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
+    /* FOOTER */
+    #jurnify-user-edit .card-footer-box {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+        padding: 20px 32px !important;
+        background: #FAFBFD !important;
+        border-top: 1px solid #E2E8F0 !important;
     }
 
-    @media (max-width: 800px) {
-        .form-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .form-group.full-width {
-            grid-column: span 1;
-        }
-
-        .edit-body {
-            padding: 20px;
-        }
-
-        .edit-header {
-            padding: 20px;
-        }
-
-        .edit-footer {
-            padding: 18px 20px;
-        }
+    #jurnify-user-edit .btn-submit-custom,
+    #jurnify-user-edit .btn-cancel-custom {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        height: 44px !important;
+        padding: 0 24px !important;
+        border-radius: 12px !important;
+        font-size: 13.5px !important;
+        font-weight: 700 !important;
+        font-family: 'Manrope', sans-serif !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
     }
 
-    @media (max-width: 600px) {
-        .breadcrumb {
-            margin-bottom: 18px;
-        }
-
-        .edit-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .profile-section {
-            align-items: flex-start;
-        }
-
-        .edit-footer {
-            flex-direction: column;
-            width: 100%;
-        }
-
-        .btn-cancel,
-        .btn-save {
-            width: 100%;
-            justify-content: center;
-        }
+    #jurnify-user-edit .btn-submit-custom {
+        border: none !important;
+        background: linear-gradient(135deg, #7886C7 0%, #2D336B 100%) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(45, 51, 107, 0.12) !important;
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .edit-page,
-        .breadcrumb,
-        .edit-card,
-        .profile-section,
-        .form-group,
-        .validation-alert {
-            animation: none;
+    #jurnify-user-edit .btn-submit-custom:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 7px 18px rgba(45, 51, 107, 0.20) !important;
+    }
+
+    #jurnify-user-edit .btn-cancel-custom {
+        border: 1px solid #CBD5E1 !important;
+        background: #FFFFFF !important;
+        color: #475569 !important;
+    }
+
+    #jurnify-user-edit .btn-cancel-custom:hover {
+        background: #F1F5F9 !important;
+        color: #334155 !important;
+        border-color: #CBD5E1 !important;
+    }
+
+    #jurnify-user-edit .btn-submit-custom svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        #jurnify-user-edit {
+            max-width: 100% !important;
         }
 
-        * {
-            transition: none !important;
+        #jurnify-user-edit .card-header-box,
+        #jurnify-user-edit .profile-box {
+            padding: 22px 20px !important;
+        }
+
+        #jurnify-user-edit .card-body-box {
+            padding: 22px 20px !important;
+        }
+
+        #jurnify-user-edit .input-grid {
+            grid-template-columns: 1fr !important;
+        }
+
+        #jurnify-user-edit .field-group.full-width {
+            grid-column: span 1 !important;
+        }
+
+        #jurnify-user-edit .card-footer-box {
+            padding: 18px 20px !important;
+            flex-direction: column-reverse !important;
+        }
+
+        #jurnify-user-edit .btn-submit-custom,
+        #jurnify-user-edit .btn-cancel-custom {
+            width: 100% !important;
         }
     }
 </style>
-@endpush
+
+@endsection
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const username = document.getElementById('username');
     const usernameError = document.getElementById('usernameError');
+
     const password = document.getElementById('password');
     const passwordError = document.getElementById('passwordError');
+
     const togglePassword = document.getElementById('togglePassword');
+    const eyeIcon = document.getElementById('eyeIcon');
+
     const role = document.getElementById('role');
+
     const guruContainer = document.getElementById('guruContainer');
     const idGuru = document.getElementById('id_guru');
+    const guruError = document.getElementById('guruError');
+
     const waContainer = document.getElementById('waContainer');
     const noWa = document.getElementById('no_wa');
-    const guruError = document.getElementById('guruError');
+
     const form = document.getElementById('editUserForm');
 
-    username.addEventListener('keydown', function(event) {
+    // Username
+    username.addEventListener('keydown', function (event) {
         if (event.key === ' ') {
             event.preventDefault();
-            usernameError.innerText = 'Username tidak boleh menggunakan spasi.';
+
+            usernameError.innerText =
+                'Username tidak boleh menggunakan spasi.';
+
             usernameError.style.display = 'block';
         }
     });
 
-    username.addEventListener('input', function() {
+    username.addEventListener('input', function () {
         if (/\s/.test(this.value)) {
             this.value = this.value.replace(/\s/g, '');
-            usernameError.innerText = 'Spasi otomatis dihapus.';
+
+            usernameError.innerText =
+                'Spasi otomatis dihapus. Username tidak boleh menggunakan spasi.';
+
             usernameError.style.display = 'block';
         }
 
         this.value = this.value.toLowerCase();
     });
 
-    username.addEventListener('blur', function() {
+    username.addEventListener('blur', function () {
         if (!/\s/.test(this.value)) {
             usernameError.style.display = 'none';
         }
     });
 
-    togglePassword.addEventListener('click', function() {
+    // Toggle password
+    togglePassword.addEventListener('click', function () {
         if (password.type === 'password') {
             password.type = 'text';
-            this.innerText = '🙈';
+
+            eyeIcon.innerHTML = `
+                <path d="M3 3l18 18"/>
+                <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"/>
+                <path d="M9.9 4.2A10.8 10.8 0 0 1 12 4c6.5 0 10 8 10 8a18.3 18.3 0 0 1-3.1 4.4"/>
+                <path d="M6.6 6.6C3.8 8.5 2 12 2 12s3.5 8 10 8a9.8 9.8 0 0 0 3.4-.6"/>
+            `;
+
             this.title = 'Sembunyikan password';
             this.setAttribute('aria-label', 'Sembunyikan password');
         } else {
             password.type = 'password';
-            this.innerText = '👁️';
+
+            eyeIcon.innerHTML = `
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+            `;
+
             this.title = 'Tampilkan password';
             this.setAttribute('aria-label', 'Tampilkan password');
         }
     });
 
-    password.addEventListener('input', function() {
+    // Password validation
+    password.addEventListener('input', function () {
         if (this.value.length > 0 && this.value.length < 8) {
             passwordError.style.display = 'block';
         } else {
@@ -700,9 +917,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Guru field
     function updateGuruField() {
-        if (role.value === 'Guru' || role.value === 'Staff Piket') {
-            guruContainer.style.display = 'flex'; 
+        const needsGuru =
+            role.value === 'Guru' ||
+            role.value === 'Staff Piket';
+
+        if (needsGuru) {
+            guruContainer.style.display = 'flex';
             idGuru.required = true;
         } else {
             guruContainer.style.display = 'none';
@@ -712,9 +934,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // WhatsApp Kesiswaan
     function updateWaField() {
         const isKesiswaan = role.value === 'Kesiswaan';
-        waContainer.style.display = isKesiswaan ? 'flex' : 'none';
+
+        waContainer.style.display =
+            isKesiswaan ? 'flex' : 'none';
+
         noWa.required = isKesiswaan;
 
         if (!isKesiswaan) {
@@ -722,13 +948,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    role.addEventListener('change', updateGuruField);
-    role.addEventListener('change', updateWaField);
+    role.addEventListener('change', function () {
+        updateGuruField();
+        updateWaField();
+    });
 
     updateGuruField();
     updateWaField();
 
-    form.addEventListener('submit', function(event) {
+    // Submit validation
+    form.addEventListener('submit', function (event) {
         let valid = true;
 
         if (username.value.trim() === '') {
@@ -737,8 +966,14 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        if (password.value.length > 0 && password.value.length < 8) {
-            passwordError.innerText = 'Password minimal 8 karakter.';
+        // Password hanya divalidasi jika diisi
+        if (
+            password.value.length > 0 &&
+            password.value.length < 8
+        ) {
+            passwordError.innerText =
+                'Password minimal 8 karakter.';
+
             passwordError.style.display = 'block';
             valid = false;
         }
@@ -748,8 +983,10 @@ document.addEventListener('DOMContentLoaded', function() {
             valid = false;
         }
 
-        // Guru dan Staff Piket wajib terhubung ke data guru
-        if ((role.value === 'Guru' || role.value === 'Staff Piket') && idGuru.value === '') {
+        if (
+            (role.value === 'Guru' || role.value === 'Staff Piket') &&
+            idGuru.value === ''
+        ) {
             guruError.style.display = 'block';
             valid = false;
         }

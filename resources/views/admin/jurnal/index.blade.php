@@ -3,324 +3,17 @@
 @section('title', 'Daftar Jurnal - Jurnify')
 @section('page-title', 'Daftar Jurnal')
 
-<style>
-    .jurnal-page {
-        width: 100%;
-        font-family: 'Manrope', sans-serif;
-    }
-
-    .jurnal-card {
-        width: 100%;
-        background: #fff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
-        animation: jurnalFadeIn .45s ease both;
-    }
-
-    .jurnal-header {
-        padding: 28px 28px 20px;
-    }
-
-    .jurnal-title {
-        margin: 0 0 6px;
-        color: #1d2c67;
-        font-size: 22px;
-        font-weight: 800;
-        line-height: 1.3;
-    }
-
-    .jurnal-description {
-        margin: 0;
-        color: #4b4d56;
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    /* FILTER & SEARCH */
-    .jurnal-filter {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 0 28px 24px;
-    }
-
-    .search-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 360px;
-        height: 42px;
-        padding: 0 14px;
-        background: #f1f2f5;
-        border: 1px solid transparent;
-        border-radius: 8px;
-        transition: all .2s ease;
-    }
-
-    .search-box:focus-within {
-        background: #fff;
-        border-color: #cfd4e5;
-        box-shadow: 0 0 0 3px rgba(120, 134, 199, .12);
-    }
-
-    .search-box .material-symbols-outlined {
-        color: #777b86;
-        font-size: 22px;
-    }
-
-    .search-box:focus-within .material-symbols-outlined {
-        color: #30366f;
-    }
-
-    .search-box input {
-        width: 100%;
-        border: none;
-        outline: none;
-        background: transparent;
-        color: #30323a;
-        font-family: 'Manrope', sans-serif;
-        font-size: 14px;
-    }
-
-    .search-btn {
-        height: 42px;
-        padding: 0 20px;
-        margin-left: 0;
-        border: none;
-        border-radius: 8px;
-        background: #30366f;
-        color: #fff;
-        font-family: 'Manrope', sans-serif;
-        font-size: 13px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 2px 5px rgba(48, 54, 111, .12);
-        transition: all .2s ease;
-    }
-
-    .search-btn:hover {
-        background: #252c61;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(48, 54, 111, .18);
-    }
-
-    /* TABLE */
-    .table-wrapper {
-        width: 100%;
-        overflow-x: auto;
-    }
-
-    .jurnal-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .jurnal-table thead {
-        background: #f1f2f5;
-    }
-
-    .jurnal-table th {
-        padding: 16px;
-        color: #3f4350;
-        font-size: 12px;
-        font-weight: 800;
-        letter-spacing: 0.5px;
-        text-align: left;
-        white-space: nowrap;
-    }
-
-    .jurnal-table td {
-        padding: 16px;
-        border-bottom: 1px solid #f2f3f5;
-        color: #30323a;
-        font-size: 13px;
-        vertical-align: middle;
-    }
-
-    .jurnal-table tbody tr:hover {
-        background: #fafbff;
-    }
-
-    .jurnal-table th:first-child,
-    .jurnal-table td:first-child {
-        padding-left: 28px;
-        text-align: center;
-        width: 50px;
-    }
-
-    .jurnal-table th:last-child,
-    .jurnal-table td:last-child {
-        padding-right: 28px;
-    }
-
-    .number-text {
-        color: #555965;
-        font-weight: 600;
-    }
-
-    .date-text {
-        color: #4d5059;
-        font-weight: 500;
-        white-space: nowrap;
-    }
-
-    .guru-name {
-        color: #202126;
-        font-size: 13px;
-        font-weight: 700;
-    }
-
-    .materi-text {
-        display: -webkit-box;
-        overflow: hidden;
-        color: #30323a;
-        line-height: 1.5;
-        font-size: 13px;
-        max-width: 260px;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-    }
-
-    /* FIX TUKAR / TUMPANG TINDIH KEHADIRAN */
-    .attendance-box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 2px;
-    }
-
-    .attendance-box .hadir-text {
-        color: #202126;
-        font-size: 13px;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    .attendance-box .absen-text {
-        color: #777b86;
-        font-size: 11px;
-        font-weight: 600;
-        line-height: 1.2;
-    }
-
-    .status-badge,
-    .validation-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 5px 12px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    .status-badge {
-        background: #dce4ff;
-        color: #344477;
-    }
-
-    .validation-badge {
-        background: #d5f7e8;
-        color: #087451;
-    }
-
-    .empty {
-        padding: 40px !important;
-        color: #777b86 !important;
-        font-size: 14px !important;
-        text-align: center;
-    }
-
-    /* PAGINATION */
-    .pagination-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 20px 28px;
-    }
-
-    .pagination-info {
-        color: #3f4148;
-        font-size: 13px;
-    }
-
-    .pagination {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .pagination a,
-    .pagination span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 36px;
-        height: 36px;
-        padding: 0 10px;
-        border-radius: 6px;
-        background: #f0f1f4;
-        color: #343945;
-        font-size: 13px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all .2s ease;
-    }
-
-    .pagination a:hover {
-        background: #dce4ff;
-        color: #182864;
-    }
-
-    .pagination .active {
-        background: #182864;
-        color: #fff;
-    }
-
-    .pagination .disabled {
-        opacity: .45;
-    }
-
-    @keyframes jurnalFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(6px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .jurnal-header {
-            padding: 20px;
-        }
-
-        .jurnal-filter {
-            flex-direction: column;
-            align-items: stretch;
-            padding: 0 20px 20px;
-        }
-
-        .search-box {
-            width: 100%;
-        }
-
-        .pagination-wrapper {
-            flex-direction: column;
-            gap: 16px;
-            padding: 20px;
-        }
-    }
-</style>
-
 @section('content')
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 <div class="jurnal-page">
+
     <div class="jurnal-card">
 
+        {{-- HEADER --}}
         <div class="jurnal-header">
             <h3 class="jurnal-title">Daftar Jurnal</h3>
             <p class="jurnal-description">
@@ -328,19 +21,37 @@
             </p>
         </div>
 
+        {{-- FILTER & SEARCH --}}
         <form action="{{ route('admin.jurnal.index') }}" method="GET" class="jurnal-filter">
+
             <div class="search-box">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari guru, mapel, kelas, atau materi...">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="Cari guru, mapel, kelas, atau materi..."
+                >
             </div>
 
             <button type="submit" class="search-btn">
-                Cari
+                <svg class="search-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Cari</span>
             </button>
+
         </form>
 
+        {{-- TABLE DATA --}}
         <div class="table-wrapper">
             <table class="jurnal-table">
+
                 <thead>
                     <tr>
                         <th>NO</th>
@@ -358,6 +69,7 @@
                 <tbody>
                     @forelse($jurnals as $jurnal)
                         <tr>
+
                             <td>
                                 <span class="number-text">
                                     {{ $jurnals->firstItem() + $loop->index }}
@@ -366,18 +78,18 @@
 
                             <td>
                                 <span class="date-text">
-                                    {{ $jurnal->tanggal->format('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($jurnal->tanggal)->format('d M Y') }}
                                 </span>
                             </td>
 
                             <td>
                                 <span class="guru-name">
-                                    {{ $jurnal->guru->nama_guru ?? '-' }}
+                                    {{ $jurnal->guru->nama_guru ?? $jurnal->user->nama_user ?? '-' }}
                                 </span>
                             </td>
 
                             <td>
-                                {{ $jurnal->jadwal->mapel->nama_mapel ?? '-' }}
+                                {{ $jurnal->jadwal->mapel->nama_mapel ?? $jurnal->mapel->nama_mapel ?? '-' }}
                             </td>
 
                             <td>
@@ -385,29 +97,34 @@
                             </td>
 
                             <td>
-                                <span class="materi-text">
+                                <span class="materi-text" title="{{ $jurnal->materi }}">
                                     {{ $jurnal->materi }}
                                 </span>
                             </td>
 
                             <td>
                                 <div class="attendance-box">
-                                    <span class="hadir-text">{{ $jurnal->jml_hadir }} hadir</span>
-                                    <span class="absen-text">{{ $jurnal->jml_tidak_hadir }} tidak hadir</span>
+                                    <span class="hadir-text">
+                                        {{ $jurnal->jml_hadir ?? 0 }} hadir
+                                    </span>
+                                    <span class="absen-text">
+                                        {{ $jurnal->jml_tidak_hadir ?? 0 }} tidak hadir
+                                    </span>
                                 </div>
                             </td>
 
                             <td>
                                 <span class="status-badge">
-                                    {{ $jurnal->status_guru }}
+                                    {{ $jurnal->status_guru ?? 'Hadir' }}
                                 </span>
                             </td>
 
                             <td>
                                 <span class="validation-badge">
-                                    {{ $jurnal->status_validasi_guru }}
+                                    {{ $jurnal->status_validasi_guru ?? 'Disetujui' }}
                                 </span>
                             </td>
+
                         </tr>
                     @empty
                         <tr>
@@ -417,27 +134,49 @@
                         </tr>
                     @endforelse
                 </tbody>
+
             </table>
         </div>
 
+        {{-- PAGINASI --}}
         @if($jurnals->hasPages())
             <div class="pagination-wrapper">
+
                 <div class="pagination-info">
                     Menampilkan {{ $jurnals->firstItem() }}–{{ $jurnals->lastItem() }}
                     dari {{ $jurnals->total() }} jurnal
                 </div>
 
                 <div class="pagination">
+
+                    {{-- PREVIOUS --}}
                     @if($jurnals->onFirstPage())
                         <span class="disabled">
-                            <span class="material-symbols-outlined">chevron_left</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M15 18L9 12L15 6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
                         </span>
                     @else
                         <a href="{{ $jurnals->previousPageUrl() }}">
-                            <span class="material-symbols-outlined">chevron_left</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M15 18L9 12L15 6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
                         </a>
                     @endif
 
+                    {{-- PAGE NUMBERS --}}
                     @foreach($jurnals->getUrlRange(1, $jurnals->lastPage()) as $page => $url)
                         @if($page == $jurnals->currentPage())
                             <span class="active">{{ $page }}</span>
@@ -446,20 +185,403 @@
                         @endif
                     @endforeach
 
+                    {{-- NEXT --}}
                     @if($jurnals->hasMorePages())
                         <a href="{{ $jurnals->nextPageUrl() }}">
-                            <span class="material-symbols-outlined">chevron_right</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M9 18L15 12L9 6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
                         </a>
                     @else
                         <span class="disabled">
-                            <span class="material-symbols-outlined">chevron_right</span>
+                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path
+                                    d="M9 18L15 12L9 6"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                />
+                            </svg>
                         </span>
                     @endif
+
                 </div>
             </div>
         @endif
 
     </div>
+
 </div>
+
+<style>
+    .jurnal-page,
+    .jurnal-page * {
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .jurnal-page {
+        width: 100%;
+    }
+
+    .jurnal-card {
+        width: 100%;
+        background: #FFFFFF;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03);
+        animation: jurnalFadeIn 0.45s ease both;
+    }
+
+    /* HEADER */
+    .jurnal-header {
+        padding: 28px 28px 20px;
+    }
+
+    .jurnal-title {
+        margin: 0 0 6px;
+        color: #2D336B;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.3;
+        letter-spacing: -0.4px;
+    }
+
+    .jurnal-description {
+        margin: 0;
+        color: #64748B;
+        font-size: 14px;
+        line-height: 1.5;
+        font-weight: 500;
+    }
+
+    /* FILTER & SEARCH */
+    .jurnal-filter {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 28px 24px;
+    }
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 380px;
+        height: 44px;
+        padding: 0 14px;
+        background: #FFFFFF;
+        border: 1px solid #CBD5E1;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .search-box:focus-within {
+        border-color: #7886C7;
+        box-shadow: 0 0 0 4px rgba(120, 134, 199, 0.15);
+    }
+
+    .search-icon {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        color: #94A3B8;
+        transition: color 0.2s ease;
+    }
+
+    .search-box:focus-within .search-icon {
+        color: #7886C7;
+    }
+
+    .search-box input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: #0F172A;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .search-box input::placeholder {
+        color: #94A3B8;
+    }
+
+    .search-btn {
+        height: 44px;
+        padding: 0 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #7886C7 0%, #2D336B 100%);
+        color: #FFFFFF;
+        font-family: inherit;
+        font-size: 13.5px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(45, 51, 107, 0.15);
+        transition: all 0.2s ease;
+    }
+
+    .search-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(45, 51, 107, 0.25);
+    }
+
+    .search-btn-icon {
+        width: 17px;
+        height: 17px;
+        flex-shrink: 0;
+    }
+
+    /* TABLE */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .jurnal-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+    }
+
+    .jurnal-table thead {
+        background: #F8FAFC;
+    }
+
+    .jurnal-table th {
+        padding: 16px 20px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+    }
+
+    .jurnal-table td {
+        padding: 18px 20px;
+        border-bottom: 1px solid #F1F5F9;
+        color: #1E293B;
+        font-size: 14px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .jurnal-table tbody tr {
+        transition: background-color 0.2s ease;
+    }
+
+    .jurnal-table tbody tr:hover {
+        background: #F8FAFC;
+    }
+
+    .jurnal-table th:first-child,
+    .jurnal-table td:first-child {
+        padding-left: 28px;
+        text-align: center;
+        width: 60px;
+    }
+
+    .jurnal-table th:last-child,
+    .jurnal-table td:last-child {
+        padding-right: 28px;
+    }
+
+    .number-text {
+        color: #64748B;
+        font-weight: 600;
+    }
+
+    .date-text {
+        color: #334155;
+        font-weight: 600;
+    }
+
+    .guru-name {
+        color: #0F172A;
+        font-weight: 700;
+    }
+
+    .materi-text {
+        display: -webkit-box;
+        overflow: hidden;
+        color: #334155;
+        line-height: 1.5;
+        font-size: 13.5px;
+        max-width: 280px;
+        white-space: normal;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    /* ATTENDANCE */
+    .attendance-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 2px;
+    }
+
+    .attendance-box .hadir-text {
+        color: #166534;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .attendance-box .absen-text {
+        color: #94A3B8;
+        font-size: 11.5px;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    /* BADGES */
+    .status-badge,
+    .validation-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11.5px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .status-badge {
+        background: #F0F3FF;
+        color: #2D336B;
+    }
+
+    .validation-badge {
+        background: #DCFCE7;
+        color: #15803D;
+    }
+
+    /* EMPTY STATE */
+    .empty {
+        padding: 56px 24px !important;
+        color: #94A3B8 !important;
+        font-size: 14.5px !important;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    /* PAGINATION */
+    .pagination-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 28px;
+        border-top: 1px solid #E2E8F0;
+        background: #FFFFFF;
+    }
+
+    .pagination-info {
+        color: #64748B;
+        font-size: 13.5px;
+        font-weight: 500;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .pagination a,
+    .pagination span {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 8px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .pagination a:hover {
+        background: #E2E8F0;
+        color: #0F172A;
+    }
+
+    .pagination .active {
+        background: #2D336B;
+        color: #FFFFFF;
+    }
+
+    .pagination .disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .chevron-icon {
+        width: 18px;
+        height: 18px;
+        display: block;
+    }
+
+    /* ANIMATION */
+    @keyframes jurnalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .jurnal-header {
+            padding: 20px;
+        }
+
+        .jurnal-filter {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0 20px 20px;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .search-btn {
+            width: 100%;
+        }
+
+        .pagination-wrapper {
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+            align-items: center;
+        }
+    }
+</style>
 
 @endsection
