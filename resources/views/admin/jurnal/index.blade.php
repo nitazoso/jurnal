@@ -120,7 +120,10 @@
                             </td>
 
                             <td>
-                                <span class="validation-badge">
+                                <span class="validation-badge
+                                    {{ strtolower($jurnal->status_validasi_guru ?? 'Disetujui') === 'disetujui' ? 'approved' : '' }}
+                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'menunggu' ? 'pending' : '' }}
+                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'ditolak' ? 'rejected' : '' }}">
                                     {{ $jurnal->status_validasi_guru ?? 'Disetujui' }}
                                 </span>
                             </td>
@@ -463,9 +466,22 @@
         white-space: nowrap;
     }
 
-    .status-badge {
-        background: #F0F3FF;
-        color: #2D336B;
+    /* Disetujui */
+    .validation-badge.approved {
+        background: #DCFCE7;
+        color: #15803D;
+    }
+
+    /* Menunggu */
+    .validation-badge.pending {
+        background: #FEF3C7;
+        color: #B45309;
+    }
+
+    /* Ditolak */
+    .validation-badge.rejected {
+        background: #FEE2E2;
+        color: #DC2626;
     }
 
     .validation-badge {
