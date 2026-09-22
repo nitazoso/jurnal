@@ -187,11 +187,11 @@
 
                         <div>
                             <h2 class="card-title text-red-dark">
-                                Catatan Evaluasi / Revisi
+                                Catatan
                             </h2>
 
                             <p class="card-subtitle text-red-sub">
-                                Umpan balik atau catatan evaluasi dari admin
+                                Umpan balik atau catatan evaluasi dari sekretaris
                             </p>
                         </div>
                     </div>
