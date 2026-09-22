@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Kelas extends Model
 {
@@ -15,6 +16,7 @@ class Kelas extends Model
 
     protected $fillable = [
         'nama_kelas',
+        'qr_token',
         'wali_kelas',
         'jumlah_siswa',
     ];
@@ -35,5 +37,12 @@ class Kelas extends Model
             'id_kelas',
             'id_kelas'
         );
+    }
+
+    protected static function booted(): void
+    {
+        static::creating(function (Kelas $kelas) {
+            $kelas->qr_token ??= Str::random(48);
+        });
     }
 }

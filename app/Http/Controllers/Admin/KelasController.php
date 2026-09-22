@@ -8,6 +8,10 @@ use App\Models\Kelas;
 
 use App\Models\Guru; 
 use Illuminate\Validation\Rule;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 class KelasController extends Controller
 {
 public function index(Request $request)
@@ -68,6 +72,19 @@ public function store(Request $request)
     public function edit(Kelas $kelas)
     {
         return view('admin.kelas.edit', compact('kelas'));
+    }
+
+    public function qr(Kelas $kelas)
+    {
+        $renderer = new ImageRenderer(new RendererStyle(280, 12), new SvgImageBackEnd());
+        $svg = (new Writer($renderer))->writeString($kelas->qr_token);
+
+        return response($svg)->header('Content-Type', 'image/svg+xml');
+    }
+
+    public function printQr(Kelas $kelas)
+    {
+        return view('admin.kelas.print-qr', compact('kelas'));
     }
 
     public function update(Request $request, Kelas $kelas)

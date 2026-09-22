@@ -307,6 +307,10 @@
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
                 </a>
+                <a href="{{ route('piket.dispen.history') }}" class="nav-item {{ request()->routeIs('piket.dispen.history') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>Riwayat Dispen</span>
+                </a>
                 <a href="{{ route('piket.profil') }}" class="nav-item {{ request()->routeIs('piket.profil') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">person</span> 
                     <span>Profil</span>

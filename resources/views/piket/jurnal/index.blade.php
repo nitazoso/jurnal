@@ -271,7 +271,7 @@
         type="text"
         name="search"
         value="{{ request('search') }}"
-        placeholder="Cari materi, guru, atau kelas..."
+        placeholder="Cari nama kelas..."
         class="search-input w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700"
     >
 
@@ -679,15 +679,15 @@
 
     </div>
 
-    @if($kelasTerpilih)
+    @if($kelasTerpilih || request()->filled('search') || request()->filled('bulan') || request()->filled('tahun'))
         <div class="jurnal-card overflow-hidden fade-in">
             <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-bold text-slate-800">
-                        Jurnal Kelas {{ $kelasTerpilih->nama_kelas }}
+                        {{ $kelasTerpilih ? 'Jurnal Kelas '.$kelasTerpilih->nama_kelas : 'Hasil Pencarian Jurnal' }}
                     </h2>
                     <p class="text-sm text-slate-500 mt-1">
-                        Menampilkan jurnal yang sudah disetujui untuk kelas ini.
+                        Menampilkan jurnal sesuai filter yang dipilih.
                     </p>
                 </div>
                 <a href="{{ route('piket.jurnal.index') }}" class="text-sm text-[#1B234A] font-medium hover:underline">

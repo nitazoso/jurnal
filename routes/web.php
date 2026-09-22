@@ -25,12 +25,26 @@ use App\Http\Controllers\Piket\DispenController as PiketDispenController;
 use App\Http\Controllers\Piket\DashboardController as PiketDashboardController;
 use App\Http\Controllers\Piket\JurnalController as PiketJurnalController;
 use App\Http\Controllers\Piket\JadwalPiketController;
-use App\Http\Controllers\DispenVerificationController;
 use App\Http\Controllers\Sekretaris\JurnalController as SekretarisJurnalController;
 
 use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
 
 // LOGIN
+
+Route::get('/', function () {
+    if (! auth()->check()) {
+        return redirect()->route('login');
+    }
+
+    return match (auth()->user()->role) {
+        'Admin' => redirect()->route('admin.dashboard'),
+        'Guru' => redirect()->route('guru.dashboard'),
+        'Kesiswaan' => redirect()->route('kesiswaan.dashboard'),
+        'Sekretaris' => redirect()->route('sekretaris.dashboard'),
+        'Staff Piket' => redirect()->route('piket.dashboard'),
+        default => redirect()->route('login'),
+    };
+})->name('home');
 
 /*
 |--------------------------------------------------------------------------
@@ -115,6 +129,10 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::get('/admin/kelas/{kelas}/edit', [KelasController::class, 'edit'])
         ->name('admin.kelas.edit');
+    Route::get('/admin/kelas/{kelas}/qr', [KelasController::class, 'qr'])
+        ->name('admin.kelas.qr');
+    Route::get('/admin/kelas/{kelas}/qr/cetak', [KelasController::class, 'printQr'])
+        ->name('admin.kelas.qr.print');
 
     Route::put('/admin/kelas/{kelas}', [KelasController::class, 'update'])
         ->name('admin.kelas.update');
@@ -268,6 +286,12 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
 
     Route::get('/guru/jurnal/form/{jadwal}', [GuruJurnalController::class, 'form'])
         ->name('guru.jurnal.form');
+    Route::post('/guru/jurnal/form/{jadwal}/scan-qr', [GuruJurnalController::class, 'verifyClassQr'])
+        ->name('guru.jurnal.verify-qr');
+    Route::get('/guru/jurnal/form/{jadwal}/konfirmasi-hadir', [GuruJurnalController::class, 'confirmAttendance'])
+        ->name('guru.jurnal.confirm-attendance');
+    Route::post('/guru/jurnal/form/{jadwal}/konfirmasi-hadir', [GuruJurnalController::class, 'storeAttendance'])
+        ->name('guru.jurnal.store-attendance');
 
     Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
         ->name('guru.jurnal.store');
@@ -324,6 +348,7 @@ Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
 
 
     Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
+    Route::get('/piket/dispen/riwayat', [PiketDispenController::class, 'history'])->name('piket.dispen.history');
     Route::get('/piket/dispen/create', [PiketDispenController::class, 'create'])->name('piket.dispen.create');
     Route::post('/piket/dispen', [PiketDispenController::class, 'store'])->name('piket.dispen.store');
     Route::get('/piket/dispen/{dispen}/whatsapp', [PiketDispenController::class, 'whatsapp'])->name('piket.dispen.whatsapp');
@@ -331,13 +356,6 @@ Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
     Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');
     Route::delete('/piket/dispen/{dispen}', [PiketDispenController::class, 'destroy'])->name('piket.dispen.destroy');
 });
-
-Route::get('/dispen/verifikasi/{token}', [DispenVerificationController::class, 'show'])
-    ->name('dispen.verifikasi');
-Route::post('/dispen/verifikasi/{token}/approve', [DispenVerificationController::class, 'approve'])
-    ->name('dispen.verifikasi.approve');
-Route::post('/dispen/verifikasi/{token}/reject', [DispenVerificationController::class, 'reject'])
-    ->name('dispen.verifikasi.reject');
 
 Route::middleware(['auth', 'role:Kesiswaan'])->group(function () {
     Route::get('/kesiswaan/dashboard', [KesiswaanDashboardController::class, 'index'])
@@ -347,7 +365,27 @@ Route::middleware(['auth', 'role:Kesiswaan'])->group(function () {
         return view('kesiswaan.profil');
     })->name('kesiswaan.profil');
 
+    Route::put('/kesiswaan/profil', function (Request $request) {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:50', 'unique:users,username,'.$user->id_user.',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = bcrypt($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('kesiswaan.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('kesiswaan.profil.update');
+
     Route::get('/kesiswaan/dispen', [KesiswaanDispenController::class, 'index'])->name('kesiswaan.dispen.index');
+    Route::get('/kesiswaan/dispen/riwayat', [KesiswaanDispenController::class, 'history'])->name('kesiswaan.dispen.history');
     Route::get('/kesiswaan/dispen/{dispen}', [KesiswaanDispenController::class, 'show'])->name('kesiswaan.dispen.show');
     Route::post('/kesiswaan/dispen/{dispen}/approve', [KesiswaanDispenController::class, 'approve'])->name('kesiswaan.dispen.approve');
     Route::post('/kesiswaan/dispen/{dispen}/reject', [KesiswaanDispenController::class, 'reject'])->name('kesiswaan.dispen.reject');
@@ -368,4 +406,3 @@ Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekr
     Route::post('/isi-jurnal', [SekretarisJurnalController::class, 'store'])->name('isi-jurnal.store');
     Route::view('/profil', 'sekretaris.profil')->name('profil');
 });
-

@@ -30,21 +30,39 @@
             @method('PUT')
 
             <div class="mb-4">
-                <label class="block mb-2 font-medium text-gray-700">
-                    Siswa
-                </label>
-
-                <select name="id_siswa"
+                <label class="block mb-2 font-medium text-gray-700">Kelas</label>
+                <select name="id_kelas" id="class-select"
                         class="w-full border border-gray-300 rounded-lg px-4 py-2"
                         required>
-
-                    @foreach ($siswa as $item)
-                        <option value="{{ $item->id_siswa }}"
-                            {{ old('id_siswa', $dispen->id_siswa) == $item->id_siswa ? 'selected' : '' }}>
-                            {{ $item->nama_siswa }}
+                    <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                    @foreach ($kelases as $kelas)
+                        <option value="{{ $kelas->id_kelas }}"
+                            {{ old('id_kelas', $dispen->siswa?->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}>
+                            {{ $kelas->nama_kelas }}
                         </option>
                     @endforeach
+                </select>
+            </div>
 
+            <div class="mb-4">
+                <label class="block mb-2 font-medium text-gray-700">Siswa</label>
+                <select name="id_siswa" id="student-select"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2" required disabled>
+                    <option value="">-- Pilih kelas terlebih dahulu --</option>
+                </select>
+                <p id="student-help" class="mt-1 text-sm text-gray-500">Pilih kelas untuk menampilkan seluruh siswa.</p>
+            </div>
+
+            <div class="mb-4">
+                <label class="block mb-2 font-medium text-gray-700">Kirim ke Kesiswaan</label>
+                <select name="id_kesiswaan" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
+                    <option value="">-- Pilih nomor WhatsApp Kesiswaan --</option>
+                    @foreach ($petugasKesiswaans as $petugas)
+                        <option value="{{ $petugas->id_user }}"
+                            {{ old('id_kesiswaan', $dispen->id_kesiswaan) == $petugas->id_user ? 'selected' : '' }}>
+                            {{ $petugas->nama_user }} — {{ $petugas->no_wa }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -136,5 +154,33 @@
     </div>
 
 </div>
+
+<script>
+    (() => {
+        const studentsByClass = @json($siswaPerKelas);
+        const classSelect = document.getElementById('class-select');
+        const studentSelect = document.getElementById('student-select');
+        const studentHelp = document.getElementById('student-help');
+        const selectedStudent = @json((string) old('id_siswa', $dispen->id_siswa));
+
+        const showStudents = (classId, studentId = '') => {
+            const students = studentsByClass[classId] || [];
+            studentSelect.replaceChildren(new Option(
+                students.length ? '-- Pilih Siswa --' : '-- Tidak ada siswa di kelas ini --', ''
+            ));
+            students.forEach((student) => {
+                const label = student.nis ? `${student.nama} (${student.nis})` : student.nama;
+                studentSelect.add(new Option(label, student.id, false, String(student.id) === String(studentId)));
+            });
+            studentSelect.disabled = !classId || !students.length;
+            studentHelp.textContent = classId
+                ? `${students.length} siswa ditemukan di kelas ini.`
+                : 'Pilih kelas untuk menampilkan seluruh siswa.';
+        };
+
+        classSelect.addEventListener('change', () => showStudents(classSelect.value));
+        if (classSelect.value) showStudents(classSelect.value, selectedStudent);
+    })();
+</script>
 
 @endsection

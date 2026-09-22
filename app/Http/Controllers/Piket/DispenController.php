@@ -4,114 +4,180 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
-use App\Models\JadwalKesiswaan;
 use App\Models\JamPel;
-use App\Models\Siswa;
+use App\Models\Kelas;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DispenController extends Controller
 {
+    /**
+     * Menampilkan daftar dispen.
+     */
     public function index()
     {
-        $dispens = Dispen::with('siswa', 'jamMulai', 'jamSelesai')
+        $dispens = Dispen::with([
+            'siswa',
+            'jamMulai',
+            'jamSelesai',
+            'approver'
+        ])
+            ->where('status', 'menunggu')
             ->latest('tanggal')
             ->paginate(10);
 
         return view('piket.dispen.index', compact('dispens'));
     }
 
+    /**
+     * Menampilkan riwayat dispen yang sudah dikonfirmasi.
+     */
+    public function history()
+    {
+        $dispens = Dispen::with([
+            'siswa',
+            'jamMulai',
+            'jamSelesai',
+            'approver',
+        ])
+            ->whereIn('status', ['disetujui', 'ditolak'])
+            ->latest('disetujui_pada')
+            ->paginate(10);
+
+        return view('piket.dispen.history', compact('dispens'));
+    }
+
+    /**
+     * Form tambah dispen.
+     */
     public function create()
     {
-        $siswa = Siswa::orderBy('nama_siswa')->get();
-
         $jamPels = JamPel::where('jenis', 'pelajaran')
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.create', compact('siswa', 'jamPels'));
+        return view('piket.dispen.create', $this->formData($jamPels));
     }
 
+    /**
+     * Simpan dispen baru.
+     */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_siswa' => 'required|exists:siswas,id_siswa',
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => [
+                'required',
+                Rule::exists('siswas', 'id_siswa')->where(
+                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
+                ),
+            ],
+            'id_kesiswaan' => [
+                'nullable',
+                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
             'alasan' => 'required|string|max:255',
         ]);
 
-        $jadwal = JadwalKesiswaan::with('user')
-            ->whereDate('tanggal', $validated['tanggal'])
-            ->first();
-
-        $dispen = Dispen::create($validated + [
-            'token_verifikasi' => Str::random(64),
+        $dispen = Dispen::create([
+            'id_siswa' => $validated['id_siswa'],
+            'id_kesiswaan' => $validated['id_kesiswaan'] ?? null,
+            'tanggal' => $validated['tanggal'],
+            'id_jam_mulai' => $validated['id_jam_mulai'],
+            'id_jam_selesai' => $validated['id_jam_selesai'],
+            'alasan' => $validated['alasan'],
+            'status' => 'menunggu',
         ]);
 
-        return redirect()
-            ->route('piket.dispen.index')
-            ->with('success', 'Data dispen berhasil ditambahkan.');
+        return redirect()->route('piket.dispen.whatsapp', $dispen);
     }
 
+    /**
+     * Membuka WhatsApp untuk mengirim permohonan konfirmasi ke petugas kesiswaan.
+     */
     public function whatsapp(Dispen $dispen)
     {
-        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
+        $dispen->load([
+            'siswa.kelas',
+            'jamMulai',
+            'jamSelesai',
+            'petugasKesiswaan'
+        ]);
 
-        $waka = JadwalKesiswaan::with('user')
-            ->whereDate('tanggal', $dispen->tanggal)
-            ->first()?->user;
+        $linkVerifikasi = route('kesiswaan.dispen.show', $dispen);
+        $loginUrl = route('login') . '?redirect=' . urlencode($linkVerifikasi);
 
-        abort_unless($waka?->no_wa, 422, 'Nomor WhatsApp Waka untuk tanggal tersebut belum tersedia.');
+        $message =
+            "Permohonan Dispensasi Siswa\n\n"
+            . "Nama Siswa: " . $dispen->siswa->nama_siswa . "\n"
+            . "Kelas: " . ($dispen->siswa->kelas->nama_kelas ?? '-') . "\n"
+            . "Tanggal: " . $dispen->tanggal->format('d-m-Y') . "\n"
+            . "Jam: "
+            . ($dispen->jamMulai->jam_mulai ?? '-')
+            . " - "
+            . ($dispen->jamSelesai->jam_selesai ?? '-')
+            . "\n"
+            . "Alasan: " . $dispen->alasan . "\n\n"
+            . "Silakan masuk ke akun Anda untuk meninjau dan mengonfirmasi pengajuan:\n"
+            . $loginUrl;
 
-        $message = "Permohonan Dispensasi Siswa\n\n"
-            .'Nama Siswa: '.$dispen->siswa->nama_siswa."\n"
-            .'Kelas: '.($dispen->siswa->kelas->nama_kelas ?? '-')."\n"
-            .'Tanggal: '.$dispen->tanggal->format('d-m-Y')."\n"
-            .'Jam: '.($dispen->jamMulai->jam_mulai ?? '-').' - '.($dispen->jamSelesai->jam_selesai ?? '-')."\n"
-            .'Alasan: '.$dispen->alasan."\n\n"
-            .'Silakan lakukan verifikasi melalui link berikut:\n'
-            .route('dispen.verifikasi', $dispen->token_verifikasi);
+        $whatsappUrl = 'https://wa.me/?text=' . rawurlencode($message);
 
-        $phone = preg_replace('/\D+/', '', $waka->no_wa);
-        $phone = str_starts_with($phone, '0') ? '62'.substr($phone, 1) : $phone;
-
-        return redirect('https://wa.me/'.$phone.'?text='.rawurlencode($message));
+        return redirect()->away($whatsappUrl);
     }
 
+    /**
+     * Form edit dispen.
+     */
     public function edit(Dispen $dispen)
     {
-        $siswa = Siswa::orderBy('nama_siswa')->get();
-
         $jamPels = JamPel::where('jenis', 'pelajaran')
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.edit', compact(
-            'dispen',
-            'siswa',
-            'jamPels'
+        return view('piket.dispen.edit', array_merge(
+            compact('dispen'),
+            $this->formData($jamPels)
         ));
     }
 
+    /**
+     * Update dispen.
+     */
     public function update(Request $request, Dispen $dispen)
     {
         $validated = $request->validate([
-            'id_siswa' => 'required|exists:siswas,id_siswa',
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => [
+                'required',
+                Rule::exists('siswas', 'id_siswa')->where(
+                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
+                ),
+            ],
+            'id_kesiswaan' => [
+                'required',
+                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
             'alasan' => 'required|string|max:255',
         ]);
 
-        $dispen->update($validated);
+        $dispen->update(collect($validated)->except('id_kelas')->all());
 
         return redirect()
             ->route('piket.dispen.index')
             ->with('success', 'Data dispen berhasil diperbarui.');
     }
 
+    /**
+     * Hapus dispen.
+     */
     public function destroy(Dispen $dispen)
     {
         $dispen->delete();
@@ -119,5 +185,32 @@ class DispenController extends Controller
         return redirect()
             ->route('piket.dispen.index')
             ->with('success', 'Data dispen berhasil dihapus.');
+    }
+
+    /**
+     * Data kelas dan siswa untuk pemilihan siswa pada formulir dispen.
+     */
+    private function formData($jamPels): array
+    {
+        $kelases = Kelas::with([
+            'siswas' => fn ($query) => $query->orderBy('nama_siswa'),
+        ])->orderBy('nama_kelas')->get();
+
+        $petugasKesiswaans = User::query()
+            ->where('role', 'Kesiswaan')
+            ->whereNotNull('no_wa')
+            ->where('no_wa', '!=', '')
+            ->orderBy('nama_user')
+            ->get(['id_user', 'nama_user', 'no_wa']);
+
+        $siswaPerKelas = $kelases->mapWithKeys(fn ($kelas) => [
+            $kelas->id_kelas => $kelas->siswas->map(fn ($siswa) => [
+                'id' => $siswa->id_siswa,
+                'nama' => $siswa->nama_siswa,
+                'nis' => $siswa->nis,
+            ])->values(),
+        ]);
+
+        return compact('jamPels', 'kelases', 'siswaPerKelas', 'petugasKesiswaans');
     }
 }
