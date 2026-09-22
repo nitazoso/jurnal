@@ -2,205 +2,59 @@
 
 @section('title', 'Edit Guru - Jurnify')
 @section('page-title', 'Edit Guru')
-
-@push('styles')
-<style>
-    .edit-guru-page { width: 100%; }
-
-    .edit-guru-header {
-        margin-bottom: 24px;
-        animation: fadeUp .45s ease both;
-    }
-
-    .edit-guru-header h2 {
-        margin: 0 0 6px;
-        font-size: 24px;
-        font-weight: 700;
-        color: #252525;
-    }
-
-    .edit-guru-header p {
-        margin: 0;
-        font-size: 14px;
-        color: #777;
-    }
-
-    .edit-guru-card {
-        width: 100%;
-        max-width: 700px;
-        padding: 28px;
-        background: #fff;
-        border: 1px solid #eee;
-        border-radius: 14px;
-        box-shadow: 0 3px 12px rgba(0,0,0,.04);
-        box-sizing: border-box;
-        animation: fadeUp .5s ease .08s both;
-        transition: box-shadow .25s ease;
-    }
-
-    .edit-guru-card:hover {
-        box-shadow: 0 7px 20px rgba(48,54,111,.06);
-    }
-
-    .edit-guru-errors {
-        margin-bottom: 22px;
-        padding: 13px 16px;
-        border: 1px solid #f1d2d2;
-        border-radius: 10px;
-        background: #fff4f4;
-        color: #c54848;
-        font-size: 13px;
-        animation: fadeUp .35s ease both;
-    }
-
-    .edit-guru-errors ul { margin: 0; padding-left: 20px; }
-    .edit-guru-errors li { margin-bottom: 4px; }
-    .edit-guru-errors li:last-child { margin-bottom: 0; }
-
-    .edit-guru-field {
-        margin-bottom: 20px;
-        animation: fadeUp .4s ease both;
-    }
-
-    .edit-guru-field:nth-child(2) { animation-delay: .05s; }
-    .edit-guru-field:nth-child(3) { animation-delay: .1s; }
-    .edit-guru-field:nth-child(4) { animation-delay: .15s; }
-    .edit-guru-field:last-of-type { margin-bottom: 26px; }
-
-    .edit-guru-field label {
-        display: block;
-        margin-bottom: 8px;
-        font-size: 13px;
-        font-weight: 600;
-        color: #444;
-    }
-
-    .edit-guru-field input {
-        width: 100%;
-        height: 44px;
-        padding: 0 14px;
-        border: 1px solid #ddd;
-        border-radius: 9px;
-        background: #fff;
-        color: #333;
-        font-family: inherit;
-        font-size: 13px;
-        outline: none;
-        box-sizing: border-box;
-        transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
-    }
-
-    .edit-guru-field input:focus {
-        border-color: #7886c7;
-        box-shadow: 0 0 0 3px rgba(120,134,199,.12);
-        transform: translateY(-1px);
-    }
-
-    .edit-guru-field input::placeholder { color: #aaa; }
-
-    .edit-guru-buttons {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .edit-guru-cancel,
-    .edit-guru-submit {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 42px;
-        padding: 0 18px;
-        border-radius: 9px;
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        box-sizing: border-box;
-        transition: .2s ease;
-    }
-
-    .edit-guru-cancel {
-        border: 1px solid #ddd;
-        background: #f5f5f5;
-        color: #666;
-    }
-
-    .edit-guru-cancel:hover {
-        background: #ebebeb;
-        transform: translateY(-1px);
-    }
-
-    .edit-guru-submit {
-        border: none;
-        background: #30366f;
-        color: #fff;
-        box-shadow: 0 3px 8px rgba(48,54,111,.12);
-    }
-
-    .edit-guru-submit:hover {
-        background: #252b5d;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 13px rgba(48,54,111,.16);
-    }
-
-    .edit-guru-submit:active,
-    .edit-guru-cancel:active {
-        transform: scale(.97);
-    }
-
-    @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (max-width: 768px) {
-        .edit-guru-card { max-width: none; padding: 22px; }
-
-        .edit-guru-buttons {
-            flex-direction: column-reverse;
-            align-items: stretch;
-        }
-
-        .edit-guru-cancel,
-        .edit-guru-submit { width: 100%; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        .edit-guru-header,
-        .edit-guru-card,
-        .edit-guru-field,
-        .edit-guru-errors { animation: none; }
-
-        .edit-guru-field input,
-        .edit-guru-cancel,
-        .edit-guru-submit { transition: none; }
-    }
-</style>
-@endpush
+@section('page-subtitle', 'Perbarui informasi data guru yang terdaftar dalam sistem')
 
 @section('content')
 
-<div class="edit-guru-page">
+{{-- Font Manrope --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    {{-- PAGE HEADER --}}
-    <div class="edit-guru-header">
-        <h2>Edit Guru</h2>
-        <p>Perbarui data guru yang terdaftar dalam sistem.</p>
-    </div>
+<div class="guru-edit-page">
 
-    {{-- FORM CARD --}}
-    <div class="edit-guru-card">
+    <div class="form-container">
 
-        {{-- ERROR --}}
+        {{-- BACK BUTTON --}}
+        <a href="{{ route('admin.guru.index') }}" class="btn-back">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Kembali ke Data Guru</span>
+        </a>
+
+        {{-- HEADER CARD --}}
+        <div class="header-card">
+            <div class="header-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="header-info">
+                <h1 class="header-title">Edit Data Guru</h1>
+                <p class="header-subtitle">Perbarui NIP, nama lengkap, atau kontak guru yang terpilih</p>
+            </div>
+        </div>
+
+        {{-- ERROR ALERT --}}
         @if ($errors->any())
-            <div class="edit-guru-errors">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+            <div class="alert alert-danger">
+                <div class="alert-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="alert-content">
+                    <h4 class="alert-title">Gagal Memperbarui Data</h4>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
         @endif
 
@@ -208,26 +62,398 @@
             @csrf
             @method('PUT')
 
-            {{-- NAMA --}}
-            <div class="edit-guru-field">
-                <label for="nama_guru">Nama Guru</label>
-                <input id="nama_guru" type="text" name="nama_guru" value="{{ old('nama_guru', $guru->nama_guru) }}" placeholder="Masukkan nama guru" required>
-            </div>
+            <div class="card-body-inner">
+                <div class="form-grid">
 
-            {{-- NO HP --}}
-            <div class="edit-guru-field">
-                <label for="no_hp">No. HP</label>
-                <input id="no_hp" type="text" name="no_hp" value="{{ old('no_hp', $guru->no_hp) }}" placeholder="Contoh: 081234567890">
-            </div>
+                        {{-- NIP --}}
+                        <div class="form-group">
+                            <label for="nip" class="form-label">
+                                NIP <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="nip"
+                                name="nip"
+                                value="{{ old('nip', $guru->nip) }}"
+                                placeholder="Masukkan NIP guru"
+                                required
+                                class="form-input @error('nip') is-invalid @enderror"
+                            >
+                            <span class="form-hint">Nomor Induk Pegawai resmi.</span>
+                        </div>
 
-            {{-- BUTTON --}}
-            <div class="edit-guru-buttons">
-                <a href="{{ route('admin.guru.index') }}" class="edit-guru-cancel">Batal</a>
-                <button type="submit" class="edit-guru-submit">Simpan Perubahan</button>
-            </div>
-        </form>
+                        {{-- NAMA GURU --}}
+                        <div class="form-group">
+                            <label for="nama_guru" class="form-label">
+                                Nama Guru & Gelar <span class="required">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="nama_guru"
+                                name="nama_guru"
+                                value="{{ old('nama_guru', $guru->nama_guru) }}"
+                                placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd."
+                                required
+                                class="form-input @error('nama_guru') is-invalid @enderror"
+                            >
+                            <span class="form-hint">Nama lengkap beserta gelar akademik.</span>
+                        </div>
+
+                        {{-- NO HP --}}
+                        <div class="form-group full-width">
+                            <label for="no_hp" class="form-label">
+                                Nomor HP / WhatsApp
+                            </label>
+                            <input
+                                type="text"
+                                id="no_hp"
+                                name="no_hp"
+                                value="{{ old('no_hp', $guru->no_hp) }}"
+                                placeholder="Contoh: 081234567890"
+                                inputmode="tel"
+                                class="form-input @error('no_hp') is-invalid @enderror"
+                            >
+                            <span class="form-hint">Digunakan untuk kontak dan koordinasi piket.</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                {{-- FORM FOOTER / ACTIONS --}}
+                <div class="card-footer-inner">
+                    <a href="{{ route('admin.guru.index') }}" class="btn-cancel">
+                        Batal
+                    </a>
+
+                    <button type="submit" class="btn-submit">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="17 21 17 13 7 13 7 21" stroke-linecap="round" stroke-linejoin="round"/>
+                            <polyline points="7 3 7 8 15 8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span>Simpan Perubahan</span>
+                    </button>
+                </div>
+            </form>
+        </div>
 
     </div>
+
 </div>
+
+<style>
+    .guru-edit-page,
+    .guru-edit-page * {
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-sizing: border-box;
+    }
+
+    .guru-edit-page {
+        width: 100%;
+        padding: 0 0 32px;
+        animation: guruFadeUp 0.45s cubic-bezier(.16, 1, .3, 1) both;
+    }
+
+    .form-container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* BACK BUTTON */
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #64748B;
+        text-decoration: none;
+        width: fit-content;
+        transition: all 0.2s ease;
+    }
+
+    .btn-back svg {
+        width: 18px;
+        height: 18px;
+        transition: transform 0.2s ease;
+    }
+
+    .btn-back:hover {
+        color: #2D336B;
+    }
+
+    .btn-back:hover svg {
+        transform: translateX(-3px);
+    }
+
+    /* HEADER CARD */
+    .header-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        background: #FFFFFF;
+        padding: 24px 28px;
+        border-radius: 20px;
+        border: 1px solid #E2E8F0;
+        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03);
+    }
+
+    .header-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 16px;
+        background: #F0F3FF;
+        color: #7886C7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .header-icon svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .header-title {
+        margin: 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: #2D336B;
+        letter-spacing: -0.3px;
+    }
+
+    .header-subtitle {
+        margin: 4px 0 0;
+        font-size: 13.5px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    /* ALERTS */
+    .alert {
+        display: flex;
+        gap: 14px;
+        padding: 18px 24px;
+        border-radius: 16px;
+        font-size: 14px;
+    }
+
+    .alert-danger {
+        background: #FEF2F2;
+        border: 1px solid #FECACA;
+        color: #991B1B;
+    }
+
+    .alert-icon svg {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+
+    .alert-title {
+        margin: 0 0 6px;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .alert-content ul {
+        margin: 0;
+        padding-left: 18px;
+        font-weight: 500;
+    }
+
+    /* FORM CARD */
+    .form-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03);
+        overflow: hidden;
+    }
+
+    .card-header-inner {
+        padding: 24px 32px;
+        border-bottom: 1px solid #F1F5F9;
+        background: #FAFAFC;
+    }
+
+    .card-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1E293B;
+    }
+
+    .card-subtitle {
+        margin: 4px 0 0;
+        font-size: 13.5px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .card-body-inner {
+        padding: 32px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group.full-width {
+        grid-column: span 2;
+    }
+
+    .form-label {
+        font-size: 14px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .required {
+        color: #EF4444;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        background: #FFFFFF;
+        border: 1px solid #CBD5E1;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #0F172A;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .form-input::placeholder {
+        color: #94A3B8;
+        font-weight: 500;
+    }
+
+    .form-input:focus {
+        border-color: #7886C7;
+        box-shadow: 0 0 0 4px rgba(120, 134, 199, 0.15);
+    }
+
+    .form-input.is-invalid {
+        border-color: #EF4444;
+    }
+
+    .form-hint {
+        font-size: 12.5px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    /* CARD FOOTER */
+    .card-footer-inner {
+        padding: 20px 32px;
+        background: #FAFBFD;
+        border-top: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .btn-cancel {
+        padding: 11px 24px;
+        background: #FFFFFF;
+        border: 1px solid #CBD5E1;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #475569;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-cancel:hover {
+        background: #F1F5F9;
+        color: #0F172A;
+    }
+
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 26px;
+        background: linear-gradient(135deg, #7886C7 0%, #2D336B 100%);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(45, 51, 107, 0.15);
+        transition: all 0.25s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-1.5px);
+        box-shadow: 0 6px 18px rgba(45, 51, 107, 0.25);
+    }
+
+    .btn-submit svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    /* ANIMATION */
+    @keyframes guruFadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .form-group.full-width {
+            grid-column: span 1;
+        }
+
+        .card-header-inner,
+        .card-body-inner,
+        .card-footer-inner,
+        .header-card {
+            padding: 20px;
+        }
+
+        .card-footer-inner {
+            flex-direction: column-reverse;
+            gap: 10px;
+        }
+
+        .btn-cancel,
+        .btn-submit {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+</style>
 
 @endsection

@@ -45,6 +45,7 @@ class JurnalController extends Controller
             'jamSelesai',
         ])
         ->where('id_guru', $user->id_guru)
+        ->whereDoesntHave('jurnals')
         ->orderBy('hari')
         ->orderBy('id_jam_mulai')
         ->get();
@@ -59,6 +60,12 @@ class JurnalController extends Controller
         // Pastikan jadwal memang milik guru yang sedang login
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
+        }
+
+        if ($jadwal->jurnals()->exists()) {
+            return redirect()
+                ->route('guru.jurnal.index')
+                ->with('info', 'Jurnal untuk jadwal ini sudah tersimpan di riwayat.');
         }
 
         // Ambil data relasi jadwal
@@ -106,10 +113,11 @@ class JurnalController extends Controller
         ]);
 
         $jadwal->loadMissing('kelas');
+        $qrToken = trim((string) ($validated['qr_token'] ?? ''));
 
-        if (! hash_equals((string) $jadwal->kelas?->qr_token, $validated['qr_token'])) {
+        if (! hash_equals((string) $jadwal->kelas?->qr_token, $qrToken)) {
             return response()->json([
-                'message' => 'QR Code bukan milik kelas pada jadwal ini.',
+                'message' => 'QR tidak valid untuk kelas ini. Pastikan Anda memindai QR kelas yang benar.',
             ], 422);
         }
 

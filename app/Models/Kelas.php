@@ -42,7 +42,25 @@ class Kelas extends Model
     protected static function booted(): void
     {
         static::creating(function (Kelas $kelas) {
-            $kelas->qr_token ??= Str::random(48);
+            if (! empty($kelas->qr_token)) {
+                return;
+            }
+
+            do {
+                $token = Str::random(48);
+            } while (self::where('qr_token', $token)->exists());
+
+            $kelas->qr_token = $token;
+        });
+
+        static::updating(function (Kelas $kelas) {
+            if (empty($kelas->qr_token)) {
+                do {
+                    $token = Str::random(48);
+                } while (self::where('qr_token', $token)->exists());
+
+                $kelas->qr_token = $token;
+            }
         });
     }
 }

@@ -410,15 +410,15 @@
         letter-spacing: .3px;
         display: inline-block;
         transition:
-            transform .18s ease,
-            box-shadow .18s ease;
+        transform .18s ease,
+        box-shadow .18s ease;
     }
 
     tbody tr:hover .status {
         transform: translateY(-1px);
     }
 
-    .status.valid {
+    .status.disetujui {
         background-color: #dcfce7;
         color: #15803d;
     }
@@ -705,34 +705,20 @@
     <div class="filter-controls-right">
 
         <!-- STATUS -->
-        <select
-            name="status"
-            class="filter-select"
-            onchange="this.form.submit()"
-        >
-
+        <select name="status" class="filter-select" onchange="this.form.submit()">
             <option value="">
                 Semua Status Validasi
             </option>
 
-            <option
-                value="Valid"
-                {{ request('status') == 'Valid' ? 'selected' : '' }}
-            >
+            <option value="Valid" {{ request('status') == 'Valid' ? 'selected' : '' }}>
                 Valid
             </option>
 
-            <option
-                value="Menunggu"
-                {{ request('status') == 'Menunggu' ? 'selected' : '' }}
-            >
+            <option value="Menunggu" {{ request('status') == 'Menunggu' ? 'selected' : '' }}>
                 Menunggu
             </option>
 
-            <option
-                value="Ditolak"
-                {{ request('status') == 'Ditolak' ? 'selected' : '' }}
-            >
+            <option value="Ditolak" {{ request('status') == 'Ditolak' ? 'selected' : '' }}>
                 Ditolak
             </option>
 
@@ -740,11 +726,7 @@
 
 
         <!-- KELAS -->
-        <select
-            name="kelas_id"
-            class="filter-select"
-            onchange="this.form.submit()"
-        >
+        <select name="kelas_id" class="filter-select" onchange="this.form.submit()">
 
             <option value="">
                 Semua Kelas
@@ -752,10 +734,7 @@
 
             @foreach($kelases as $kelas)
 
-                <option
-                    value="{{ $kelas->id_kelas }}"
-                    {{ request('kelas_id') == $kelas->id_kelas ? 'selected' : '' }}
-                >
+                <option value="{{ $kelas->id_kelas }}" {{ request('kelas_id') == $kelas->id_kelas ? 'selected' : '' }}>
                     {{ $kelas->nama_kelas }}
                 </option>
 
@@ -765,21 +744,10 @@
 
 
         <!-- TANGGAL -->
-        <input
-            type="date"
-            name="tanggal"
-            value="{{ request('tanggal') }}"
-            class="filter-select"
-            onchange="this.form.submit()"
-        >
-
+        <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="filter-select" onchange="this.form.submit()">
 
         <!-- RESET -->
-        <a
-            href="{{ route('admin.dashboard') }}"
-            class="btn-reset"
-            title="Reset Semua Filter"
-        >
+        <a href="{{ route('admin.dashboard') }}" class="btn-reset" title="Reset Semua Filter">
             <span class="material-symbols-outlined">
                 restart_alt
             </span>
@@ -788,9 +756,7 @@
                 Reset Filter
             </span>
         </a>
-
     </div>
-
 </form>
 
 
@@ -843,14 +809,7 @@
                             {{ $item->created_at->format('d M Y') }}
                         </span>
 
-                        <span
-                            class="time"
-                            style="
-                                display: block;
-                                font-size: 11px;
-                                color: #94a3b8;
-                            "
-                        >
+                        <span class="time" style=" display: block; font-size: 11px; color: #94a3b8;">
                             {{ $item->jam_ke }}
                         </span>
                     </td>
@@ -877,13 +836,13 @@
 
                     <td class="attendance">
                         <strong>
-                            {{ $item->jumlah_hadir }}/{{ $item->total_siswa }}
+                            {{ $item->jml_hadir ?? 0 }}/{{ ($item->jml_hadir ?? 0) + ($item->jml_tidak_hadir ?? 0) }}
                         </strong>
                     </td>
 
                     <td>
-                        <span class="status {{ strtolower($item->status) }}">
-                            {{ $item->status }}
+                        <span class="status {{ strtolower($item->status_validasi_guru) }}">
+                            {{ $item->status_validasi_guru }}
                         </span>
                     </td>
 

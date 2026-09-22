@@ -11,8 +11,11 @@
         p { color: #475569; font-size: 16px; margin: 6px 0; }
         img { height: 75mm; margin: 16px 0; width: 75mm; }
         .note { font-size: 13px; }
-        .print-button { background: #172033; border: 0; color: #fff; cursor: pointer; margin-top: 18px; padding: 10px 18px; }
-        @media print { .print-button { display: none; } .sheet { margin: 0 auto; } }
+        .print-button, .back-button { border: 0; border-radius: 8px; color: #fff; cursor: pointer; font-weight: 700; margin-top: 18px; padding: 10px 18px; }
+        .print-button { background: #172033; }
+        .back-button { background: #64748b; margin-right: 10px; text-decoration: none; display: inline-block; }
+        .action-row { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; }
+        @media print { .print-button, .back-button { display: none; } .sheet { margin: 0 auto; } }
     </style>
 </head>
 <body>
@@ -21,7 +24,10 @@
         <p>QR Kehadiran Guru</p>
         <img src="{{ route('admin.kelas.qr', $kelas) }}" alt="QR kelas {{ $kelas->nama_kelas }}">
         <p class="note">Scan QR ini saat mengisi jurnal di kelas.</p>
-        <button class="print-button" type="button" onclick="window.print()">Cetak</button>
+        <div class="action-row">
+            <a href="{{ route('admin.kelas.index') }}" class="back-button">Kembali</a>
+            <button class="print-button" type="button" onclick="window.print()">Cetak</button>
+        </div>
     </main>
 </body>
 </html>
