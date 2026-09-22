@@ -198,27 +198,41 @@
 
             <tbody style="font-size: 13px;">
                 @forelse($kelas as $index => $item)
-                <tr class="table-kelas-row" style="animation-delay: {{ $index * 0.04 }}s;">
-                    <td class="col-id" style="padding: 16px; color: #64748b; font-weight: 700; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-left: 4px solid transparent; transition: all 0.2s;">
-                        KLS-{{ str_pad($item->id_kelas ?? $item->id, 3, '0', STR_PAD_LEFT) }}
-                    </td>
-                    <td style="padding: 16px; color: #0f172a; font-weight: 700;">
-                        {{ $item->nama_kelas }}
-                    </td>
-                    <td style="padding: 16px; color: #475569;">
-                        {{ $item->waliKelas->nama_guru ?? '-' }}
-                    </td>
-                    <td style="padding: 16px; text-align: center; color: #475569;">
-                        <span style="background-color: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 12px;">
-                            {{ $item->siswas_count ?? $item->siswas->count() ?? 0 }} Siswa
-                        </span>
-                    </td>
-                    <td style="padding: 16px; text-align: center; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
-                       <a href="{{ route('admin.kelas.siswa', ['kelas_id' => $item->id_kelas ?? $item->id]) }}" class="action-btn" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f8fafc; border-radius: 50%;">
-                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
-                       </a>
-                    </td>
-                </tr>
+                <tr
+    class="table-kelas-row"
+    style="animation-delay: {{ $index * 0.04 }}s; cursor: pointer;"
+    onclick="window.location='{{ route('admin.kelas.siswa', ['kelas_id' => $item->id_kelas ?? $item->id]) }}'"
+>
+    <td class="col-id"
+        style="padding: 16px; color: #64748b; font-weight: 700; border-top-left-radius: 10px; border-bottom-left-radius: 10px; border-left: 4px solid transparent; transition: all 0.2s;">
+        KLS-{{ str_pad($item->id_kelas ?? $item->id, 3, '0', STR_PAD_LEFT) }}
+    </td>
+
+    <td style="padding: 16px; color: #0f172a; font-weight: 700;">
+        {{ $item->nama_kelas }}
+    </td>
+
+    <td style="padding: 16px; color: #475569;">
+        {{ $item->waliKelas->nama_guru ?? '-' }}
+    </td>
+
+    <td style="padding: 16px; text-align: center; color: #475569;">
+        <span style="background-color: #e0e7ff; color: #3730a3; padding: 4px 10px; border-radius: 12px; font-weight: 700; font-size: 12px;">
+            {{ $item->siswas_count ?? $item->siswas->count() ?? 0 }} Siswa
+        </span>
+    </td>
+
+    <td style="padding: 16px; text-align: center; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
+        <span
+            class="action-btn"
+            style="color: #64748b; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f8fafc; border-radius: 50%;"
+        >
+            <span class="material-symbols-outlined" style="font-size: 18px;">
+                chevron_right
+            </span>
+        </span>
+    </td>
+</tr>
                 @empty
                 <tr>
                     <td colspan="5" style="padding: 32px; text-align: center; color: #94a3b8;">

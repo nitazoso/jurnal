@@ -1,343 +1,428 @@
 @extends('layouts.admin')
-@section('title', 'Profil - Jurnify')
+@section('title', 'Profil Admin - Jurnify')
 @section('page-title', 'Profil')
-
+@section('page-subtitle', 'Informasi Data Diri & Akun Administrator')
 @section('content')
+
+{{-- Font Manrope --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 @php
     $user = auth()->user();
-    $profileName = $user->nama_user ?? '-';
-    $profilePhone = $user->no_wa ?? $user->guru?->no_hp ?? '-';
 @endphp
 
 <div class="profile-page">
 
-    {{-- HERO PROFILE --}}
-    <div class="profile-hero">
+    {{-- PROFILE HERO --}}
+    <section class="profile-hero">
 
-        <button type="button" class="profile-edit-btn" title="Edit Profil">
-            <span class="material-symbols-outlined">edit</span>
-        </button>
+        {{-- Edit --}}
+        <a
+            href="{{ url('/admin/profil/edit') }}"
+            class="profile-edit"
+            aria-label="Edit Profil"
+            title="Edit Profil"
+        >
+            <svg
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+        </a>
 
+        {{-- Avatar --}}
         <div class="profile-avatar">
-            <span class="material-symbols-outlined">person</span>
+            <svg viewBox="0 0 24 24">
+                <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+            </svg>
         </div>
 
-        <h1 class="profile-name">
-            {{ $profileName }}
-        </h1>
+        {{-- Name --}}
+        <h3 class="profile-name">
+            {{ $user->nama_user ?? 'Admin' }}
+        </h3>
 
-    </div>
+        {{-- Role --}}
+        <span class="profile-role">
+            {{ strtoupper($user->role ?? 'ADMIN') }}
+        </span>
 
-    {{-- PROFILE INFORMATION --}}
-    <div class="profile-info-card">
+    </section>
 
-        <div class="profile-info-item">
-            <span class="profile-label">Nama Lengkap</span>
-            <span class="profile-value">
-                {{ $profileName }}
-            </span>
+    {{-- PERSONAL DETAILS --}}
+    <section class="personal-card">
+
+        {{-- Nama --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Nama Lengkap
+            </p>
+
+            <p class="personal-value">
+                {{ $user->nama_user ?? '-' }}
+            </p>
         </div>
 
-        <div class="profile-info-item">
-            <span class="profile-label">Username</span>
-            <span class="profile-value">
-                {{ $user->username ?? '-' }}
-            </span>
+        <hr class="personal-divider">
+
+        {{-- Username / Email --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Email
+            </p>
+
+            <p class="personal-value">
+                {{ $user->email ?? '-' }}
+            </p>
         </div>
 
-        <div class="profile-info-item">
-            <span class="profile-label">Nomor Telepon</span>
-            <span class="profile-value">
-                {{ $profilePhone }}
-            </span>
+        <hr class="personal-divider">
+
+        {{-- Role --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Role
+            </p>
+
+            <p class="personal-value">
+                {{ ucfirst($user->role ?? 'Admin') }}
+            </p>
         </div>
 
-    </div>
+        <hr class="personal-divider">
+
+        {{-- Nomor Telepon --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Nomor Telepon
+            </p>
+
+            <p class="personal-value">
+                {{ $user->no_hp ?? $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
+            </p>
+        </div>
+
+    </section>
 
     {{-- LOGOUT --}}
-    <form action="{{ route('logout') }}" method="POST" class="logout-form" onsubmit="return confirm('Anda yakin ingin logout?');">
-        @csrf
-        <button type="submit" class="logout-btn">
-            <span>Keluar</span>
-            <span class="material-symbols-outlined logout-icon">logout</span>
-        </button>
-    </form> 
+    <div class="logout-wrapper">
+
+        <form
+            action="{{ route('logout') }}"
+            method="POST"
+            onsubmit="return confirm('Anda yakin ingin logout?');"
+        >
+            @csrf
+
+            <button
+                class="logout-button"
+                type="submit"
+            >
+                Keluar
+            </button>
+
+        </form>
+
+    </div>
+
 </div>
 
-@endsection
-
-@push('styles')
 <style>
-    .profile-page {
-        padding: 10px;
-        max-width: 1440px;
-        margin: 0 auto;
-        animation: profilePageIn 0.55s ease both;
+    .profile-page,
+    .profile-page * {
+        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        box-sizing: border-box;
     }
 
-    /* =========================
-       HERO
-    ========================= */
+    .profile-page {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
 
+    /* PROFILE HERO */
     .profile-hero {
         position: relative;
-        min-height: 307px;
-        background: #B4BFE5;
-        border-radius: 14px;
+        min-height: 280px;
+        padding: 36px 24px;
+        background: linear-gradient(135deg, #A9B5DF 0%, #BFC9EA 100%);
+        border: 1px solid rgba(255, 255, 255, 0.65);
+        border-radius: 24px;
+        box-shadow: 0 8px 24px rgba(45, 51, 107, 0.08);
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 32px;
+        text-align: center;
         overflow: hidden;
+        isolation: isolate;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .profile-hero::before {
+        content: "";
+        position: absolute;
+        width: 220px;
+        height: 220px;
+        top: -110px;
+        left: -70px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.16);
+        pointer-events: none;
+        z-index: -1;
     }
 
     .profile-hero::after {
         content: "";
         position: absolute;
-        width: 260px;
-        height: 260px;
+        width: 280px;
+        height: 280px;
+        right: -130px;
+        bottom: -170px;
         border-radius: 50%;
-        background: rgba(255, 255, 255, 0.08);
-        top: -130px;
-        left: -80px;
+        background: rgba(45, 51, 107, 0.07);
         pointer-events: none;
+        z-index: -1;
     }
 
-    .profile-edit-btn {
+    .profile-hero:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 32px rgba(45, 51, 107, 0.11);
+    }
+
+    .profile-edit {
         position: absolute;
-        top: 24px;
-        right: 24px;
-        width: 36px;
-        height: 36px;
-        border: none;
-        border-radius: 8px;
-        background: rgba(120, 134, 199, 0.35);
-        color: #30366F;
+        top: 20px;
+        right: 20px;
+        width: 42px;
+        height: 42px;
+        padding: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        color: #2D336B;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        z-index: 2;
+        backdrop-filter: blur(4px);
+        text-decoration: none;
         transition:
-            background 0.25s ease,
-            transform 0.25s ease,
-            box-shadow 0.25s ease;
+            background-color 0.2s ease,
+            color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
     }
 
-    .profile-edit-btn:hover {
-        background: rgba(120, 134, 199, 0.55);
-        transform: translateY(-2px);
-        box-shadow: 0 5px 12px rgba(48, 54, 111, 0.12);
+    .profile-edit:hover {
+        background: rgba(255, 255, 255, 0.8);
+        color: #2D336B;
+        transform: rotate(-4deg) scale(1.06);
+        box-shadow: 0 5px 14px rgba(45, 51, 107, 0.12);
     }
 
-    .profile-edit-btn:active {
-        transform: scale(0.94);
+    .profile-edit:active {
+        transform: scale(0.96);
     }
 
-    .profile-edit-btn .material-symbols-outlined {
-        font-size: 22px;
-        transition: transform 0.25s ease;
+    .profile-edit svg {
+        width: 22px;
+        height: 22px;
     }
-
-    .profile-edit-btn:hover .material-symbols-outlined {
-        transform: rotate(-8deg);
-    }
-
-    /* =========================
-       AVATAR
-    ========================= */
 
     .profile-avatar {
-        width: 170px;
-        height: 170px;
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin-bottom: 16px;
+        border: 4px solid rgba(255, 255, 255, 0.85);
         border-radius: 50%;
-        background: #FFFFFF;
+        background: linear-gradient(135deg, #2D336B 0%, #47539B 100%);
+        color: #FFFFFF;
+        box-shadow:
+            0 8px 20px rgba(45, 51, 107, 0.14),
+            0 0 0 6px rgba(255, 255, 255, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 24px;
-        overflow: hidden;
-        position: relative;
-        z-index: 1;
-        box-shadow: 0 8px 20px rgba(48, 54, 111, 0.08);
-        animation: avatarIn 0.7s ease both;
         transition:
             transform 0.3s ease,
             box-shadow 0.3s ease;
     }
 
-    .profile-avatar:hover {
-        transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 12px 25px rgba(48, 54, 111, 0.13);
+    .profile-avatar::after {
+        content: "";
+        position: absolute;
+        inset: -6px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: inherit;
+        pointer-events: none;
     }
 
-    .profile-avatar .material-symbols-outlined {
-        font-size: 82px;
-        color: #7886C7;
-        transition: transform 0.35s ease;
+    .profile-hero:hover .profile-avatar {
+        transform: translateY(-3px);
+        box-shadow:
+            0 12px 26px rgba(45, 51, 107, 0.18),
+            0 0 0 6px rgba(255, 255, 255, 0.25);
     }
 
-    .profile-avatar:hover .material-symbols-outlined {
-        transform: scale(1.06);
+    .profile-avatar svg {
+        width: 56px;
+        height: 56px;
+        fill: #FFFFFF;
+        opacity: 0.9;
     }
-
-    /* =========================
-       NAME
-    ========================= */
 
     .profile-name {
-        margin: 0;
-        color: #30366F;
-        font-size: 36px;
-        line-height: 1.2;
-        font-weight: 700;
-        position: relative;
-        z-index: 1;
-        animation: nameIn 0.65s ease 0.15s both;
+        margin: 0 0 10px;
+        color: #2D336B;
+        font-size: 26px;
+        line-height: 1.3;
+        font-weight: 800;
+        letter-spacing: -0.4px;
     }
 
-    /* =========================
-       INFORMATION CARD
-    ========================= */
-
-    .profile-info-card {
-        margin-top: 32px;
-        background: #FFFFFF;
-        border-radius: 14px;
-        padding: 15px 32px;
-        box-shadow: 0 2px 12px rgba(48, 54, 111, 0.03);
-        animation: cardIn 0.65s ease 0.2s both;
+    .profile-role {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 20px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        color: #2D336B;
+        font-size: 12.5px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 12px rgba(45, 51, 107, 0.08);
         transition:
-            box-shadow 0.3s ease,
-            transform 0.3s ease;
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
     }
 
-    .profile-info-card:hover {
-        box-shadow: 0 6px 20px rgba(48, 54, 111, 0.06);
+    .profile-role:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 14px rgba(45, 51, 107, 0.12);
     }
 
-    .profile-info-item {
-        min-height: 90px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        border-bottom: 1px solid #E1E4EC;
-        position: relative;
-        transition: padding-left 0.25s ease;
+    /* PERSONAL DETAILS */
+    .personal-card {
+        padding: 28px 32px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 20px;
+        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03);
+        transition:
+            transform 0.25s ease,
+            box-shadow 0.25s ease,
+            border-color 0.25s ease;
     }
 
-    .profile-info-item:last-child {
-        border-bottom: none;
+    .personal-card:hover {
+        transform: translateY(-2px);
+        border-color: #CBD5E1;
+        box-shadow: 0 10px 24px rgba(45, 51, 107, 0.06);
     }
 
-    .profile-info-item:hover {
-        padding-left: 5px;
+    .personal-field {
+        padding: 4px 0;
+        transition: transform 0.2s ease;
     }
 
-    .profile-label {
-        color: #62708F;
-        font-size: 13px;
-        font-weight: 500;
-        margin-bottom: 5px;
-        transition: color 0.25s ease;
+    .personal-field:hover {
+        transform: translateX(4px);
     }
 
-    .profile-info-item:hover .profile-label {
+    .personal-label {
+        margin: 0 0 4px;
+        color: #64748B;
+        font-size: 12.5px;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+
+    .personal-field:hover .personal-label {
         color: #7886C7;
     }
 
-    .profile-value {
-        color: #30366F;
+    .personal-value {
+        margin: 0;
+        color: #0F172A;
         font-size: 16px;
-        font-weight: 600;
-    }
-
-    /* =========================
-       LOGOUT
-    ========================= */
-
-    .logout-form {
-        margin-top: 32px;
-        animation: cardIn 0.65s ease 0.3s both;
-    }
-
-    .logout-btn {
-        width: 100%;
-        min-height: 96px;
-        border: none;
-        border-radius: 14px;
-        background: #FFCBA9;
-        color: #D93434;
-        text-align: left;
-        padding: 0 26px;
-        font-family: 'Manrope', sans-serif;
-        font-size: 19px;
         font-weight: 700;
+        word-break: break-word;
+    }
+
+    .personal-divider {
+        margin: 16px 0;
+        border: 0;
+        border-top: 1px solid #F1F5F9;
+    }
+
+    /* LOGOUT */
+    .logout-wrapper {
+        padding-top: 0;
+    }
+
+    .logout-button {
+        width: 100%;
+        padding: 15px 20px;
+        border: 1px solid rgba(201, 74, 43, 0.15);
+        border-radius: 16px;
+        background: #FEE2E2;
+        color: #DC2626;
+        font-size: 15px;
+        font-weight: 700;
+        text-align: center;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
         transition:
-            background 0.25s ease,
-            transform 0.25s ease,
-            box-shadow 0.25s ease;
+            background-color 0.2s ease,
+            transform 0.2s ease,
+            box-shadow 0.2s ease,
+            border-color 0.2s ease;
     }
 
-    .logout-btn:hover {
-        background: #FFC09A;
+    .logout-button:hover {
+        background: #FCA5A5;
+        border-color: rgba(220, 38, 38, 0.2);
+        color: #B91C1C;
         transform: translateY(-2px);
-        box-shadow: 0 7px 18px rgba(217, 52, 52, 0.08);
+        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.12);
     }
 
-    .logout-btn:active {
-        transform: scale(0.99);
+    .logout-button:active {
+        transform: translateY(0) scale(0.99);
+        box-shadow: none;
     }
 
-    .logout-icon {
-        font-size: 23px;
-        opacity: 0;
-        transform: translateX(-8px);
-        transition:
-            opacity 0.25s ease,
-            transform 0.25s ease;
+    /* ANIMATIONS */
+    .profile-hero,
+    .personal-card,
+    .logout-wrapper {
+        animation: profileFadeUp 0.45s cubic-bezier(.16, 1, .3, 1) both;
     }
 
-    .logout-btn:hover .logout-icon {
-        opacity: 1;
-        transform: translateX(0);
+    .personal-card {
+        animation-delay: 0.06s;
     }
 
-    /* =========================
-       ANIMATIONS
-    ========================= */
-
-    @keyframes profilePageIn {
-        from {
-            opacity: 0;
-            transform: translateY(8px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .logout-wrapper {
+        animation-delay: 0.12s;
     }
 
-    @keyframes avatarIn {
-        from {
-            opacity: 0;
-            transform: scale(0.9) translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    @keyframes nameIn {
+    @keyframes profileFadeUp {
         from {
             opacity: 0;
             transform: translateY(10px);
@@ -349,61 +434,128 @@
         }
     }
 
-    @keyframes cardIn {
-        from {
-            opacity: 0;
-            transform: translateY(14px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    /* =========================
-       RESPONSIVE
-    ========================= */
-
-    @media (max-width: 768px) {
+    /* RESPONSIVE */
+    @media (min-width: 768px) and (max-width: 1100px) {
         .profile-page {
-            padding: 24px 20px;
+            padding: 0;
         }
 
         .profile-hero {
-            min-height: 280px;
+            padding: 32px;
+        }
+    }
+
+    @media (max-width: 767px) {
+        .profile-page {
+            padding: 0 0 24px;
+            gap: 16px;
+        }
+
+        .profile-hero {
+            min-height: 250px;
+            padding: 28px 20px 24px;
+            border-radius: 20px;
+        }
+
+        .profile-edit {
+            top: 14px;
+            right: 14px;
+            width: 38px;
+            height: 38px;
+        }
+
+        .profile-edit svg {
+            width: 18px;
+            height: 18px;
         }
 
         .profile-avatar {
-            width: 140px;
-            height: 140px;
+            width: 96px;
+            height: 96px;
+            margin-bottom: 14px;
+        }
+
+        .profile-avatar svg {
+            width: 48px;
+            height: 48px;
         }
 
         .profile-name {
-            font-size: 30px;
+            margin-bottom: 10px;
+            font-size: 22px;
         }
 
-        .profile-info-card {
-            padding: 12px 22px;
+        .profile-role {
+            padding: 5px 16px;
+            font-size: 11.5px;
+        }
+
+        .personal-card {
+            padding: 20px 18px;
+            border-radius: 16px;
+        }
+
+        .personal-field {
+            padding: 2px 0;
+        }
+
+        .personal-label {
+            margin-bottom: 4px;
+            font-size: 11.5px;
+        }
+
+        .personal-value {
+            font-size: 14.5px;
+        }
+
+        .personal-divider {
+            margin: 14px 0;
+        }
+
+        .logout-button {
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 420px) {
+        .profile-hero {
+            min-height: 230px;
+            padding: 24px 16px 20px;
+        }
+
+        .profile-avatar {
+            width: 84px;
+            height: 84px;
+        }
+
+        .profile-avatar svg {
+            width: 42px;
+            height: 42px;
+        }
+
+        .profile-name {
+            font-size: 20px;
+        }
+
+        .personal-card {
+            padding: 18px 16px;
         }
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .profile-page,
+        .profile-hero,
         .profile-avatar,
-        .profile-name,
-        .profile-info-card,
-        .logout-form {
-            animation: none;
-        }
-
-        .profile-edit-btn,
-        .profile-avatar,
-        .profile-info-item,
-        .logout-btn,
-        .logout-icon {
+        .profile-edit,
+        .profile-role,
+        .personal-card,
+        .personal-field,
+        .logout-button {
             transition: none;
+            animation: none;
         }
     }
 </style>
-@endpush
+
+@endsection
