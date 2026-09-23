@@ -36,7 +36,13 @@ Route::get('/', function () {
         return redirect()->route('login');
     }
 
-    return match (auth()->user()->role) {
+    $user = auth()->user();
+
+    if ($user->role === 'Guru' && $user->hasPiketToday()) {
+        return redirect()->route('piket.dashboard');
+    }
+
+    return match ($user->role) {
         'Admin' => redirect()->route('admin.dashboard'),
         'Guru' => redirect()->route('guru.dashboard'),
         'Kesiswaan' => redirect()->route('kesiswaan.dashboard'),
@@ -63,6 +69,12 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::get('/admin/jurnal', [JurnalController::class, 'index'])
         ->name('admin.jurnal.index');
+
+    Route::get('/admin/jurnal/{jurnal}/edit', [JurnalController::class, 'edit'])
+        ->name('admin.jurnal.edit');
+
+    Route::put('/admin/jurnal/{jurnal}', [JurnalController::class, 'update'])
+        ->name('admin.jurnal.update');
 
     Route::get('/admin/jurnal/{jurnal}', [JurnalController::class, 'show'])
         ->name('admin.jurnal.show');
@@ -332,7 +344,7 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     })->name('guru.profil.update');
 });
 
-Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
+Route::middleware(['auth', 'role:Guru,Staff Piket'])->group(function () {
     Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
         ->name('piket.dashboard');
 
@@ -345,7 +357,6 @@ Route::middleware(['auth', 'role:Staff Piket'])->group(function () {
 
     Route::get('/piket/jadwal', [JadwalPiketController::class, 'index'])
         ->name('piket.jadwal.index');
-
 
     Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
     Route::get('/piket/dispen/riwayat', [PiketDispenController::class, 'history'])->name('piket.dispen.history');

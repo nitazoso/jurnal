@@ -19,8 +19,12 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        if ($user->role !== 'Staff Piket') {
+        if (! in_array($user->role, ['Guru', 'Staff Piket'], true)) {
             abort(403, 'Akses ditolak.');
+        }
+
+        if ($user->role === 'Guru' && ! $user->hasPiketToday()) {
+            return redirect()->route('guru.dashboard')->with('info', 'Anda tidak memiliki jadwal piket hari ini.');
         }
 
         $today = now()->toDateString();

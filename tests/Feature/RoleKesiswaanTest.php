@@ -77,14 +77,12 @@ class RoleKesiswaanTest extends TestCase
         $response = $this->actingAs($admin)
             ->post(route('admin.guru.store'), [
                 'nama_guru' => 'Guru Tanpa NIP',
-                'no_hp' => '081234567890',
             ]);
 
         $response->assertRedirect(route('admin.guru.index'));
 
         $this->assertDatabaseHas('gurus', [
             'nama_guru' => 'Guru Tanpa NIP',
-            'no_hp' => '081234567890',
         ]);
     }
 
@@ -125,7 +123,6 @@ class RoleKesiswaanTest extends TestCase
 
         $guru = Guru::create([
             'nama_guru' => 'Guru Wali Kelas',
-            'no_hp' => '081111111111',
         ]);
 
         $kelas = Kelas::create([
@@ -193,7 +190,6 @@ class RoleKesiswaanTest extends TestCase
     {
         $guru = Guru::create([
             'nama_guru' => 'Guru Baru',
-            'no_hp' => '081234567890',
         ]);
 
         $guruUser = User::create([

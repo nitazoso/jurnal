@@ -1809,22 +1809,6 @@
 
                 </div>
 
-                <div style="margin-top: 16px;">
-
-                    <div class="field-group">
-
-                        <label class="field-label">Catatan Umum</label>
-
-                        <textarea
-                            name="catatan_umum"
-                            class="field-textarea"
-                            placeholder="Tambahkan catatan jika diperlukan..."
-                        >{{ old('catatan_umum') }}</textarea>
-
-                    </div>
-
-                </div>
-
             </section>
 
             {{-- ACTION --}}

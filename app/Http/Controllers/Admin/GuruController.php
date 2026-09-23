@@ -43,7 +43,6 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
-            'no_hp' => 'nullable|string|max:20',
         ]);
 
         Guru::create($validated);
@@ -66,7 +65,6 @@ class GuruController extends Controller
 
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
-            'no_hp' => 'nullable|string|max:20',
         ]);
 
         $guru->update($validated);

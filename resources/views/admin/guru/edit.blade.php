@@ -33,7 +33,7 @@
             </div>
             <div class="header-info">
                 <h1 class="header-title">Edit Data Guru</h1>
-                <p class="header-subtitle">Perbarui NIP, nama lengkap, atau kontak guru yang terpilih</p>
+                <p class="header-subtitle">Perbarui nama lengkap atau kontak guru yang terpilih</p>
             </div>
         </div>
 
@@ -65,23 +65,6 @@
             <div class="card-body-inner">
                 <div class="form-grid">
 
-                        {{-- NIP --}}
-                        <div class="form-group">
-                            <label for="nip" class="form-label">
-                                NIP <span class="required">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="nip"
-                                name="nip"
-                                value="{{ old('nip', $guru->nip) }}"
-                                placeholder="Masukkan NIP guru"
-                                required
-                                class="form-input @error('nip') is-invalid @enderror"
-                            >
-                            <span class="form-hint">Nomor Induk Pegawai resmi.</span>
-                        </div>
-
                         {{-- NAMA GURU --}}
                         <div class="form-group">
                             <label for="nama_guru" class="form-label">
@@ -97,23 +80,6 @@
                                 class="form-input @error('nama_guru') is-invalid @enderror"
                             >
                             <span class="form-hint">Nama lengkap beserta gelar akademik.</span>
-                        </div>
-
-                        {{-- NO HP --}}
-                        <div class="form-group full-width">
-                            <label for="no_hp" class="form-label">
-                                Nomor HP / WhatsApp
-                            </label>
-                            <input
-                                type="text"
-                                id="no_hp"
-                                name="no_hp"
-                                value="{{ old('no_hp', $guru->no_hp) }}"
-                                placeholder="Contoh: 081234567890"
-                                inputmode="tel"
-                                class="form-input @error('no_hp') is-invalid @enderror"
-                            >
-                            <span class="form-hint">Digunakan untuk kontak dan koordinasi piket.</span>
                         </div>
 
                     </div>

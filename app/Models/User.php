@@ -48,6 +48,17 @@ class User extends Authenticatable implements PasskeyUser
         return $this->role === $role;
     }
 
+    public function hasPiketToday(): bool
+    {
+        if (! $this->id_guru) {
+            return false;
+        }
+
+        return \App\Models\PiketJadwal::where('id_guru', $this->id_guru)
+            ->whereDate('tanggal', now()->toDateString())
+            ->exists();
+    }
+
     public function initials(): string
     {
         $initials = Str::initials($this->nama_user ?? '', true);

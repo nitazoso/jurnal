@@ -33,7 +33,12 @@ class FortifyServiceProvider extends ServiceProvider
                 return redirect()->to($redirectTarget);
             }
 
-            $role = Auth::user()->role;
+            $user = Auth::user();
+            $role = $user?->role;
+
+            if ($role === 'Guru' && $user->hasPiketToday()) {
+                return redirect()->route('piket.dashboard');
+            }
 
             return match ($role) {
                 'Admin'       => redirect()->route('admin.dashboard'),

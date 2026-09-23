@@ -189,7 +189,7 @@
                             </option>
 
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
-                                Sekretaris / Kurikulum
+                                Sekretaris
                             </option>
 
                             <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>
@@ -242,9 +242,6 @@
                                     {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
                                 >
                                     {{ $guru->nama_guru }}
-                                    @if ($guru->nip)
-                                        - NIP {{ $guru->nip }}
-                                    @endif
                                 </option>
                             @endforeach
                         </select>

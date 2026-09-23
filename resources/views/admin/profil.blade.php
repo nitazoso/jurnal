@@ -7,7 +7,6 @@
 @php
     $user = auth()->user();
     $profileName = $user->nama_user ?? '-';
-    $profilePhone = $user->no_wa ?? $user->guru?->no_hp ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -65,13 +64,6 @@
         <span class="profile-label">Username</span>
         <span class="profile-value">
             {{ $user->username ?? '-' }}
-        </span>
-    </div>
-
-    <div class="profile-info-item">
-        <span class="profile-label">Nomor Telepon</span>
-        <span class="profile-value">
-            {{ $profilePhone }}
         </span>
     </div>
 

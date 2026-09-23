@@ -44,6 +44,7 @@ class UserController extends Controller
         // Statistik
         $totalUser = User::count();
         $totalGuru = User::where('role', 'Guru')->count();
+        $totalAdmin = User::where('role', 'Admin')->count();
         $totalKesiswaan = User::where('role', 'Kesiswaan')->count();
         $totalStaffPiket = User::where('role', 'Staff Piket')->count();
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
@@ -52,6 +53,7 @@ class UserController extends Controller
         return view('admin.user.index', compact(
             'users',
             'totalUser',
+            'totalAdmin',
             'totalGuru',
             'totalKesiswaan',
             'totalStaffPiket',
@@ -160,6 +162,16 @@ class UserController extends Controller
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
+        if (
+            $user->role === 'Admin'
+            && $validated['role'] !== 'Admin'
+            && User::where('role', 'Admin')->count() <= 1
+        ) {
+            return back()
+                ->withInput()
+                ->with('error', 'Admin terakhir tidak dapat diganti rolenya. Buat akun Admin lain terlebih dahulu.');
+        }
+
         // Kalau password diisi, hash password baru
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -181,6 +193,12 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+
+        if ($user->role === 'Admin' && User::where('role', 'Admin')->count() <= 1) {
+            return redirect()
+                ->route('admin.user.index')
+                ->with('error', 'Admin terakhir tidak dapat dihapus. Buat akun Admin lain terlebih dahulu.');
+        }
 
         $user->delete();
 
