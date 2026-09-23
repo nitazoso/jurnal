@@ -11,6 +11,8 @@
 
 @php
     $user = auth()->user();
+    $profileName = $user->nama_user ?? 'Admin';
+    $profilePhone = $user->no_wa ?? $user->no_hp ?? $user->guru?->no_hp ?? $user->no_telepon ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -48,7 +50,7 @@
 
         {{-- Name --}}
         <h3 class="profile-name">
-            {{ $user->nama_user ?? 'Admin' }}
+            {{ $profileName }}
         </h3>
 
         {{-- Role --}}
@@ -61,14 +63,13 @@
     {{-- PERSONAL DETAILS --}}
     <section class="personal-card">
 
-        {{-- Nama --}}
+        {{-- Nama Lengkap --}}
         <div class="personal-field">
             <p class="personal-label">
                 Nama Lengkap
             </p>
-
             <p class="personal-value">
-                {{ $user->nama_user ?? '-' }}
+                {{ $profileName }}
             </p>
         </div>
 
@@ -77,11 +78,10 @@
         {{-- Username / Email --}}
         <div class="personal-field">
             <p class="personal-label">
-                Email
+                Email / Username
             </p>
-
             <p class="personal-value">
-                {{ $user->email ?? '-' }}
+                {{ $user->email ?? $user->username ?? '-' }}
             </p>
         </div>
 
@@ -92,7 +92,6 @@
             <p class="personal-label">
                 Role
             </p>
-
             <p class="personal-value">
                 {{ ucfirst($user->role ?? 'Admin') }}
             </p>
@@ -105,9 +104,8 @@
             <p class="personal-label">
                 Nomor Telepon
             </p>
-
             <p class="personal-value">
-                {{ $user->no_hp ?? $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
+                {{ $profilePhone }}
             </p>
         </div>
 

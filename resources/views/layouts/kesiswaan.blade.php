@@ -33,7 +33,8 @@
 
             <nav class="nav">
                 <a href="{{ route('kesiswaan.dashboard') }}" class="{{ request()->routeIs('kesiswaan.dashboard') ? 'active' : '' }}">Dashboard</a>
-                <a href="{{ route('kesiswaan.dispen.index') }}" class="{{ request()->routeIs('kesiswaan.dispen.*') ? 'active' : '' }}">Persetujuan Dispen</a>
+                <a href="{{ route('kesiswaan.dispen.index') }}" class="{{ request()->routeIs('kesiswaan.dispen.index', 'kesiswaan.dispen.show', 'kesiswaan.dispen.approve', 'kesiswaan.dispen.reject') ? 'active' : '' }}">Persetujuan Dispen</a>
+                <a href="{{ route('kesiswaan.dispen.history') }}" class="{{ request()->routeIs('kesiswaan.dispen.history') ? 'active' : '' }}">Riwayat Dispen</a>
                 <a href="{{ route('kesiswaan.profil') }}" class="{{ request()->routeIs('kesiswaan.profil') ? 'active' : '' }}">Profil</a>
             </nav>
 

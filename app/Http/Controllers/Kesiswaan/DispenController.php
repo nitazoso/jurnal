@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Kesiswaan;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
-use App\Models\JadwalKesiswaan;
 use Illuminate\Http\Request;
 
 class DispenController extends Controller
@@ -12,25 +11,34 @@ class DispenController extends Controller
     public function index()
     {
         $dispens = Dispen::with(['siswa', 'jamMulai', 'jamSelesai'])
+            ->where('status', 'menunggu')
             ->latest()
             ->paginate(15);
 
         return view('kesiswaan.dispen.index', compact('dispens'));
     }
 
+    public function history()
+    {
+        $dispens = Dispen::with(['siswa', 'approver', 'jamMulai', 'jamSelesai'])
+            ->whereIn('status', ['disetujui', 'ditolak'])
+            ->latest('disetujui_pada')
+            ->paginate(15);
+
+        return view('kesiswaan.dispen.history', compact('dispens'));
+    }
+
     public function show(Dispen $dispen)
     {
+        $this->ensureScheduled($dispen);
+
         $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
 
         auth()->user()->unreadNotifications()
             ->where('data->dispen_id', $dispen->id_dispen)
             ->update(['read_at' => now()]);
 
-        $canApprove = JadwalKesiswaan::where('tanggal', $dispen->tanggal)
-            ->where('id_user', auth()->id())
-            ->exists();
-
-        return view('kesiswaan.dispen.show', compact('dispen', 'canApprove'));
+        return view('kesiswaan.dispen.show', compact('dispen'));
     }
 
     public function approve(Request $request, Dispen $dispen)
@@ -73,10 +81,18 @@ class DispenController extends Controller
 
     private function ensureScheduled(Dispen $dispen): void
     {
-        $scheduled = JadwalKesiswaan::where('tanggal', $dispen->tanggal)
-            ->where('id_user', auth()->id())
-            ->exists();
+        if ($dispen->id_kesiswaan) {
+            abort_unless(
+                $dispen->id_kesiswaan === auth()->id(),
+                403,
+                'Dispen ini ditujukan untuk petugas kesiswaan lain.'
+            );
 
-        abort_unless($scheduled, 403, 'Anda tidak bertugas sebagai petugas kesiswaan pada tanggal dispen ini.');
+            return;
+        }
+
+        // Pengajuan lama belum memiliki penerima Kesiswaan. Karena halaman ini
+        // sudah dilindungi role:Kesiswaan, semua petugas Kesiswaan dapat
+        // memeriksa dan memvalidasi pengajuan tersebut.
     }
 }

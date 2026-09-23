@@ -114,6 +114,81 @@ class RoleKesiswaanTest extends TestCase
         $this->assertTrue(password_verify('newpassword123', $guru->password));
     }
 
+    public function test_staff_piket_can_store_dispen_and_route_it_to_selected_kesiswaan(): void
+    {
+        $piket = User::create([
+            'username' => 'piket_dispen',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Staff Piket',
+            'role' => 'Staff Piket',
+        ]);
+
+        $guru = Guru::create([
+            'nama_guru' => 'Guru Wali Kelas',
+            'no_hp' => '081111111111',
+        ]);
+
+        $kelas = Kelas::create([
+            'nama_kelas' => 'XI IPA 1',
+            'wali_kelas' => $guru->id_guru,
+            'jumlah_siswa' => 30,
+        ]);
+
+        $siswa = \App\Models\Siswa::create([
+            'id_kelas' => $kelas->id_kelas,
+            'nis' => '1001',
+            'no_presensi' => 1,
+            'nama_siswa' => 'Budi Santoso',
+            'jenis_kelamin' => 'L',
+        ]);
+
+        $petugas = User::create([
+            'username' => 'kesiswaan_target',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Petugas Kesiswaan',
+            'role' => 'Kesiswaan',
+            'no_wa' => '081234567890',
+        ]);
+
+        $jamMulai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+            'durasi_menit' => 45,
+        ]);
+
+        $jamSelesai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 2,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:45:00',
+            'jam_selesai' => '08:30:00',
+            'durasi_menit' => 45,
+        ]);
+
+        $response = $this->actingAs($piket)
+            ->post(route('piket.dispen.store'), [
+                'id_kelas' => $kelas->id_kelas,
+                'id_siswa' => $siswa->id_siswa,
+                'id_kesiswaan' => $petugas->id_user,
+                'tanggal' => now()->toDateString(),
+                'id_jam_mulai' => $jamMulai->id_jam,
+                'id_jam_selesai' => $jamSelesai->id_jam,
+                'alasan' => 'Mengikuti lomba',
+            ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('dispens', [
+            'id_siswa' => $siswa->id_siswa,
+            'id_kesiswaan' => $petugas->id_user,
+            'status' => 'menunggu',
+            'alasan' => 'Mengikuti lomba',
+        ]);
+    }
+
     public function test_staff_piket_can_see_newly_submitted_journal(): void
     {
         $guru = Guru::create([

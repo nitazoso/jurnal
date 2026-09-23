@@ -57,8 +57,14 @@ class JurnalController extends Controller
             'jadwal.mapel',
             'jamMulai',
             'jamSelesai',
+            'absensiSiswa.siswa'
         ]);
 
         return view('admin.jurnal.show', compact('jurnal'));
+    }
+
+    public function absensiSiswa()
+    {
+        return $this->hasMany(DetailAbsensi::class, 'id_jurnal', 'id_jurnal');
     }
 }

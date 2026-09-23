@@ -6,8 +6,19 @@
 
 @section('content')
 
+<<<<<<< HEAD
 <style>
 
+=======
+
+{{-- Font Manrope --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+>>>>>>> crud-guru
     .journal-hero {
         width: 100%;
         min-height: 132px;
@@ -544,7 +555,6 @@
         }
     }
 </style>
-
 
 <div class="create-journal-page">
 

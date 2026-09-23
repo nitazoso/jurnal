@@ -17,7 +17,7 @@
         <div class="jurnal-header">
             <h3 class="jurnal-title">Daftar Jurnal</h3>
             <p class="jurnal-description">
-                Daftar jurnal pembelajaran yang telah dibuat oleh guru.
+                Daftar jurnal pembelajaran yang telah dibuat oleh guru. Klik pada rekap kehadiran untuk melihat detail nama siswa.
             </p>
         </div>
 
@@ -67,12 +67,12 @@
                 </thead>
 
                 <tbody>
-                    @forelse($jurnals as $jurnal)
+                    @forelse($jurnals as$jurnal)
                         <tr>
 
                             <td>
                                 <span class="number-text">
-                                    {{ $jurnals->firstItem() + $loop->index }}
+                                    {{ $jurnals->firstItem() +$loop->index }}
                                 </span>
                             </td>
 
@@ -103,14 +103,40 @@
                             </td>
 
                             <td>
-                                <div class="attendance-box">
-                                    <span class="hadir-text">
-                                        {{ $jurnal->jml_hadir ?? 0 }} hadir
-                                    </span>
-                                    <span class="absen-text">
-                                        {{ $jurnal->jml_tidak_hadir ?? 0 }} tidak hadir
-                                    </span>
-                                </div>
+                                {{-- Tombol Interaktif Rekap Kehadiran --}}
+                                <button type="button" class="attendance-btn" onclick="openAttendanceModal({{ $jurnal->id }})">
+                                    <div class="attendance-box">
+                                        <span class="hadir-text">
+                                            {{ $jurnal->jml_hadir ?? 0 }} hadir
+                                        </span>
+                                        <span class="absen-text">
+                                            {{ $jurnal->jml_tidak_hadir ?? 0 }} tidak hadir
+                                        </span>
+                                    </div>
+                                    <svg class="attendance-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 18l6-6-6-6"/>
+                                    </svg>
+                                </button>
+
+                                {{-- Hidden Data JSON untuk Modal Popup --}}
+                                <script id="attendance-data-{{ $jurnal->id }}" type="application/json">
+                                    {
+                                        "kelas": "{{ $jurnal->kelas->nama_kelas ?? '-' }}",
+                                        "materi": "{{ $jurnal->materi ?? '-' }}",
+                                        "siswa": [
+                                            @if($jurnal->absensiSiswa &&$jurnal->absensiSiswa->count() > 0)
+                                                @foreach($jurnal->absensiSiswa as$absensi)
+                                                    {
+                                                        "nama": "{{ $absensi->siswa->nama_siswa ?? $absensi->nama_siswa ?? 'Siswa' }}",
+                                                        "status": "{{ $absensi->status ?? 'Hadir' }}"
+                                                    }@if(!$loop->last),@endif
+                                                @endforeach
+                                            @else
+                                                { "nama": "Data siswa tidak ditemukan", "status": "-" }
+                                            @endif
+                                        ]
+                                    }
+                                </script>
                             </td>
 
                             <td>
@@ -120,7 +146,10 @@
                             </td>
 
                             <td>
-                                <span class="validation-badge">
+                                <span class="validation-badge
+                                    {{ strtolower($jurnal->status_validasi_guru ?? 'Disetujui') === 'disetujui' ? 'approved' : '' }}
+                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'menunggu' ? 'pending' : '' }}
+                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'ditolak' ? 'rejected' : '' }}">
                                     {{ $jurnal->status_validasi_guru ?? 'Disetujui' }}
                                 </span>
                             </td>
@@ -143,7 +172,7 @@
             <div class="pagination-wrapper">
 
                 <div class="pagination-info">
-                    Menampilkan {{ $jurnals->firstItem() }}–{{ $jurnals->lastItem() }}
+                    Menampilkan {{ $jurnals->firstItem() }}–{{$jurnals->lastItem() }}
                     dari {{ $jurnals->total() }} jurnal
                 </div>
 
@@ -153,32 +182,20 @@
                     @if($jurnals->onFirstPage())
                         <span class="disabled">
                             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path
-                                    d="M15 18L9 12L15 6"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
+                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
                     @else
                         <a href="{{ $jurnals->previousPageUrl() }}">
                             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path
-                                    d="M15 18L9 12L15 6"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
+                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </a>
                     @endif
 
                     {{-- PAGE NUMBERS --}}
-                    @foreach($jurnals->getUrlRange(1, $jurnals->lastPage()) as $page => $url)
-                        @if($page == $jurnals->currentPage())
+                    @foreach($jurnals->getUrlRange(1,$jurnals->lastPage()) as $page =>$url)
+                        @if($page ==$jurnals->currentPage())
                             <span class="active">{{ $page }}</span>
                         @else
                             <a href="{{ $url }}">{{ $page }}</a>
@@ -189,25 +206,13 @@
                     @if($jurnals->hasMorePages())
                         <a href="{{ $jurnals->nextPageUrl() }}">
                             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path
-                                    d="M9 18L15 12L9 6"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </a>
                     @else
                         <span class="disabled">
                             <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path
-                                    d="M9 18L15 12L9 6"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                />
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </span>
                     @endif
@@ -218,6 +223,40 @@
 
     </div>
 
+</div>
+
+{{-- MODAL POPUP KEHADIRAN SISWA --}}
+<div id="attendanceModal" class="modal-backdrop" onclick="closeAttendanceModal(event)">
+    <div class="modal-container" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <div>
+                <h4 class="modal-title">Detail Kehadiran Siswa</h4>
+                <p id="modalSubTitle" class="modal-subtitle">Kelas -</p>
+            </div>
+            <button type="button" class="modal-close" onclick="closeAttendanceModal()">
+                &times;
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <table class="modal-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">NO</th>
+                        <th>NAMA SISWA</th>
+                        <th style="text-align: right;">STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="modalStudentList">
+                    {{-- Diisi secara dinamis lewat JavaScript --}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <button type="button" class="btn-close-modal" onclick="closeAttendanceModal()">Tutup</button>
+        </div>
+    </div>
 </div>
 
 <style>
@@ -429,7 +468,37 @@
         -webkit-box-orient: vertical;
     }
 
-    /* ATTENDANCE */
+    /* ATTENDANCE BUTTON INTERACTIVE */
+    .attendance-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        padding: 6px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: left;
+    }
+
+    .attendance-btn:hover {
+        background: #F1F5F9;
+        border-color: #CBD5E1;
+        transform: translateY(-1px);
+    }
+
+    .attendance-chevron {
+        width: 16px;
+        height: 16px;
+        color: #94A3B8;
+        transition: color 0.2s ease;
+    }
+
+    .attendance-btn:hover .attendance-chevron {
+        color: #2D336B;
+    }
+
     .attendance-box {
         display: flex;
         flex-direction: column;
@@ -463,9 +532,37 @@
         white-space: nowrap;
     }
 
-    .status-badge {
-        background: #F0F3FF;
-        color: #2D336B;
+    /* Status Siswa Badges */
+    .student-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .student-badge.hadir { background: #DCFCE7; color: #15803D; }
+    .student-badge.izin { background: #E0F2FE; color: #0369A1; }
+    .student-badge.sakit { background: #FEF3C7; color: #B45309; }
+    .student-badge.alpa { background: #FEE2E2; color: #DC2626; }
+
+    /* Disetujui */
+    .validation-badge.approved {
+        background: #DCFCE7;
+        color: #15803D;
+    }
+
+    /* Menunggu */
+    .validation-badge.pending {
+        background: #FEF3C7;
+        color: #B45309;
+    }
+
+    /* Ditolak */
+    .validation-badge.rejected {
+        background: #FEE2E2;
+        color: #DC2626;
     }
 
     .validation-badge {
@@ -542,6 +639,130 @@
         display: block;
     }
 
+    /* STYLES MODAL POPUP */
+    .modal-backdrop {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(4px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .modal-backdrop.show {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-container {
+        background: #FFFFFF;
+        width: 90%;
+        max-width: 520px;
+        border-radius: 16px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        transform: scale(0.95);
+        transition: transform 0.25s ease;
+    }
+
+    .modal-backdrop.show .modal-container {
+        transform: scale(1);
+    }
+
+    .modal-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .modal-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        color: #2D336B;
+    }
+
+    .modal-subtitle {
+        margin: 4px 0 0;
+        font-size: 13px;
+        color: #64748B;
+        font-weight: 500;
+    }
+
+    .modal-close {
+        background: transparent;
+        border: none;
+        font-size: 24px;
+        color: #94A3B8;
+        cursor: pointer;
+        line-height: 1;
+        transition: color 0.2s ease;
+    }
+
+    .modal-close:hover {
+        color: #0F172A;
+    }
+
+    .modal-body {
+        padding: 16px 24px;
+        max-height: 380px;
+        overflow-y: auto;
+    }
+
+    .modal-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .modal-table th {
+        padding: 10px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        border-bottom: 1px solid #E2E8F0;
+        text-align: left;
+    }
+
+    .modal-table td {
+        padding: 12px;
+        font-size: 13.5px;
+        color: #1E293B;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #E2E8F0;
+        background: #F8FAFC;
+        text-align: right;
+    }
+
+    .btn-close-modal {
+        padding: 8px 18px;
+        background: #2D336B;
+        color: #FFFFFF;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-close-modal:hover {
+        background: #1E234A;
+    }
+
     /* ANIMATION */
     @keyframes jurnalFadeIn {
         from {
@@ -583,5 +804,56 @@
         }
     }
 </style>
+
+<script>
+    function openAttendanceModal(jurnalId) {
+        const rawData = document.getElementById(`attendance-data-${jurnalId}`).textContent;
+        const data = JSON.parse(rawData);
+        
+        document.getElementById('modalSubTitle').innerText = `Kelas: ${data.kelas}`;
+
+        const tbody = document.getElementById('modalStudentList');
+        tbody.innerHTML = '';
+
+        if (data.siswa && data.siswa.length > 0) {
+            data.siswa.forEach((student, index) => {
+                const statusClean = student.status.toLowerCase().trim();
+                let badgeClass = 'hadir';
+                
+                if (statusClean === 'izin') badgeClass = 'izin';
+                else if (statusClean === 'sakit') badgeClass = 'sakit';
+                else if (statusClean === 'alpa' || statusClean === 'tidak hadir') badgeClass = 'alpa';
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: #64748B; font-weight: 600;">${index + 1}</td>
+                    <td style="font-weight: 600; color: #0F172A;">${student.nama}</td>
+                    <td style="text-align: right;">
+                        <span class="student-badge ${badgeClass}">
+                            ${student.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } else {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; color: #94A3B8; padding: 20px;">
+                        Tidak ada data siswa
+                    </td>
+                </tr>
+            `;
+        }
+
+        const modal = document.getElementById('attendanceModal');
+        modal.classList.add('show');
+    }
+
+    function closeAttendanceModal(event) {
+        const modal = document.getElementById('attendanceModal');
+        modal.classList.remove('show');
+    }
+</script>
 
 @endsection

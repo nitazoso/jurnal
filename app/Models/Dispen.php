@@ -12,21 +12,20 @@ class Dispen extends Model
 
     protected $fillable = [
         'id_siswa',
-        'id_waka',
+        'id_kesiswaan',
         'tanggal',
         'id_jam_mulai',
         'id_jam_selesai',
         'alasan',
         'status',
-        'token_verifikasi',
-        'verified_at',
-        'verified_by',
-        'catatan_verifikasi',
+        'disetujui_oleh',
+        'disetujui_pada',
+        'catatan_persetujuan',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'verified_at' => 'datetime',
+        'disetujui_pada' => 'datetime',
     ];
 
 
@@ -39,18 +38,9 @@ class Dispen extends Model
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id_siswa');
     }
 
-
-    // =========================
-    // WAKA
-    // =========================
-
-    public function waka()
+    public function petugasKesiswaan()
     {
-        return $this->belongsTo(
-            Guru::class,
-            'id_waka',
-            'id_guru'
-        );
+        return $this->belongsTo(User::class, 'id_kesiswaan', 'id_user');
     }
 
 
@@ -83,14 +73,14 @@ class Dispen extends Model
 
 
     // =========================
-    // USER VERIFIKATOR
+    // PETUGAS KESISWAAN YANG MENGONFIRMASI
     // =========================
 
-    public function verifier()
+    public function approver()
     {
         return $this->belongsTo(
             User::class,
-            'verified_by',
+            'disetujui_oleh',
             'id_user'
         );
     }

@@ -4,11 +4,11 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dispen;
-use App\Models\JadwalKesiswaan;
 use App\Models\JamPel;
-use App\Models\Siswa;
+use App\Models\Kelas;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class DispenController extends Controller
 {
@@ -20,8 +20,10 @@ class DispenController extends Controller
         $dispens = Dispen::with([
             'siswa',
             'jamMulai',
-            'jamSelesai'
+            'jamSelesai',
+            'approver'
         ])
+            ->where('status', 'menunggu')
             ->latest('tanggal')
             ->paginate(10);
 
@@ -29,20 +31,33 @@ class DispenController extends Controller
     }
 
     /**
+     * Menampilkan riwayat dispen yang sudah dikonfirmasi.
+     */
+    public function history()
+    {
+        $dispens = Dispen::with([
+            'siswa',
+            'jamMulai',
+            'jamSelesai',
+            'approver',
+        ])
+            ->whereIn('status', ['disetujui', 'ditolak'])
+            ->latest('disetujui_pada')
+            ->paginate(10);
+
+        return view('piket.dispen.history', compact('dispens'));
+    }
+
+    /**
      * Form tambah dispen.
      */
     public function create()
     {
-        $siswa = Siswa::orderBy('nama_siswa')->get();
-
         $jamPels = JamPel::where('jenis', 'pelajaran')
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.create', compact(
-            'siswa',
-            'jamPels'
-        ));
+        return view('piket.dispen.create', $this->formData($jamPels));
     }
 
     /**
@@ -51,7 +66,17 @@ class DispenController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'id_siswa' => 'required|exists:siswas,id_siswa',
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => [
+                'required',
+                Rule::exists('siswas', 'id_siswa')->where(
+                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
+                ),
+            ],
+            'id_kesiswaan' => [
+                'nullable',
+                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
@@ -60,73 +85,31 @@ class DispenController extends Controller
 
         $dispen = Dispen::create([
             'id_siswa' => $validated['id_siswa'],
+            'id_kesiswaan' => $validated['id_kesiswaan'] ?? null,
             'tanggal' => $validated['tanggal'],
             'id_jam_mulai' => $validated['id_jam_mulai'],
             'id_jam_selesai' => $validated['id_jam_selesai'],
             'alasan' => $validated['alasan'],
-            'token_verifikasi' => Str::random(64),
+            'status' => 'menunggu',
         ]);
 
-        return redirect()
-            ->route('piket.dispen.index')
-            ->with('success', 'Data dispen berhasil ditambahkan.');
+        return redirect()->route('piket.dispen.whatsapp', $dispen);
     }
 
     /**
-     * Membuka WhatsApp untuk mengirim permohonan verifikasi ke Waka.
+     * Membuka WhatsApp untuk mengirim permohonan konfirmasi ke petugas kesiswaan.
      */
     public function whatsapp(Dispen $dispen)
     {
         $dispen->load([
             'siswa.kelas',
             'jamMulai',
-            'jamSelesai'
+            'jamSelesai',
+            'petugasKesiswaan'
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Cari Waka berdasarkan jadwal Kesiswaan pada tanggal dispen
-        |--------------------------------------------------------------------------
-        */
-
-        $waka = JadwalKesiswaan::with('user')
-            ->whereDate('tanggal', $dispen->tanggal)
-            ->first()?->user;
-
-        abort_unless(
-            $waka,
-            422,
-            'Waka untuk tanggal tersebut belum memiliki jadwal.'
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Cek nomor WhatsApp
-        |--------------------------------------------------------------------------
-        */
-
-        abort_unless(
-            $waka->no_wa,
-            422,
-            'Nomor WhatsApp Waka untuk tanggal tersebut belum tersedia.'
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Buat link verifikasi
-        |--------------------------------------------------------------------------
-        */
-
-        $linkVerifikasi = route(
-            'dispen.verifikasi',
-            $dispen->token_verifikasi
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Buat pesan WhatsApp
-        |--------------------------------------------------------------------------
-        */
+        $linkVerifikasi = route('kesiswaan.dispen.show', $dispen);
+        $loginUrl = route('login') . '?redirect=' . urlencode($linkVerifikasi);
 
         $message =
             "Permohonan Dispensasi Siswa\n\n"
@@ -139,36 +122,10 @@ class DispenController extends Controller
             . ($dispen->jamSelesai->jam_selesai ?? '-')
             . "\n"
             . "Alasan: " . $dispen->alasan . "\n\n"
-            . "Silakan lakukan verifikasi melalui link berikut:\n"
-            . $linkVerifikasi;
+            . "Silakan masuk ke akun Anda untuk meninjau dan mengonfirmasi pengajuan:\n"
+            . $loginUrl;
 
-        /*
-        |--------------------------------------------------------------------------
-        | Bersihkan nomor WhatsApp
-        |--------------------------------------------------------------------------
-        |
-        | Contoh:
-        | 081234567890 -> 6281234567890
-        |
-        */
-
-        $phone = preg_replace('/\D+/', '', $waka->no_wa);
-
-        if (str_starts_with($phone, '0')) {
-            $phone = '62' . substr($phone, 1);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Buka WhatsApp
-        |--------------------------------------------------------------------------
-        */
-
-        $whatsappUrl =
-            'https://wa.me/'
-            . $phone
-            . '?text='
-            . rawurlencode($message);
+        $whatsappUrl = 'https://wa.me/?text=' . rawurlencode($message);
 
         return redirect()->away($whatsappUrl);
     }
@@ -178,16 +135,13 @@ class DispenController extends Controller
      */
     public function edit(Dispen $dispen)
     {
-        $siswa = Siswa::orderBy('nama_siswa')->get();
-
         $jamPels = JamPel::where('jenis', 'pelajaran')
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.edit', compact(
-            'dispen',
-            'siswa',
-            'jamPels'
+        return view('piket.dispen.edit', array_merge(
+            compact('dispen'),
+            $this->formData($jamPels)
         ));
     }
 
@@ -197,14 +151,24 @@ class DispenController extends Controller
     public function update(Request $request, Dispen $dispen)
     {
         $validated = $request->validate([
-            'id_siswa' => 'required|exists:siswas,id_siswa',
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => [
+                'required',
+                Rule::exists('siswas', 'id_siswa')->where(
+                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
+                ),
+            ],
+            'id_kesiswaan' => [
+                'required',
+                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
             'alasan' => 'required|string|max:255',
         ]);
 
-        $dispen->update($validated);
+        $dispen->update(collect($validated)->except('id_kelas')->all());
 
         return redirect()
             ->route('piket.dispen.index')
@@ -221,5 +185,32 @@ class DispenController extends Controller
         return redirect()
             ->route('piket.dispen.index')
             ->with('success', 'Data dispen berhasil dihapus.');
+    }
+
+    /**
+     * Data kelas dan siswa untuk pemilihan siswa pada formulir dispen.
+     */
+    private function formData($jamPels): array
+    {
+        $kelases = Kelas::with([
+            'siswas' => fn ($query) => $query->orderBy('nama_siswa'),
+        ])->orderBy('nama_kelas')->get();
+
+        $petugasKesiswaans = User::query()
+            ->where('role', 'Kesiswaan')
+            ->whereNotNull('no_wa')
+            ->where('no_wa', '!=', '')
+            ->orderBy('nama_user')
+            ->get(['id_user', 'nama_user', 'no_wa']);
+
+        $siswaPerKelas = $kelases->mapWithKeys(fn ($kelas) => [
+            $kelas->id_kelas => $kelas->siswas->map(fn ($siswa) => [
+                'id' => $siswa->id_siswa,
+                'nama' => $siswa->nama_siswa,
+                'nis' => $siswa->nis,
+            ])->values(),
+        ]);
+
+        return compact('jamPels', 'kelases', 'siswaPerKelas', 'petugasKesiswaans');
     }
 }

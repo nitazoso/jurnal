@@ -633,6 +633,33 @@
                     Pilih kelas untuk melihat seluruh jurnal mengajar.
                 </p>
 
+        <form action="{{ route('piket.jurnal.index') }}"
+              method="GET"
+              class="grid grid-cols-1 md:grid-cols-4 gap-4">
+
+            {{-- SEARCH --}}
+            <div class="md:col-span-2">
+
+                <label class="block text-sm font-medium text-slate-600 mb-1">
+                    Cari
+                </label>
+
+        <div class="relative">
+
+    <span class="material-symbols-outlined search-icon">
+        search
+    </span>
+
+    <input
+        type="text"
+        name="search"
+        value="{{ request('search') }}"
+        placeholder="Cari nama kelas..."
+        class="search-input w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-700"
+    >
+
+</div>
+
             </div>
 
 
@@ -1169,6 +1196,7 @@
         </div>
 
 
+<<<<<<< HEAD
         {{-- DETAIL GURU --}}
 
         @if($selectedGuru)
@@ -1211,6 +1239,18 @@
 
                     </div>
 
+=======
+    @if($kelasTerpilih || request()->filled('search') || request()->filled('bulan') || request()->filled('tahun'))
+        <div class="jurnal-card overflow-hidden fade-in">
+            <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-800">
+                        {{ $kelasTerpilih ? 'Jurnal Kelas '.$kelasTerpilih->nama_kelas : 'Hasil Pencarian Jurnal' }}
+                    </h2>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Menampilkan jurnal sesuai filter yang dipilih.
+                    </p>
+>>>>>>> crud-guru
                 </div>
 
             </div>

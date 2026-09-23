@@ -45,10 +45,10 @@ class JurnalController extends Controller
         }
 
         // =========================
-        // SEARCH
+        // SEARCH (Materi, Guru, Kelas)
         // =========================
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = $request->string('search')->trim()->toString();
 
             $jurnalQuery->where(function ($query) use ($search) {
                 $query->where(
@@ -146,14 +146,16 @@ class JurnalController extends Controller
         // =========================
         // TAHUN TERSEDIA
         // =========================
+        // Dibuat di PHP agar kompatibel dengan MySQL dan SQLite
         $tahunList = Jurnal::whereIn(
             'status_validasi_guru',
             ['Menunggu', 'Disetujui']
         )
-        ->selectRaw('YEAR(tanggal) as tahun')
-        ->distinct()
-        ->orderByDesc('tahun')
-        ->pluck('tahun');
+        ->pluck('tanggal')
+        ->map(fn ($tanggal) => (int) date('Y', strtotime($tanggal)))
+        ->unique()
+        ->sortDesc()
+        ->values();
 
         // =========================
         // KIRIM KE BLADE

@@ -27,6 +27,12 @@ class FortifyServiceProvider extends ServiceProvider
     $this->app->instance(LoginResponse::class, new class implements LoginResponse {
         public function toResponse($request)
         {
+            $redirectTarget = $request->query('redirect');
+
+            if (filled($redirectTarget) && Str::startsWith($redirectTarget, 'http')) {
+                return redirect()->to($redirectTarget);
+            }
+
             $role = Auth::user()->role;
 
             return match ($role) {
@@ -64,6 +70,7 @@ class FortifyServiceProvider extends ServiceProvider
         ], function () {
             $this->loadRoutesFrom(base_path('vendor/laravel/fortify/routes/routes.php'));
         });
+
     }
 
     /**
