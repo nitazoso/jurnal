@@ -1,10 +1,6 @@
 @extends('layouts.guru')
-
 @section('title', 'Dashboard - Jurnify')
-@section('tahun_ajaran', $tahunAjaran)
-
 @section('content')
-
 {{-- Font Manrope --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
