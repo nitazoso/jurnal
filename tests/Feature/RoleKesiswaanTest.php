@@ -144,7 +144,6 @@ class RoleKesiswaanTest extends TestCase
             'password' => bcrypt('password123'),
             'nama_user' => 'Petugas Kesiswaan',
             'role' => 'Kesiswaan',
-            'no_wa' => '081234567890',
         ]);
 
         $jamMulai = \App\Models\JamPel::create([

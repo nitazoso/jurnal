@@ -56,11 +56,11 @@
             <div class="mb-4">
                 <label class="block mb-2 font-medium text-gray-700">Kirim ke Kesiswaan</label>
                 <select name="id_kesiswaan" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                    <option value="">-- Pilih nomor WhatsApp Kesiswaan --</option>
+                    <option value="">-- Pilih Kesiswaan --</option>
                     @foreach ($petugasKesiswaans as $petugas)
                         <option value="{{ $petugas->id_user }}"
                             {{ old('id_kesiswaan', $dispen->id_kesiswaan) == $petugas->id_user ? 'selected' : '' }}>
-                            {{ $petugas->nama_user }} — {{ $petugas->no_wa }}
+                            {{ $petugas->nama_user }}
                         </option>
                     @endforeach
                 </select>

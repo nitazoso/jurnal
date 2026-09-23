@@ -86,12 +86,15 @@ class UserController extends Controller
             'nama_user' => 'required|string|max:255',
             'password' => 'required|string|min:8',
             'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
             'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
         $plainPassword = $validated['password'];
+
+        if (! in_array($validated['role'], ['Guru', 'Staff Piket'], true)) {
+            $validated['id_guru'] = null;
+        }
 
         $validated['password'] = Hash::make($plainPassword);
 
@@ -157,7 +160,6 @@ class UserController extends Controller
             'nama_user' => 'required|string|max:255',
             'password' => 'nullable|string|min:8',
             'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
             'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
@@ -171,6 +173,10 @@ class UserController extends Controller
                 ->withInput()
                 ->with('error', 'Admin terakhir tidak dapat diganti rolenya. Buat akun Admin lain terlebih dahulu.');
         }
+
+            if (! in_array($validated['role'], ['Guru', 'Staff Piket'], true)) {
+                $validated['id_guru'] = null;
+            }
 
         // Kalau password diisi, hash password baru
         if (!empty($validated['password'])) {

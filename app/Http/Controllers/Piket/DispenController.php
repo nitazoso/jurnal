@@ -198,10 +198,8 @@ class DispenController extends Controller
 
         $petugasKesiswaans = User::query()
             ->where('role', 'Kesiswaan')
-            ->whereNotNull('no_wa')
-            ->where('no_wa', '!=', '')
             ->orderBy('nama_user')
-            ->get(['id_user', 'nama_user', 'no_wa']);
+            ->get(['id_user', 'nama_user']);
 
         $siswaPerKelas = $kelases->mapWithKeys(fn ($kelas) => [
             $kelas->id_kelas => $kelas->siswas->map(fn ($siswa) => [
