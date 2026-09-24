@@ -46,7 +46,6 @@ class UserController extends Controller
         $totalGuru = User::where('role', 'Guru')->count();
         $totalAdmin = User::where('role', 'Admin')->count();
         $totalKesiswaan = User::where('role', 'Kesiswaan')->count();
-        $totalStaffPiket = User::where('role', 'Staff Piket')->count();
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
         $totalSiswa = \App\Models\Siswa::count();
 
@@ -56,7 +55,6 @@ class UserController extends Controller
             'totalAdmin',
             'totalGuru',
             'totalKesiswaan',
-            'totalStaffPiket',
             'totalSekretaris',
             'totalSiswa'
         ));
@@ -85,14 +83,14 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username',
             'nama_user' => 'required|string|max:255',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'id_guru' => 'nullable|required_if:role,Guru|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
         $plainPassword = $validated['password'];
 
-        if (! in_array($validated['role'], ['Guru', 'Staff Piket'], true)) {
+        if ($validated['role'] !== 'Guru') {
             $validated['id_guru'] = null;
         }
 
@@ -159,8 +157,8 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
             'nama_user' => 'required|string|max:255',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'id_guru' => 'nullable|required_if:role,Guru|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
@@ -174,7 +172,7 @@ class UserController extends Controller
                 ->with('error', 'Admin terakhir tidak dapat diganti rolenya. Buat akun Admin lain terlebih dahulu.');
         }
 
-            if (! in_array($validated['role'], ['Guru', 'Staff Piket'], true)) {
+            if ($validated['role'] !== 'Guru') {
                 $validated['id_guru'] = null;
             }
 

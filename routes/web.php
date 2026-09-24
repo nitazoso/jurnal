@@ -47,7 +47,6 @@ Route::get('/', function () {
         'Guru' => redirect()->route('guru.dashboard'),
         'Kesiswaan' => redirect()->route('kesiswaan.dashboard'),
         'Sekretaris' => redirect()->route('sekretaris.dashboard'),
-        'Staff Piket' => redirect()->route('piket.dashboard'),
         default => redirect()->route('login'),
     };
 })->name('home');
@@ -344,7 +343,7 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     })->name('guru.profil.update');
 });
 
-Route::middleware(['auth', 'role:Guru,Staff Piket'])->group(function () {
+Route::middleware(['auth', 'role:Guru'])->group(function () {
     Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
         ->name('piket.dashboard');
 

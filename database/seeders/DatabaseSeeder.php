@@ -90,7 +90,7 @@ class DatabaseSeeder extends Seeder
             'username' => 'wildan_piket',
             'password' => Hash::make('password123'),
             'nama_user' => 'Wildan Piket',
-            'role' => 'Staff Piket',
+            'role' => 'Guru',
             'id_guru' => null,
             'id_kelas' => null,
         ]);

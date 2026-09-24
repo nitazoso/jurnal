@@ -240,9 +240,6 @@
                                 Sekretaris
                             </option>
 
-                            <option value="Staff Piket" {{ old('role', $user->role) == 'Staff Piket' ? 'selected' : '' }}>
-                                Staff Piket
-                            </option>
                         </select>
 
                         @error('role')
@@ -278,7 +275,7 @@
                         </select>
 
                         <span id="guruError" class="err-text" style="display:none;">
-                            Silakan pilih data Guru untuk akun Guru atau Staff Piket.
+                            Silakan pilih data Guru untuk akun Guru.
                         </span>
 
                         @error('id_guru')
@@ -286,7 +283,7 @@
                         @enderror
 
                         <span class="field-hint">
-                            Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.
+                            Hubungkan akun ini dengan data guru yang sudah terdaftar.
                         </span>
                     </div>
 
@@ -888,8 +885,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Guru field
     function updateGuruField() {
-        const showGuru = ['Guru', 'Kesiswaan', 'Staff Piket'].includes(role.value);
-        const needsGuru = ['Guru', 'Staff Piket'].includes(role.value);
+        const showGuru = role.value === 'Guru';
+        const needsGuru = role.value === 'Guru';
 
         if (showGuru) {
             guruContainer.style.display = 'flex';
@@ -936,7 +933,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            ['Guru', 'Staff Piket'].includes(role.value) &&
+            role.value === 'Guru' &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

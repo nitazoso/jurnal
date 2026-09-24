@@ -5,13 +5,18 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\PiketJadwal;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class JadwalPiketController extends Controller
 {
     public function index(Request $request)
     {
-        $query = PiketJadwal::with(['guru', 'pembuat'])
+        $query = PiketJadwal::with([
+            'guru', 'pembuat', 'petugasKbmPagi', 'koordinatorKbmPagi',
+            'petugasKbmSiang', 'koordinatorKbmSiang', 'piketWaka',
+        ])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
                 $query->where(function ($query) use ($search) {
@@ -30,7 +35,11 @@ class JadwalPiketController extends Controller
 
     public function create()
     {
-        $gurus = Guru::orderBy('nama_guru')->get();
+        $gurus = User::with('guru')
+            ->where('role', 'Guru')
+            ->whereNotNull('id_guru')
+            ->orderBy('username')
+            ->get();
 
         return view('admin.jadwal-piket.create', compact('gurus'));
     }
@@ -44,7 +53,11 @@ class JadwalPiketController extends Controller
 
     public function edit(PiketJadwal $jadwal)
     {
-        $gurus = Guru::orderBy('nama_guru')->get();
+        $gurus = User::with('guru')
+            ->where('role', 'Guru')
+            ->whereNotNull('id_guru')
+            ->orderBy('username')
+            ->get();
 
         return view('admin.jadwal-piket.edit', compact('jadwal', 'gurus'));
     }
@@ -65,15 +78,52 @@ class JadwalPiketController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
-            'id_guru' => 'required|exists:gurus,id_guru',
+        $data = $request->validate([
             'tanggal' => 'required|date',
-            'shift' => 'required|in:Pagi,Siang,Waka',
-            'jam_mulai' => 'required|string|max:20',
-            'jam_selesai' => 'required|string|max:20',
-            'jenis_tugas' => 'required|in:Piket KBM Pagi,Koordinator Piket KBM Pagi,Piket KBM Siang,Koordinator Piket KBM Siang,Piket Waka',
-            'posisi' => 'nullable|string|max:100',
-            'keterangan' => 'nullable|string',
+            'petugas_kbm_pagi_id' => ['required', $this->guruUsernameRule()],
+            'koordinator_kbm_pagi_id' => ['required', $this->guruUsernameRule()],
+            'petugas_kbm_siang_id' => ['required', $this->guruUsernameRule()],
+            'koordinator_kbm_siang_id' => ['required', $this->guruUsernameRule()],
+            'piket_waka_id' => ['required', $this->guruUsernameRule()],
+            'jam_mulai_kbm_pagi' => 'required|string|max:20',
+            'jam_selesai_kbm_pagi' => 'required|string|max:20',
+            'jam_mulai_koordinator_pagi' => 'required|string|max:20',
+            'jam_selesai_koordinator_pagi' => 'required|string|max:20',
+            'jam_mulai_kbm_siang' => 'required|string|max:20',
+            'jam_selesai_kbm_siang' => 'required|string|max:20',
+            'jam_mulai_koordinator_siang' => 'required|string|max:20',
+            'jam_selesai_koordinator_siang' => 'required|string|max:20',
         ]);
+
+        $usernameFields = [
+            'petugas_kbm_pagi_id',
+            'koordinator_kbm_pagi_id',
+            'petugas_kbm_siang_id',
+            'koordinator_kbm_siang_id',
+            'piket_waka_id',
+        ];
+
+        $guruIds = User::where('role', 'Guru')
+            ->whereIn('username', array_map(fn ($field) => $data[$field], $usernameFields))
+            ->pluck('id_guru', 'username');
+
+        foreach ($usernameFields as $field) {
+            $data[$field] = $guruIds[$data[$field]];
+        }
+
+        return array_merge($data, [
+            'id_guru' => $data['petugas_kbm_pagi_id'],
+            'shift' => 'Pagi',
+            'jam_mulai' => $data['jam_mulai_kbm_pagi'],
+            'jam_selesai' => $data['jam_selesai_kbm_pagi'],
+            'jenis_tugas' => 'Piket KBM Pagi',
+        ]);
+    }
+
+    private function guruUsernameRule()
+    {
+        return Rule::exists('users', 'username')->where(fn ($query) => $query
+            ->where('role', 'Guru')
+            ->whereNotNull('id_guru'));
     }
 }

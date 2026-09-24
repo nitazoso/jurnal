@@ -59,13 +59,12 @@
                 <thead>
                     <tr>
                         <th class="col-no">No</th>
-                        <th class="col-tanggal">Tanggal</th>
-                        <th class="col-guru">Guru</th>
-                        <th class="col-shift">Shift</th>
-                        <th class="col-jam">Jam</th>
-                        <th class="col-tugas">Tugas</th>
-                        <th class="col-posisi">Posisi</th>
-                        <th class="col-keterangan">Keterangan</th>
+                        <th class="col-tanggal">Hari / Tanggal</th>
+                        <th>Petugas Piket<br>KBM Pagi</th>
+                        <th>Koordinator<br>KBM Pagi</th>
+                        <th>Petugas Piket<br>KBM Siang</th>
+                        <th>Koordinator<br>KBM Siang</th>
+                        <th>Piket Waka</th>
                         <th class="col-aksi">Aksi</th>
                     </tr>
                 </thead>
@@ -94,52 +93,19 @@
                                 </div>
                             </td>
 
-                            {{-- GURU --}}
-                            <td class="td-guru">
-                                <div class="guru-wrapper">
-                                    <div class="user-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M20 21a8 8 0 0 0-16 0"/>
-                                            <circle cx="12" cy="7" r="4"/>
-                                        </svg>
-                                    </div>
-                                    <span>{{ $jadwal->guru->nama_guru ?? '-' }}</span>
-                                </div>
-                            </td>
-
-                            {{-- SHIFT --}}
-                            <td class="td-shift">
-                                <span class="shift-badge">
-                                    {{ $jadwal->shift }}
-                                </span>
-                            </td>
-
-                            {{-- JAM --}}
-                            <td class="td-jam">
-                                <span class="time-text">
-                                    {{ $jadwal->jam_mulai }} - {{ $jadwal->jam_selesai }}
-                                </span>
-                            </td>
-
-                            {{-- TUGAS --}}
-                            <td class="td-tugas">
-                                <span class="task-text">
-                                    {{ $jadwal->jenis_tugas }}
-                                </span>
-                            </td>
-
-                            {{-- POSISI --}}
-                            <td class="td-posisi">
-                                <span class="position-badge">
-                                    {{ $jadwal->posisi ?? '-' }}
-                                </span>
-                            </td>
-
-                            {{-- KETERANGAN --}}
-                            <td class="td-keterangan">
-                                <span class="description-text">
-                                    {{ $jadwal->keterangan ?? '-' }}
-                                </span>
+                            @foreach ([
+                                ['petugasKbmPagi', 'jam_mulai_kbm_pagi', 'jam_selesai_kbm_pagi'],
+                                ['koordinatorKbmPagi', 'jam_mulai_koordinator_pagi', 'jam_selesai_koordinator_pagi'],
+                                ['petugasKbmSiang', 'jam_mulai_kbm_siang', 'jam_selesai_kbm_siang'],
+                                ['koordinatorKbmSiang', 'jam_mulai_koordinator_siang', 'jam_selesai_koordinator_siang'],
+                            ] as [$relation, $start, $end])
+                                <td>
+                                    <strong>{{ $jadwal->{$relation}->nama_guru ?? '-' }}</strong>
+                                    <small class="schedule-time">{{ $jadwal->{$start} }} - {{ $jadwal->{$end} }}</small>
+                                </td>
+                            @endforeach
+                            <td>
+                                <strong>{{ $jadwal->piketWaka->nama_guru ?? '-' }}</strong>
                             </td>
 
                             {{-- AKSI --}}
@@ -186,7 +152,7 @@
 
                     @empty
                         <tr>
-                            <td colspan="9" class="empty-state">
+                            <td colspan="8" class="empty-state">
                                 <div class="empty-content">
                                     <div class="empty-icon">
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
