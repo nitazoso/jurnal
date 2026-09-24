@@ -68,6 +68,12 @@ class JurnalController extends Controller
                 ->with('info', 'Jurnal untuk jadwal ini sudah tersimpan di riwayat.');
         }
 
+        if (! $this->isScheduleWindowOpen($jadwal)) {
+            return redirect()
+                ->route('guru.jurnal.create')
+                ->with('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
+        }
+
         // Ambil data relasi jadwal
         $jadwal->load([
             'kelas',
@@ -201,7 +207,6 @@ class JurnalController extends Controller
             ],
 
             'deskripsi_tugas' => 'nullable|string',
-            'catatan_umum' => 'nullable|string|max:255',
 
             'absensi' => 'required|array',
             'absensi.*' => [
@@ -218,6 +223,12 @@ class JurnalController extends Controller
         // Pastikan jadwal milik guru yang login
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
+        }
+
+        if (! $this->isScheduleWindowOpen($jadwal)) {
+            return back()->withErrors([
+                'id_jadwal' => 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.',
+            ])->withInput();
         }
 
         if (session()->get($this->qrSessionKey($jadwal)) !== true) {
@@ -279,8 +290,6 @@ class JurnalController extends Controller
             'jml_tidak_hadir' => $jmlTidakHadir,
 
             'status_validasi_guru' => 'Menunggu',
-
-            'catatan_umum' => $validated['catatan_umum'] ?? null,
         ]);
 
         // Simpan detail siswa yang tidak hadir
@@ -308,6 +317,30 @@ class JurnalController extends Controller
     private function qrSessionKey(Jadwal $jadwal): string
     {
         return 'guru.jurnal.qr_verified.'.$jadwal->id_jadwal;
+    }
+
+    private function isScheduleWindowOpen(Jadwal $jadwal): bool
+    {
+        $jadwal->loadMissing(['jamMulai', 'jamSelesai']);
+
+        $start = $jadwal->jamMulai?->jam_mulai;
+        $end = $jadwal->jamSelesai?->jam_selesai;
+
+        if (! $start || ! $end) {
+            return false;
+        }
+
+        $todayName = now()->locale('id')->isoFormat('dddd');
+
+        if (strtolower((string) $jadwal->hari) !== strtolower((string) $todayName)) {
+            return false;
+        }
+
+        $now = now();
+        $startAt = $now->copy()->setTimeFromTimeString($start);
+        $endAt = $now->copy()->setTimeFromTimeString($end);
+
+        return $now->gte($startAt) && $now->lt($endAt);
     }
 
     public function show(Jurnal $jurnal)

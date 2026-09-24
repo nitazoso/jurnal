@@ -11,8 +11,10 @@
 
 @php
     $user = auth()->user();
+
     $profileName = $user->nama_user ?? 'Admin';
     $profilePhone = $user->no_wa ?? $user->no_hp ?? $user->guru?->no_hp ?? $user->no_telepon ?? '-';
+
 @endphp
 
 <div class="profile-page">

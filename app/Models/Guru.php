@@ -15,6 +15,5 @@ class Guru extends Model
 
     protected $fillable = [
         'nama_guru',
-        'no_hp',
     ];
 }

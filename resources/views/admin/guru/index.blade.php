@@ -271,12 +271,7 @@
         text-align: center;
     }
 
-    .guru-nip {
-        font-family: monospace;
-        color: #4d5059;
-        font-size: 13px;
-        word-break: break-word;
-    }
+
 
     .guru-name {
         color: #202126;
@@ -707,7 +702,6 @@
                 <colgroup>
                     <col style="width: 50px;">
                     <col style="width: 38%;">
-                    <col style="width: 28%;">
                     <col style="width: 15%;">
                 </colgroup>
 
@@ -715,7 +709,6 @@
                     <tr>
                         <th class="no-column">NO</th>
                         <th>NAMA GURU</th>
-                        <th>NO. HP</th>
                         <th>AKSI</th>
                     </tr>
                 </thead>
@@ -727,7 +720,6 @@
                             <td>
                                 <div class="guru-name">{{ $guru->nama_guru }}</div>
                             </td>
-                            <td>{{ $guru->no_hp ?? '-' }}</td>
                             <td>
                                 <div class="guru-actions">
                                     <a href="{{ route('admin.guru.edit', $guru->id_guru) }}"
@@ -741,8 +733,7 @@
                                         title="Hapus guru"
                                         data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
                                         data-name="{{ $guru->nama_guru }}"
-                                        data-nip="{{ $guru->nip ?? '-' }}"
-                                        data-hp="{{ $guru->no_hp ?? '-' }}">
+                                        >
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </div>
@@ -822,8 +813,6 @@
 
             <div class="delete-detail">
                 <span>
-                    <strong>No. HP:</strong>
-                    <span id="guruDeleteHp">-</span>
                 </span>
             </div>
         </div>
@@ -855,10 +844,9 @@
 
 @push('scripts')
 <script>
-    function openGuruDeleteModal(url, name, hp) {
+    function openGuruDeleteModal(url, name) {
         document.getElementById('guruDeleteForm').action = url;
         document.getElementById('guruDeleteName').textContent = name;
-        document.getElementById('guruDeleteHp').textContent = hp;
         document.getElementById('guruDeleteModal').classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -873,8 +861,7 @@
             button.addEventListener('click', function () {
                 openGuruDeleteModal(
                     this.dataset.url,
-                    this.dataset.name,
-                    this.dataset.hp
+                    this.dataset.name
                 );
             });
         });

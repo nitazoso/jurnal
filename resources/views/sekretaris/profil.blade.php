@@ -35,12 +35,6 @@
         isolation: isolate;
         transition: transform .25s ease, box-shadow .25s ease;
     }
-
-    .profile-hero::before {
-        content: "";
-        position: absolute;
-        width: 180px;
-        height: 180px;
         top: -90px;
         left: -60px;
         border-radius: 50%;
@@ -289,7 +283,6 @@
 @php
     $user = auth()->user();
     $profileName = $user->nama_user ?? '-';
-    $profilePhone = $user->no_wa ?? $user->guru?->no_hp ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -349,13 +342,6 @@
 
         <hr class="personal-divider">
 
-        {{-- Nomor Telepon --}}
-        <div class="personal-field">
-            <p class="personal-label">Nomor Telepon</p>
-            <p class="personal-value">
-                {{ $profilePhone }}
-            </p>
-        </div>
     </section>
 
     {{-- LOGOUT --}}

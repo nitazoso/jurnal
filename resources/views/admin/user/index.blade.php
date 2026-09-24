@@ -97,6 +97,18 @@
         animation: fadeDown .35s ease both;
     }
 
+    .user-page .error-message {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        border: 1px solid #f3b4b4;
+        border-radius: 8px;
+        background: #fff0f0;
+        color: #a12626;
+        font-size: 13px;
+        font-weight: 700;
+        animation: fadeDown .35s ease both;
+    }
+
     .user-page .activity-card {
         width: 100%;
         background: #fff;
@@ -806,6 +818,10 @@
         <div class="success-message">{{ session('success') }}</div>
     @endif
 
+    @if(session('error'))
+        <div class="error-message" role="alert">{{ session('error') }}</div>
+    @endif
+
     <section class="stats">
         <div class="stat-card">
             <div class="stat-title">TOTAL USERS</div>
@@ -980,6 +996,7 @@
                                     data-name="{{ $user->nama_user }}"
                                     data-username="{{ $user->username }}"
                                     data-role="{{ $user->role }}"
+                                    data-admin-count="{{ $totalAdmin }}"
                                 >
                                     <span class="material-symbols-outlined">delete</span>
                                 </button>
@@ -1059,8 +1076,8 @@
                 </div>
 
                 <div class="delete-modal-title">
-                    <h3>Hapus User?</h3>
-                    <p>
+                    <h3 id="deleteTitle">Hapus User?</h3>
+                    <p id="deleteDescription">
                         Apakah Anda yakin ingin menghapus user ini?<br>
                         Tindakan ini tidak dapat dibatalkan.
                     </p>
@@ -1091,7 +1108,7 @@
                 <span class="material-symbols-outlined">info</span>
 
                 <span>
-                    User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.
+                    <span id="deleteWarningText">User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.</span>
                 </span>
             </div>
 
@@ -1108,7 +1125,7 @@
                     @csrf
                     @method('DELETE')
 
-                    <button type="submit" class="btn-delete-confirm">
+                    <button id="deleteConfirmButton" type="submit" class="btn-delete-confirm">
                         Hapus User
                     </button>
                 </form>
@@ -1120,11 +1137,28 @@
 </div>
 
 <script>
-    function openDeleteModal(url, name, username, role) {
+    function openDeleteModal(url, name, username, role, adminCount) {
+        const isLastAdmin = role === 'Admin' && Number(adminCount) <= 1;
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteInfo = document.querySelector('.delete-info');
+        const deleteTitle = document.getElementById('deleteTitle');
+        const deleteDescription = document.getElementById('deleteDescription');
+        const deleteWarningText = document.getElementById('deleteWarningText');
+        const deleteConfirmButton = document.getElementById('deleteConfirmButton');
+
         document.getElementById('deleteForm').action = url;
         document.getElementById('deleteName').textContent = name;
         document.getElementById('deleteUsername').textContent = username;
         document.getElementById('deleteRole').textContent = role;
+        deleteInfo.hidden = isLastAdmin;
+        deleteConfirmButton.hidden = isLastAdmin;
+        deleteTitle.textContent = isLastAdmin ? 'Akun Admin Tidak Bisa Dihapus' : 'Hapus User?';
+        deleteDescription.innerHTML = isLastAdmin
+            ? 'Admin terakhir harus tetap tersedia agar sistem dapat digunakan.'
+            : 'Apakah Anda yakin ingin menghapus user ini?<br>Tindakan ini tidak dapat dibatalkan.';
+        deleteWarningText.textContent = isLastAdmin
+            ? 'Buat akun Admin lain terlebih dahulu jika ingin menghapus akun ini.'
+            : 'User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.';
         document.getElementById('deleteModal').classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -1140,7 +1174,8 @@
                 this.dataset.url,
                 this.dataset.name,
                 this.dataset.username,
-                this.dataset.role
+                this.dataset.role,
+                this.dataset.adminCount
             );
         });
     });

@@ -20,11 +20,28 @@
             padding: 0;
         }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Manrope', sans-serif;
             background: #fbfbfb;
             color: #1f2937;
             min-height: 100vh;
+        }
+
+        img, svg, video, canvas, iframe, embed, object {
+            max-width: 100%;
+            height: auto;
+        }
+
+        a, button, input, select, textarea {
+            max-width: 100%;
+        }
+
+        .content * {
+            max-width: 100%;
         }
 
         /* =========================
@@ -41,6 +58,7 @@
             padding: 31px 24px;
             z-index: 100;
             overflow-y: auto;
+            transition: transform 0.3s ease;
         }
 
         .brand {
@@ -145,6 +163,65 @@
             color: #17265d;
             font-size: 19px;
             font-weight: 700;
+        }
+
+        .menu-toggle {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #f8fafc;
+            color: #17265d;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .menu-toggle .material-symbols-outlined {
+            font-size: 26px;
+        }
+
+        .topbar-meta {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .topbar-clock {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f6f8ff;
+            border: 1px solid #dde5ff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            min-width: 220px;
+            justify-content: flex-end;
+            box-shadow: 0 1px 2px rgba(22, 32, 84, 0.04);
+        }
+
+        .topbar-clock .material-symbols-outlined {
+            font-size: 18px;
+            color: #3b5bd4;
+        }
+
+        .topbar-clock small {
+            display: block;
+            color: #53627d;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .topbar-clock strong {
+            display: block;
+            color: #17265d;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.3;
         }
 
         .content {
@@ -584,30 +661,65 @@
         @media (max-width: 600px) {
 
             .sidebar {
-                position: relative;
-                width: 100%;
-                height: auto;
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: min(82vw, 280px);
+                height: 100vh;
+                transform: translateX(-105%);
+                box-shadow: 12px 0 30px rgba(15, 23, 42, 0.18);
+                z-index: 200;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
             }
 
             .main {
                 margin-left: 0;
             }
 
+            .menu-toggle {
+                display: inline-flex;
+                flex-shrink: 0;
+            }
+
             .nav {
-                flex-direction: row;
-                flex-wrap: wrap;
+                flex-direction: column;
             }
 
             .nav-item {
-                flex: 1 1 130px;
+                flex: 1 1 auto;
             }
 
             .topbar {
-                padding: 0 20px;
+                padding: 0 16px;
+                gap: 12px;
+                flex-wrap: wrap;
+                height: auto;
+                min-height: 72px;
+            }
+
+            .topbar h2 {
+                font-size: 17px;
+                flex: 1 1 100%;
+            }
+
+            .topbar-meta {
+                width: 100%;
+                min-width: 0;
+                margin-left: 0;
+            }
+
+            .topbar-clock {
+                width: 100%;
+                min-width: 0;
+                padding: 8px 10px;
+                justify-content: center;
             }
 
             .content {
-                padding: 20px 10px;
+                padding: 20px 12px;
             }
 
             .bottom {
@@ -685,7 +797,7 @@
                 <span>Jadwal Piket</span>
 
             </a>
-
+<!-- 
             {{-- JADWAL KESISWAAN --}}
             <a href="{{ route('admin.jadwal-kesiswaan.index') }}"
                class="nav-item {{ request()->routeIs('admin.jadwal-kesiswaan.*') ? 'active' : '' }}">
@@ -696,7 +808,7 @@
 
                 <span>Jadwal Kesiswaan</span>
 
-            </a>
+            </a> -->
 
 
             {{-- USER --}}
@@ -803,9 +915,23 @@
         {{-- TOPBAR --}}
         <header class="topbar">
 
+            <button class="menu-toggle" type="button" aria-label="Buka menu" id="adminMenuToggle">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+
             <h2>
                 @yield('page-title', 'Dashboard')
             </h2>
+
+            <div class="topbar-meta">
+                <div class="topbar-clock">
+                    <span class="material-symbols-outlined">schedule</span>
+                    <div>
+                        <small id="liveDate">Tanggal</small>
+                        <strong id="liveTime">--:--:--</strong>
+                    </div>
+                </div>
+            </div>
 
         </header>
 
@@ -821,6 +947,53 @@
 
 
     @stack('scripts')
+
+    <script>
+        function updateDashboardClock() {
+            const dateEl = document.getElementById('liveDate');
+            const timeEl = document.getElementById('liveTime');
+
+            if (!dateEl || !timeEl) return;
+
+            const now = new Date();
+            const dateText = new Intl.DateTimeFormat('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(now);
+
+            const timeText = new Intl.DateTimeFormat('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(now);
+
+            dateEl.textContent = dateText;
+            timeEl.textContent = timeText;
+        }
+
+        const adminSidebar = document.querySelector('.sidebar');
+        const adminMenuToggle = document.getElementById('adminMenuToggle');
+
+        if (adminSidebar && adminMenuToggle) {
+            adminMenuToggle.addEventListener('click', function () {
+                adminSidebar.classList.toggle('mobile-open');
+            });
+
+            adminSidebar.querySelectorAll('a').forEach(function (link) {
+                link.addEventListener('click', function () {
+                    if (window.innerWidth <= 600) {
+                        adminSidebar.classList.remove('mobile-open');
+                    }
+                });
+            });
+        }
+
+        updateDashboardClock();
+        setInterval(updateDashboardClock, 1000);
+    </script>
 
 </body>
 </html>

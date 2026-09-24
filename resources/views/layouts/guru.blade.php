@@ -21,11 +21,28 @@
             min-height: 100%;
         }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Manrope', sans-serif;
             background: #FBFBFB;
             color: #2D336B;
             -webkit-font-smoothing: antialiased;
+        }
+
+        img, svg, video, canvas, iframe, embed, object {
+            max-width: 100%;
+            height: auto;
+        }
+
+        a, button, input, select, textarea {
+            max-width: 100%;
+        }
+
+        .content * {
+            max-width: 100%;
         }
 
         /* =========================
@@ -193,7 +210,39 @@
         .header-right {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 16px;
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-status-block {
+            background: #F9FAFB;
+            border: 1px solid rgba(229, 231, 235, 0.7);
+            border-radius: 10px;
+            padding: 8px 12px;
+            min-width: 150px;
+            text-align: left;
+        }
+
+        .header-status-block small {
+            display: block;
+            color: #6B7280;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .header-status-block strong {
+            color: #2D336B;
+            font-size: 12px;
+            font-weight: 800;
+            line-height: 1.35;
         }
 
         .header-date {
@@ -400,12 +449,14 @@
             }
 
             .mobile-topbar {
-                height: 58px;
+                height: auto;
+                min-height: 58px;
                 background: #2D336B;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 padding: 0 16px;
+                gap: 10px;
                 position: sticky;
                 top: 0;
                 z-index: 150;
@@ -457,7 +508,7 @@
             .content {
                 width: 100%;
                 max-width: none;
-                padding: 24px 24px 32px;
+                padding: 24px 14px 32px;
             }
 
             /* Hamburger berubah menjadi X */
@@ -689,6 +740,17 @@
 
                 <div class="header-right">
 
+                    <div class="header-status">
+                        <div class="header-status-block">
+                            <small>Hari Ini</small>
+                            <strong id="liveDate">--</strong>
+                        </div>
+                        <div class="header-status-block">
+                            <small>Pukul</small>
+                            <strong id="liveTime">--:--:--</strong>
+                        </div>
+                    </div>
+
                     <div class="header-year">
                         Tahun Ajaran:
                         <strong>
@@ -710,6 +772,36 @@
     </div>
 
     @yield('scripts')
+
+    <script>
+        function updateDashboardClock() {
+            const dateEl = document.getElementById('liveDate');
+            const timeEl = document.getElementById('liveTime');
+
+            if (!dateEl || !timeEl) return;
+
+            const now = new Date();
+            const dateText = new Intl.DateTimeFormat('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(now);
+
+            const timeText = new Intl.DateTimeFormat('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(now);
+
+            dateEl.textContent = dateText;
+            timeEl.textContent = timeText;
+        }
+
+        updateDashboardClock();
+        setInterval(updateDashboardClock, 1000);
+    </script>
 
     {{-- MOBILE SIDEBAR SCRIPT --}}
     <script>
