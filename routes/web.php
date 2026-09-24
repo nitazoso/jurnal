@@ -240,19 +240,24 @@ Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
     Route::delete('/admin/jadwal/{jadwal}', [JadwalController::class, 'destroy'])
         ->name('admin.jadwal.destroy');
 
-    Route::get('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'index'])
-        ->name('admin.jadwal-piket.index');
-    Route::get('/admin/jadwal-piket/create', [AdminJadwalPiketController::class, 'create'])
-        ->name('admin.jadwal-piket.create');
-    Route::post('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'store'])
-        ->name('admin.jadwal-piket.store');
-    Route::get('/admin/jadwal-piket/{jadwal}/edit', [AdminJadwalPiketController::class, 'edit'])
-        ->name('admin.jadwal-piket.edit');
-    Route::put('/admin/jadwal-piket/{jadwal}', [AdminJadwalPiketController::class, 'update'])
-        ->name('admin.jadwal-piket.update');
-    Route::delete('/admin/jadwal-piket/{jadwal}', [AdminJadwalPiketController::class, 'destroy'])
-        ->name('admin.jadwal-piket.destroy');
 
+Route::get('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'index'])
+    ->name('admin.jadwal-piket.index');
+
+Route::get('/admin/jadwal-piket/create', [AdminJadwalPiketController::class, 'create'])
+    ->name('admin.jadwal-piket.create');
+
+Route::post('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'store'])
+    ->name('admin.jadwal-piket.store');
+
+Route::get('/admin/jadwal-piket/{tanggal}/edit', [AdminJadwalPiketController::class, 'edit'])
+    ->name('admin.jadwal-piket.edit');
+
+Route::put('/admin/jadwal-piket/{tanggal}', [AdminJadwalPiketController::class, 'update'])
+    ->name('admin.jadwal-piket.update');
+
+Route::delete('/admin/jadwal-piket/{tanggal}', [AdminJadwalPiketController::class, 'destroy'])
+    ->name('admin.jadwal-piket.destroy');
     Route::get('/admin/jadwal-kesiswaan', [JadwalKesiswaanController::class, 'index'])
         ->name('admin.jadwal-kesiswaan.index');
     Route::get('/admin/jadwal-kesiswaan/create', [JadwalKesiswaanController::class, 'create'])

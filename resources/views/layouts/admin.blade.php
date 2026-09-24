@@ -797,7 +797,7 @@
                 <span>Jadwal Piket</span>
 
             </a>
-
+<!-- 
             {{-- JADWAL KESISWAAN --}}
             <a href="{{ route('admin.jadwal-kesiswaan.index') }}"
                class="nav-item {{ request()->routeIs('admin.jadwal-kesiswaan.*') ? 'active' : '' }}">
@@ -808,7 +808,7 @@
 
                 <span>Jadwal Kesiswaan</span>
 
-            </a>
+            </a> -->
 
 
             {{-- USER --}}
