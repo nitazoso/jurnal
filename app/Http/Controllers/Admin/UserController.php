@@ -41,17 +41,28 @@ class UserController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Statistik
+        // =========================
+        // STATISTIK
+        // =========================
         $totalUser = User::count();
+
+        // TAMBAHAN: Total Admin
+        $totalAdmin = User::where('role', 'Admin')->count();
+
         $totalGuru = User::where('role', 'Guru')->count();
+
         $totalKesiswaan = User::where('role', 'Kesiswaan')->count();
+
         $totalStaffPiket = User::where('role', 'Staff Piket')->count();
+
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
+
         $totalSiswa = \App\Models\Siswa::count();
 
         return view('admin.user.index', compact(
             'users',
             'totalUser',
+            'totalAdmin',
             'totalGuru',
             'totalKesiswaan',
             'totalStaffPiket',

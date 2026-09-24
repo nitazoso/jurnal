@@ -1,773 +1,673 @@
 @extends('layouts.admin')
 
-@section('title', 'Daftar Jurnal - Jurnify')
-@section('page-title', 'Daftar Jurnal')
+@section('title', 'Manajemen User - Jurnify')
+@section('page-title', 'Manajemen User')
 
 @section('content')
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<div class="jurnal-page">
-
-    <div class="jurnal-card">
-
-        {{-- HEADER --}}
-        <div class="jurnal-header">
-            <h3 class="jurnal-title">Daftar Jurnal</h3>
-            <p class="jurnal-description">
-                Daftar jurnal pembelajaran yang telah dibuat oleh guru. Klik pada rekap kehadiran untuk melihat detail nama siswa.
-            </p>
-        </div>
-
-        {{-- FILTER & SEARCH --}}
-        <form action="{{ route('admin.jurnal.index') }}" method="GET" class="jurnal-filter">
-
-            <div class="search-box">
-                <svg class="search-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-
-                <input
-                    type="text"
-                    name="search"
-                    value="{{ request('search') }}"
-                    placeholder="Cari guru, mapel, kelas, atau materi..."
-                >
-            </div>
-
-            <button type="submit" class="search-btn">
-                <svg class="search-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/>
-                    <path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-                <span>Cari</span>
-            </button>
-
-        </form>
-
-        {{-- TABLE DATA --}}
-        <div class="table-wrapper">
-            <table class="jurnal-table">
-
-                <thead>
-                    <tr>
-                        <th>NO</th>
-                        <th>TANGGAL</th>
-                        <th>GURU</th>
-                        <th>MAPEL</th>
-                        <th>KELAS</th>
-                        <th>MATERI</th>
-                        <th>KEHADIRAN</th>
-                        <th>STATUS GURU</th>
-                        <th>VALIDASI</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($jurnals as$jurnal)
-                        <tr>
-
-                            <td>
-                                <span class="number-text">
-                                    {{ $jurnals->firstItem() +$loop->index }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="date-text">
-                                    {{ \Carbon\Carbon::parse($jurnal->tanggal)->format('d M Y') }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="guru-name">
-                                    {{ $jurnal->guru->nama_guru ?? $jurnal->user->nama_user ?? '-' }}
-                                </span>
-                            </td>
-
-                            <td>
-                                {{ $jurnal->jadwal->mapel->nama_mapel ?? $jurnal->mapel->nama_mapel ?? '-' }}
-                            </td>
-
-                            <td>
-                                {{ $jurnal->kelas->nama_kelas ?? '-' }}
-                            </td>
-
-                            <td>
-                                <span class="materi-text" title="{{ $jurnal->materi }}">
-                                    {{ $jurnal->materi }}
-                                </span>
-                            </td>
-
-                            <td>
-                                {{-- Tombol Interaktif Rekap Kehadiran --}}
-                                <button type="button" class="attendance-btn" onclick="openAttendanceModal({{ $jurnal->id }})">
-                                    <div class="attendance-box">
-                                        <span class="hadir-text">
-                                            {{ $jurnal->jml_hadir ?? 0 }} hadir
-                                        </span>
-                                        <span class="absen-text">
-                                            {{ $jurnal->jml_tidak_hadir ?? 0 }} tidak hadir
-                                        </span>
-                                    </div>
-                                    <svg class="attendance-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M9 18l6-6-6-6"/>
-                                    </svg>
-                                </button>
-
-                                {{-- Hidden Data JSON untuk Modal Popup --}}
-                                <script id="attendance-data-{{ $jurnal->id }}" type="application/json">
-                                    {
-                                        "kelas": "{{ $jurnal->kelas->nama_kelas ?? '-' }}",
-                                        "materi": "{{ $jurnal->materi ?? '-' }}",
-                                        "siswa": [
-                                            @if($jurnal->absensiSiswa &&$jurnal->absensiSiswa->count() > 0)
-                                                @foreach($jurnal->absensiSiswa as$absensi)
-                                                    {
-                                                        "nama": "{{ $absensi->siswa->nama_siswa ?? $absensi->nama_siswa ?? 'Siswa' }}",
-                                                        "status": "{{ $absensi->status ?? 'Hadir' }}"
-                                                    }@if(!$loop->last),@endif
-                                                @endforeach
-                                            @else
-                                                { "nama": "Data siswa tidak ditemukan", "status": "-" }
-                                            @endif
-                                        ]
-                                    }
-                                </script>
-                            </td>
-
-                            <td>
-                                <span class="status-badge">
-                                    {{ $jurnal->status_guru ?? 'Hadir' }}
-                                </span>
-                            </td>
-
-                            <td>
-                                <span class="validation-badge
-                                    {{ strtolower($jurnal->status_validasi_guru ?? 'Disetujui') === 'disetujui' ? 'approved' : '' }}
-                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'menunggu' ? 'pending' : '' }}
-                                    {{ strtolower($jurnal->status_validasi_guru ?? '') === 'ditolak' ? 'rejected' : '' }}">
-                                    {{ $jurnal->status_validasi_guru ?? 'Disetujui' }}
-                                </span>
-                            </td>
-
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="9" class="empty">
-                                Belum ada data jurnal.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-
-            </table>
-        </div>
-
-        {{-- PAGINASI --}}
-        @if($jurnals->hasPages())
-            <div class="pagination-wrapper">
-
-                <div class="pagination-info">
-                    Menampilkan {{ $jurnals->firstItem() }}–{{$jurnals->lastItem() }}
-                    dari {{ $jurnals->total() }} jurnal
-                </div>
-
-                <div class="pagination">
-
-                    {{-- PREVIOUS --}}
-                    @if($jurnals->onFirstPage())
-                        <span class="disabled">
-                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
-                    @else
-                        <a href="{{ $jurnals->previousPageUrl() }}">
-                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                    @endif
-
-                    {{-- PAGE NUMBERS --}}
-                    @foreach($jurnals->getUrlRange(1,$jurnals->lastPage()) as $page =>$url)
-                        @if($page ==$jurnals->currentPage())
-                            <span class="active">{{ $page }}</span>
-                        @else
-                            <a href="{{ $url }}">{{ $page }}</a>
-                        @endif
-                    @endforeach
-
-                    {{-- NEXT --}}
-                    @if($jurnals->hasMorePages())
-                        <a href="{{ $jurnals->nextPageUrl() }}">
-                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </a>
-                    @else
-                        <span class="disabled">
-                            <svg class="chevron-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                            </svg>
-                        </span>
-                    @endif
-
-                </div>
-            </div>
-        @endif
-
-    </div>
-
-</div>
-
-{{-- MODAL POPUP KEHADIRAN SISWA --}}
-<div id="attendanceModal" class="modal-backdrop" onclick="closeAttendanceModal(event)">
-    <div class="modal-container" onclick="event.stopPropagation()">
-        <div class="modal-header">
-            <div>
-                <h4 class="modal-title">Detail Kehadiran Siswa</h4>
-                <p id="modalSubTitle" class="modal-subtitle">Kelas -</p>
-            </div>
-            <button type="button" class="modal-close" onclick="closeAttendanceModal()">
-                &times;
-            </button>
-        </div>
-
-        <div class="modal-body">
-            <table class="modal-table">
-                <thead>
-                    <tr>
-                        <th style="width: 50px;">NO</th>
-                        <th>NAMA SISWA</th>
-                        <th style="text-align: right;">STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="modalStudentList">
-                    {{-- Diisi secara dinamis lewat JavaScript --}}
-                </tbody>
-            </table>
-        </div>
-
-        <div class="modal-footer">
-            <button type="button" class="btn-close-modal" onclick="closeAttendanceModal()">Tutup</button>
-        </div>
-    </div>
-</div>
-
 <style>
-    .jurnal-page,
-    .jurnal-page * {
-        font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        box-sizing: border-box;
-    }
-
-    .jurnal-page {
+    .user-page {
         width: 100%;
+        max-width: 100%;
     }
 
-    .jurnal-card {
+    .user-page .stats {
         width: 100%;
-        background: #FFFFFF;
-        border-radius: 16px;
-        overflow: hidden;
-        border: 1px solid #E2E8F0;
-        box-shadow: 0 4px 14px rgba(45, 51, 107, 0.03);
-        animation: jurnalFadeIn 0.45s ease both;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+        margin: 0 0 23px;
     }
 
-    /* HEADER */
-    .jurnal-header {
-        padding: 28px 28px 20px;
+    .user-page .stat-card {
+        min-width: 0;
+        min-height: 113px;
+        background: #fff;
+        border: 1px solid #f0f0f0;
+        border-radius: 9px;
+        padding: 22px 23px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, .025);
+        position: relative;
+        transition: transform .2s ease, box-shadow .2s ease;
+        animation: fadeUp .45s ease both;
     }
 
-    .jurnal-title {
-        margin: 0 0 6px;
-        color: #2D336B;
-        font-size: 22px;
-        font-weight: 800;
-        line-height: 1.3;
-        letter-spacing: -0.4px;
+    .user-page .stat-card:nth-child(1) { animation-delay: .05s; }
+    .user-page .stat-card:nth-child(2) { animation-delay: .1s; }
+    .user-page .stat-card:nth-child(3) { animation-delay: .15s; }
+    .user-page .stat-card:nth-child(4) { animation-delay: .2s; }
+
+    .user-page .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(0, 0, 0, .055);
     }
 
-    .jurnal-description {
-        margin: 0;
-        color: #64748B;
+    .user-page .stat-title {
+        color: #41434c;
         font-size: 14px;
-        line-height: 1.5;
-        font-weight: 500;
+        font-weight: 600;
+        margin-bottom: 7px;
     }
 
-    /* FILTER & SEARCH */
-    .jurnal-filter {
+    .user-page .stat-value {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .user-page .stat-value strong {
+        color: #1d2c67;
+        font-size: 31px;
+        font-weight: 800;
+        line-height: 1;
+    }
+
+    .user-page .stat-icon {
+        position: absolute;
+        top: 24px;
+        right: 23px;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #dce4ff;
+        color: #172b67;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform .2s ease, background .2s ease;
+    }
+
+    .user-page .stat-card:hover .stat-icon {
+        transform: scale(1.05);
+        background: #d5defc;
+    }
+
+    .user-page .stat-icon .material-symbols-outlined {
+        font-size: 22px;
+    }
+
+    .user-page .success-message {
+        margin-bottom: 20px;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: #d5f7e8;
+        color: #087451;
+        font-size: 13px;
+        font-weight: 600;
+        animation: fadeDown .35s ease both;
+    }
+
+    .user-page .activity-card {
+        width: 100%;
+        background: #fff;
+        border-radius: 9px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .025);
+        animation: fadeUp .5s ease .15s both;
+    }
+
+    .user-page .activity-header {
+        padding: 25px 24px 24px;
+    }
+
+    .user-page .activity-title {
+        color: #1d2c67;
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .user-page .activity-description {
+        color: #4b4d56;
+        font-size: 14px;
+    }
+
+    .user-page .filters {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 0 28px 24px;
+        padding: 0 24px 16px;
+        width: 100%;
     }
 
-    .search-box {
+    .user-page .search-box {
+        width: 330px;
+        height: 40px;
+        flex-shrink: 1;
+        background: #f1f2f5;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        color: #24252b;
+        font-family: 'Manrope', sans-serif;
+        font-size: 13px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        width: 380px;
-        height: 44px;
-        padding: 0 14px;
-        background: #FFFFFF;
-        border: 1px solid #CBD5E1;
-        border-radius: 12px;
-        transition: all 0.2s ease;
+        padding: 0 12px;
+        gap: 9px;
+        transition: background .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
 
-    .search-box:focus-within {
-        border-color: #7886C7;
-        box-shadow: 0 0 0 4px rgba(120, 134, 199, 0.15);
+    .user-page .search-box:focus-within {
+        background: #fff;
+        border-color: #cfd4e5;
+        box-shadow: 0 0 0 3px rgba(120, 134, 199, .1);
     }
 
-    .search-icon {
-        width: 20px;
-        height: 20px;
+    .user-page .search-box .material-symbols-outlined {
+        color: #777b86;
+        font-size: 21px;
         flex-shrink: 0;
-        color: #94A3B8;
-        transition: color 0.2s ease;
+        transition: color .2s ease;
     }
 
-    .search-box:focus-within .search-icon {
-        color: #7886C7;
+    .user-page .search-box:focus-within .material-symbols-outlined {
+        color: #30366f;
     }
 
-    .search-box input {
+    .user-page .search-box input {
         width: 100%;
+        min-width: 0;
         border: none;
         outline: none;
         background: transparent;
-        color: #0F172A;
         font-family: inherit;
-        font-size: 14px;
-        font-weight: 500;
+        font-size: 13px;
+        color: #333;
     }
 
-    .search-box input::placeholder {
-        color: #94A3B8;
+    .user-page .search-box input::placeholder {
+        color: #858891;
     }
 
-    .search-btn {
-        height: 44px;
-        padding: 0 18px;
-        display: inline-flex;
+    .user-page .role-filters {
+        display: flex;
         align-items: center;
-        justify-content: center;
         gap: 8px;
-        border: none;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #7886C7 0%, #2D336B 100%);
-        color: #FFFFFF;
-        font-family: inherit;
-        font-size: 13.5px;
-        font-weight: 700;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(45, 51, 107, 0.15);
-        transition: all 0.2s ease;
-    }
-
-    .search-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 18px rgba(45, 51, 107, 0.25);
-    }
-
-    .search-btn-icon {
-        width: 17px;
-        height: 17px;
+        margin-left: auto;
         flex-shrink: 0;
     }
 
-    /* TABLE */
-    .table-wrapper {
+    .user-page .role-filter,
+    .user-page .add-user-btn {
+        height: 40px;
+        border: 1px solid #cfd2dc;
+        border-radius: 10px;
+        background: #fff;
+        color: #30323a;
+        font-family: 'Manrope', sans-serif;
+        font-size: 13px;
+        font-weight: 700;
+        padding: 0 20px;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+
+    .user-page .role-filter:hover {
+        background: #f7f8fb;
+        border-color: #b9becb;
+        transform: translateY(-1px);
+    }
+
+    .user-page .role-filter.active {
+        background: #182864;
+        border-color: #182864;
+        color: #fff;
+    }
+
+    .user-page .role-filter.active:hover {
+        background: #202f72;
+        border-color: #202f72;
+    }
+
+    .user-page .add-user-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        background: #2d336b;
+        border-color: #2d336b;
+        color: #fff;
+        padding: 0 17px;
+        text-decoration: none;
+        flex-shrink: 0;
+        box-shadow: 0 2px 5px rgba(45, 51, 107, .1);
+    }
+
+    .user-page .add-user-btn:hover {
+        background: #252c61;
+        border-color: #252c61;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 9px rgba(45, 51, 107, .16);
+    }
+
+    .user-page .add-user-btn:active {
+        transform: translateY(0);
+    }
+
+    .user-page .add-user-btn .material-symbols-outlined {
+        font-size: 18px;
+        transition: transform .2s ease;
+    }
+
+    .user-page .add-user-btn:hover .material-symbols-outlined {
+        transform: scale(1.08);
+    }
+
+    .user-page .table-wrapper {
         width: 100%;
         overflow-x: auto;
     }
 
-    .jurnal-table {
+    .user-page table {
         width: 100%;
         border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .user-page thead {
+        background: #f1f2f5;
+    }
+
+    .user-page th {
+        height: 60px;
+        padding: 0 12px;
         text-align: left;
+        color: #484a53;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: .3px;
     }
 
-    .jurnal-table thead {
-        background: #F8FAFC;
-    }
-
-    .jurnal-table th {
-        padding: 16px 20px;
-        color: #475569;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        border-bottom: 1px solid #E2E8F0;
-        white-space: nowrap;
-    }
-
-    .jurnal-table td {
-        padding: 18px 20px;
-        border-bottom: 1px solid #F1F5F9;
-        color: #1E293B;
+    .user-page td {
+        height: 94px;
+        padding: 9px 12px;
+        color: #17181d;
         font-size: 14px;
         vertical-align: middle;
-        white-space: nowrap;
     }
 
-    .jurnal-table tbody tr {
-        transition: background-color 0.2s ease;
+    .user-page tbody tr {
+        border-bottom: 1px solid #f4f4f4;
+        transition: background .2s ease;
     }
 
-    .jurnal-table tbody tr:hover {
-        background: #F8FAFC;
+    .user-page tbody tr:hover {
+        background: #fafbff;
     }
 
-    .jurnal-table th:first-child,
-    .jurnal-table td:first-child {
-        padding-left: 28px;
-        text-align: center;
-        width: 60px;
+    .user-page tbody tr:last-child {
+        border-bottom: none;
     }
 
-    .jurnal-table th:last-child,
-    .jurnal-table td:last-child {
-        padding-right: 28px;
+    .user-page th:nth-child(1),
+    .user-page td:nth-child(1) {
+        width: 33%;
+        padding-left: 36px;
     }
 
-    .number-text {
-        color: #64748B;
-        font-weight: 600;
+    .user-page th:nth-child(2),
+    .user-page td:nth-child(2) {
+        width: 27%;
     }
 
-    .date-text {
-        color: #334155;
-        font-weight: 600;
+    .user-page th:nth-child(3),
+    .user-page td:nth-child(3) {
+        width: 25%;
     }
 
-    .guru-name {
-        color: #0F172A;
-        font-weight: 700;
+    .user-page th:nth-child(4),
+    .user-page td:nth-child(4) {
+        width: 15%;
+        padding-right: 36px;
     }
 
-    .materi-text {
-        display: -webkit-box;
-        overflow: hidden;
-        color: #334155;
-        line-height: 1.5;
-        font-size: 13.5px;
-        max-width: 280px;
-        white-space: normal;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
+    .user-page .user-cell strong {
+        display: block;
+        color: #202126;
+        font-size: 15px;
+        font-weight: 800;
+        margin-bottom: 3px;
+        transition: color .2s ease;
     }
 
-    /* ATTENDANCE BUTTON INTERACTIVE */
-    .attendance-btn {
+    .user-page tbody tr:hover .user-cell strong {
+        color: #182864;
+    }
+
+    .user-page .user-id {
+        color: #4d5059;
+        font-family: monospace;
+        font-size: 13px;
+        word-break: break-word;
+    }
+
+    .user-page .role-badge {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        padding: 6px 12px;
-        border-radius: 10px;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-align: left;
+        gap: 5px;
+        background: #a9b5df;
+        color: #344477;
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: transform .2s ease, box-shadow .2s ease;
     }
 
-    .attendance-btn:hover {
-        background: #F1F5F9;
-        border-color: #CBD5E1;
+    .user-page tbody tr:hover .role-badge {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 5px rgba(52, 68, 119, .1);
+    }
+
+    .user-page .role-badge .material-symbols-outlined {
+        font-size: 14px;
+    }
+
+    .user-page .user-actions {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .user-page .icon-action {
+        width: 22px;
+        height: 30px;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        text-decoration: none;
+        padding: 0;
+        transition: transform .2s ease, opacity .2s ease;
+    }
+
+    .user-page .icon-action .material-symbols-outlined {
+        font-size: 19px;
+        transition: transform .2s ease;
+    }
+
+    .user-page .icon-action.edit {
+        color: #182864;
+    }
+
+    .user-page .icon-action.delete {
+        color: #e00000;
+    }
+
+    .user-page .icon-action:hover {
         transform: translateY(-1px);
     }
 
-    .attendance-chevron {
-        width: 16px;
-        height: 16px;
-        color: #94A3B8;
-        transition: color 0.2s ease;
+    .user-page .icon-action:hover .material-symbols-outlined {
+        transform: scale(1.08);
     }
 
-    .attendance-btn:hover .attendance-chevron {
-        color: #2D336B;
+    .user-page .icon-action:active {
+        transform: translateY(0);
     }
 
-    .attendance-box {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 2px;
-    }
-
-    .attendance-box .hadir-text {
-        color: #166534;
-        font-size: 13px;
-        font-weight: 700;
-        line-height: 1.2;
-    }
-
-    .attendance-box .absen-text {
-        color: #94A3B8;
-        font-size: 11.5px;
-        font-weight: 600;
-        line-height: 1.2;
-    }
-
-    /* BADGES */
-    .status-badge,
-    .validation-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-size: 11.5px;
-        font-weight: 700;
-        white-space: nowrap;
-    }
-
-    /* Status Siswa Badges */
-    .student-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    .student-badge.hadir { background: #DCFCE7; color: #15803D; }
-    .student-badge.izin { background: #E0F2FE; color: #0369A1; }
-    .student-badge.sakit { background: #FEF3C7; color: #B45309; }
-    .student-badge.alpa { background: #FEE2E2; color: #DC2626; }
-
-    /* Disetujui */
-    .validation-badge.approved {
-        background: #DCFCE7;
-        color: #15803D;
-    }
-
-    /* Menunggu */
-    .validation-badge.pending {
-        background: #FEF3C7;
-        color: #B45309;
-    }
-
-    /* Ditolak */
-    .validation-badge.rejected {
-        background: #FEE2E2;
-        color: #DC2626;
-    }
-
-    .validation-badge {
-        background: #DCFCE7;
-        color: #15803D;
-    }
-
-    /* EMPTY STATE */
-    .empty {
-        padding: 56px 24px !important;
-        color: #94A3B8 !important;
-        font-size: 14.5px !important;
-        font-weight: 600;
-        text-align: center;
-    }
-
-    /* PAGINATION */
-    .pagination-wrapper {
+    .user-page .bottom {
+        min-height: 70px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 20px 28px;
-        border-top: 1px solid #E2E8F0;
-        background: #FFFFFF;
+        padding: 0 20px;
     }
 
-    .pagination-info {
-        color: #64748B;
-        font-size: 13.5px;
-        font-weight: 500;
+    .user-page .entries {
+        color: #3f4148;
+        font-size: 13px;
     }
 
-    .pagination {
+    .user-page .pagination {
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 4px;
     }
 
-    .pagination a,
-    .pagination span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+    .user-page .page {
         min-width: 36px;
         height: 36px;
-        padding: 0 10px;
-        border-radius: 8px;
-        background: #F1F5F9;
-        color: #475569;
+        border: none;
+        border-radius: 4px;
+        background: #f0f1f4;
+        color: #25272d;
+        font-family: 'Manrope', sans-serif;
         font-size: 13px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-
-    .pagination a:hover {
-        background: #E2E8F0;
-        color: #0F172A;
-    }
-
-    .pagination .active {
-        background: #2D336B;
-        color: #FFFFFF;
-    }
-
-    .pagination .disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
-    }
-
-    .chevron-icon {
-        width: 18px;
-        height: 18px;
-        display: block;
-    }
-
-    /* STYLES MODAL POPUP */
-    .modal-backdrop {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(15, 23, 42, 0.4);
-        backdrop-filter: blur(4px);
-        z-index: 9999;
+        cursor: pointer;
+        display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        transition: opacity 0.25s ease;
+        text-decoration: none;
+        transition: background .2s ease, color .2s ease, transform .2s ease;
     }
 
-    .modal-backdrop.show {
+    .user-page .page:hover:not(.disabled):not(.active) {
+        background: #dce4ff;
+        color: #182864;
+        transform: translateY(-1px);
+    }
+
+    .user-page .page.active {
+        background: #182864;
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .user-page .page.disabled {
+        opacity: .45;
+        pointer-events: none;
+    }
+
+    .user-page .page .material-symbols-outlined {
+        font-size: 18px;
+    }
+
+    .user-page .dots {
+        min-width: 24px;
+        text-align: center;
+        color: #555861;
+    }
+
+    .user-page .empty-row {
+        text-align: center;
+        padding: 40px !important;
+        color: #777b86;
+    }
+
+    .user-page .delete-modal {
         display: flex;
+        visibility: hidden;
+        opacity: 0;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, .45);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        transition: opacity .2s ease, visibility .2s ease;
+    }
+
+    .user-page .delete-modal.show {
+        visibility: visible;
         opacity: 1;
     }
 
-    .modal-container {
-        background: #FFFFFF;
-        width: 90%;
-        max-width: 520px;
-        border-radius: 16px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    .user-page .delete-modal-box {
+        width: min(520px, 100%);
+        background: #fff;
+        border-radius: 18px;
         overflow: hidden;
-        transform: scale(0.95);
-        transition: transform 0.25s ease;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, .22);
+        transform: translateY(8px) scale(.98);
+        transition: transform .25s ease;
     }
 
-    .modal-backdrop.show .modal-container {
-        transform: scale(1);
+    .user-page .delete-modal.show .delete-modal-box {
+        transform: translateY(0) scale(1);
     }
 
-    .modal-header {
-        padding: 20px 24px;
-        border-bottom: 1px solid #E2E8F0;
+    .user-page .delete-modal-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 28px 30px 20px;
+    }
+
+    .user-page .delete-icon {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: #ffe1e1;
+        color: #e5242a;
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: center;
     }
 
-    .modal-title {
-        margin: 0;
-        font-size: 18px;
+    .user-page .delete-icon .material-symbols-outlined {
+        font-size: 31px;
+    }
+
+    .user-page .delete-modal-title {
+        padding-top: 2px;
+    }
+
+    .user-page .delete-modal-title h3 {
+        margin: 0 0 6px;
+        color: #1d2c67;
+        font-size: 23px;
         font-weight: 800;
-        color: #2D336B;
+        line-height: 1.2;
     }
 
-    .modal-subtitle {
-        margin: 4px 0 0;
+    .user-page .delete-modal-title p {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .user-page .delete-info {
+        margin: 4px 30px 20px;
+        padding: 17px 20px;
+        background: #f8fafc;
+        border: 1px solid #dfe6ef;
+        border-radius: 12px;
+    }
+
+    .user-page .delete-info-name {
+        display: block;
+        margin-bottom: 7px;
+        color: #1d2c67;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .user-page .delete-info-detail {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: #64748b;
         font-size: 13px;
-        color: #64748B;
-        font-weight: 500;
+        flex-wrap: wrap;
     }
 
-    .modal-close {
-        background: transparent;
-        border: none;
-        font-size: 24px;
-        color: #94A3B8;
-        cursor: pointer;
-        line-height: 1;
-        transition: color 0.2s ease;
+    .user-page .delete-info-detail strong {
+        color: #526078;
     }
 
-    .modal-close:hover {
-        color: #0F172A;
+    .user-page .delete-info-detail .dot {
+        color: #94a3b8;
     }
 
-    .modal-body {
-        padding: 16px 24px;
-        max-height: 380px;
-        overflow-y: auto;
+    .user-page .delete-warning {
+        display: flex;
+        align-items: center;
+        margin: 0 30px 24px;
+        padding: 13px 16px;
+        background: #fff9e8;
+        border-left: 4px solid #f59e0b;
+        color: #a14c08;
+        font-size: 12px;
+        line-height: 1.5;
     }
 
-    .modal-table {
-        width: 100%;
-        border-collapse: collapse;
+    .user-page .delete-warning .material-symbols-outlined {
+        margin-right: 8px;
+        color: #d97706;
+        font-size: 19px;
+        flex-shrink: 0;
     }
 
-    .modal-table th {
-        padding: 10px 12px;
-        font-size: 11px;
-        font-weight: 700;
-        color: #64748B;
-        text-transform: uppercase;
-        border-bottom: 1px solid #E2E8F0;
-        text-align: left;
+    .user-page .delete-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 10px;
+        padding: 20px 30px;
+        background: #f8fafc;
+        border-top: 1px solid #e8ebf0;
     }
 
-    .modal-table td {
-        padding: 12px;
-        font-size: 13.5px;
-        color: #1E293B;
-        border-bottom: 1px solid #F1F5F9;
+    .user-page .delete-modal-footer form {
+        margin: 0;
     }
 
-    .modal-footer {
-        padding: 16px 24px;
-        border-top: 1px solid #E2E8F0;
-        background: #F8FAFC;
-        text-align: right;
-    }
-
-    .btn-close-modal {
-        padding: 8px 18px;
-        background: #2D336B;
-        color: #FFFFFF;
-        border: none;
+    .user-page .btn-delete-cancel,
+    .user-page .btn-delete-confirm {
+        height: 42px;
+        padding: 0 20px;
         border-radius: 8px;
+        font-family: 'Manrope', sans-serif;
         font-size: 13px;
-        font-weight: 700;
+        font-weight: 800;
         cursor: pointer;
-        transition: background-color 0.2s ease;
+        transition: transform .2s ease, background .2s ease, box-shadow .2s ease;
     }
 
-    .btn-close-modal:hover {
-        background: #1E234A;
+    .user-page .btn-delete-cancel {
+        min-width: 100px;
+        background: #fff;
+        border: 1px solid #cbd5e1;
+        color: #343945;
     }
 
-    /* ANIMATION */
-    @keyframes jurnalFadeIn {
+    .user-page .btn-delete-cancel:hover {
+        background: #f8fafc;
+        transform: translateY(-1px);
+    }
+
+    .user-page .btn-delete-confirm {
+        min-width: 120px;
+        border: none;
+        background: #e5242a;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(229, 36, 42, .16);
+    }
+
+    .user-page .btn-delete-confirm:hover {
+        background: #c91c22;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px rgba(229, 36, 42, .2);
+    }
+
+    .user-page .btn-delete-confirm:active,
+    .user-page .btn-delete-cancel:active {
+        transform: translateY(0);
+    }
+
+    @keyframes fadeUp {
         from {
             opacity: 0;
-            transform: translateY(8px);
+            transform: translateY(7px);
         }
 
         to {
@@ -776,84 +676,486 @@
         }
     }
 
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        .jurnal-header {
-            padding: 20px;
+    @keyframes fadeDown {
+        from {
+            opacity: 0;
+            transform: translateY(-5px);
         }
 
-        .jurnal-filter {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1100px) {
+        .user-page .stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .user-page .filters {
+            flex-wrap: wrap;
+        }
+
+        .user-page .search-box {
+            width: 100%;
+            flex: 1 1 300px;
+        }
+
+        .user-page .role-filters {
+            margin-left: 0;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .user-page .stats {
+            grid-template-columns: 1fr;
+        }
+
+        .user-page .filters {
             flex-direction: column;
             align-items: stretch;
-            padding: 0 20px 20px;
         }
 
-        .search-box {
+        .user-page .search-box {
             width: 100%;
+            flex: none;
         }
 
-        .search-btn {
-            width: 100%;
+        .user-page .role-filters {
+            margin-left: 0;
         }
 
-        .pagination-wrapper {
+        .user-page .add-user-btn {
+            width: fit-content;
+        }
+
+        .user-page table {
+            min-width: 700px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .user-page .bottom {
             flex-direction: column;
-            gap: 16px;
-            padding: 20px;
-            align-items: center;
+            gap: 15px;
+            padding: 18px;
+        }
+
+        .user-page .delete-modal-box {
+            width: 100%;
+            border-radius: 15px;
+        }
+
+        .user-page .delete-modal-header {
+            gap: 14px;
+            padding: 22px 20px 17px;
+        }
+
+        .user-page .delete-icon {
+            width: 52px;
+            height: 52px;
+        }
+
+        .user-page .delete-icon .material-symbols-outlined {
+            font-size: 27px;
+        }
+
+        .user-page .delete-modal-title h3 {
+            font-size: 19px;
+        }
+
+        .user-page .delete-modal-title p {
+            font-size: 12px;
+        }
+
+        .user-page .delete-info {
+            margin: 4px 20px 17px;
+            padding: 14px 16px;
+        }
+
+        .user-page .delete-info-name {
+            font-size: 15px;
+        }
+
+        .user-page .delete-info-detail {
+            font-size: 12px;
+        }
+
+        .user-page .delete-warning {
+            margin: 0 20px 20px;
+            padding: 11px 13px;
+            font-size: 11px;
+        }
+
+        .user-page .delete-modal-footer {
+            padding: 16px 20px;
+        }
+
+        .user-page .btn-delete-cancel,
+        .user-page .btn-delete-confirm {
+            height: 40px;
+            font-size: 12px;
         }
     }
 </style>
 
-<script>
-    function openAttendanceModal(jurnalId) {
-        const rawData = document.getElementById(`attendance-data-${jurnalId}`).textContent;
-        const data = JSON.parse(rawData);
-        
-        document.getElementById('modalSubTitle').innerText = `Kelas: ${data.kelas}`;
+<div class="user-page">
 
-        const tbody = document.getElementById('modalStudentList');
-        tbody.innerHTML = '';
+    @if(session('success'))
+        <div class="success-message">{{ session('success') }}</div>
+    @endif
 
-        if (data.siswa && data.siswa.length > 0) {
-            data.siswa.forEach((student, index) => {
-                const statusClean = student.status.toLowerCase().trim();
-                let badgeClass = 'hadir';
-                
-                if (statusClean === 'izin') badgeClass = 'izin';
-                else if (statusClean === 'sakit') badgeClass = 'sakit';
-                else if (statusClean === 'alpa' || statusClean === 'tidak hadir') badgeClass = 'alpa';
+    <section class="stats">
+        <div class="stat-card">
+            <div class="stat-title">TOTAL USERS</div>
+            <div class="stat-value">
+                <strong>{{ $totalUser }}</strong>
+            </div>
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">groups</span>
+            </div>
+        </div>
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td style="color: #64748B; font-weight: 600;">${index + 1}</td>
-                    <td style="font-weight: 600; color: #0F172A;">${student.nama}</td>
-                    <td style="text-align: right;">
-                        <span class="student-badge ${badgeClass}">
-                            ${student.status}
+        <div class="stat-card">
+            <div class="stat-title">GURU AKTIF</div>
+            <div class="stat-value">
+                <strong>{{ $totalGuru }}</strong>
+            </div>
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">school</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">STAFF PIKET</div>
+            <div class="stat-value">
+                <strong>{{ $totalStaffPiket }}</strong>
+            </div>
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">support_agent</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-title">TOTAL SEKRE</div>
+            <div class="stat-value">
+                <strong>{{ $totalSekretaris }}</strong>
+            </div>
+            <div class="stat-icon">
+                <span class="material-symbols-outlined">edit_note</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="activity-card">
+        <div class="activity-header">
+            <h3 class="activity-title">Daftar User</h3>
+            <p class="activity-description">
+                Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem Jurnify.
+            </p>
+        </div>
+
+        <form action="{{ route('admin.user.index') }}" method="GET" class="filters">
+            <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Cari nama, username, NIP..."
+                    value="{{ request('search') }}"
+                >
+            </div>
+
+            <div class="role-filters">
+                <button
+                    type="submit"
+                    name="role"
+                    value=""
+                    class="role-filter {{ !request('role') ? 'active' : '' }}"
+                >
+                    Semua
+                </button>
+
+                <button
+                    type="submit"
+                    name="role"
+                    value="Guru"
+                    class="role-filter {{ request('role') === 'Guru' ? 'active' : '' }}"
+                >
+                    Guru
+                </button>
+
+                <button
+                    type="submit"
+                    name="role"
+                    value="Kesiswaan"
+                    class="role-filter {{ request('role') === 'Kesiswaan' ? 'active' : '' }}"
+                >
+                    Kesiswaan
+                </button>
+
+                <button
+                    type="submit"
+                    name="role"
+                    value="Staff Piket"
+                    class="role-filter {{ request('role') === 'Staff Piket' ? 'active' : '' }}"
+                >
+                    Staff
+                </button>
+
+                <button
+                    type="submit"
+                    name="role"
+                    value="Sekretaris"
+                    class="role-filter {{ request('role') === 'Sekretaris' ? 'active' : '' }}"
+                >
+                    Sekre
+                </button>
+            </div>
+
+            <a href="{{ route('admin.user.create') }}" class="add-user-btn">
+                <span class="material-symbols-outlined">person_add</span>
+                Tambah User
+            </a>
+        </form>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>USER</th>
+                        <th>NIP / ID</th>
+                        <th>ROLE</th>
+                        <th>AKSI</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($users as $user)
+                        <tr>
+                            <td class="user-cell">
+                                <strong>{{ $user->nama_user }}</strong>
+                            </td>
+
+                            <td class="user-id">
+                                {{ $user->username }}
+                            </td>
+
+                            <td>
+                                <span class="role-badge">
+                                    @if($user->role === 'Guru')
+                                        <span class="material-symbols-outlined">school</span>
+                                    @elseif($user->role === 'Staff Piket')
+                                        <span class="material-symbols-outlined">support_agent</span>
+                                    @elseif($user->role === 'Sekretaris')
+                                        <span class="material-symbols-outlined">edit_note</span>
+                                    @elseif($user->role === 'Admin')
+                                        <span class="material-symbols-outlined">admin_panel_settings</span>
+                                    @elseif($user->role === 'Kesiswaan')
+                                        <span class="material-symbols-outlined">groups</span>
+                                    @else
+                                        <span class="material-symbols-outlined">person</span>
+                                    @endif
+
+                                    {{ $user->role }}
+                                </span>
+                            </td>
+
+                            <td class="user-actions">
+                                <a
+                                    href="{{ route('admin.user.edit', $user->id_user) }}"
+                                    class="icon-action edit"
+                                    title="Edit user"
+                                >
+                                    <span class="material-symbols-outlined">edit</span>
+                                </a>
+
+                                <button
+                                    type="button"
+                                    class="icon-action delete user-delete-btn"
+                                    title="Hapus user"
+                                    data-url="{{ route('admin.user.destroy', $user->id_user) }}"
+                                    data-name="{{ $user->nama_user }}"
+                                    data-username="{{ $user->username }}"
+                                    data-role="{{ $user->role }}"
+                                >
+                                    <span class="material-symbols-outlined">delete</span>
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty-row">
+                                Belum ada data user.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bottom">
+            <div class="entries">
+                Showing {{ $users->firstItem() ?? 0 }}
+                to {{ $users->lastItem() ?? 0 }}
+                of {{ $users->total() }} entries
+            </div>
+
+            @if($users->hasPages())
+                <div class="pagination">
+                    @if($users->onFirstPage())
+                        <span class="page disabled">
+                            <span class="material-symbols-outlined">chevron_left</span>
                         </span>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        } else {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="3" style="text-align: center; color: #94A3B8; padding: 20px;">
-                        Tidak ada data siswa
-                    </td>
-                </tr>
-            `;
+                    @else
+                        <a href="{{ $users->previousPageUrl() }}" class="page">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                    @endif
+
+                    @php
+                        $current = $users->currentPage();
+                        $last = $users->lastPage();
+                    @endphp
+
+                    @for($page = 1; $page <= $last; $page++)
+                        @if($page === 1 || $page === $last || abs($page - $current) <= 1)
+                            @if($page === $current)
+                                <span class="page active">{{ $page }}</span>
+                            @else
+                                <a href="{{ $users->url($page) }}" class="page">
+                                    {{ $page }}
+                                </a>
+                            @endif
+                        @elseif($page === 2 && $current > 3)
+                            <span class="dots">...</span>
+                        @elseif($page === $last - 1 && $current < $last - 2)
+                            <span class="dots">...</span>
+                        @endif
+                    @endfor
+
+                    @if($users->hasMorePages())
+                        <a href="{{ $users->nextPageUrl() }}" class="page">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                    @else
+                        <span class="page disabled">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </span>
+                    @endif
+                </div>
+            @endif
+        </div>
+    </section>
+
+    <div id="deleteModal" class="delete-modal">
+        <div class="delete-modal-box">
+
+            <div class="delete-modal-header">
+                <div class="delete-icon">
+                    <span class="material-symbols-outlined">warning</span>
+                </div>
+
+                <div class="delete-modal-title">
+                    <h3>Hapus User?</h3>
+                    <p>
+                        Apakah Anda yakin ingin menghapus user ini?<br>
+                        Tindakan ini tidak dapat dibatalkan.
+                    </p>
+                </div>
+            </div>
+
+            <div class="delete-info">
+                <span id="deleteName" class="delete-info-name">
+                    Nama User
+                </span>
+
+                <div class="delete-info-detail">
+                    <span>
+                        Username:
+                        <strong id="deleteUsername">username</strong>
+                    </span>
+
+                    <span class="dot">•</span>
+
+                    <span>
+                        Role:
+                        <strong id="deleteRole">Guru</strong>
+                    </span>
+                </div>
+            </div>
+
+            <div class="delete-warning">
+                <span class="material-symbols-outlined">info</span>
+
+                <span>
+                    User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.
+                </span>
+            </div>
+
+            <div class="delete-modal-footer">
+                <button
+                    type="button"
+                    class="btn-delete-cancel"
+                    onclick="closeDeleteModal()"
+                >
+                    Batal
+                </button>
+
+                <form id="deleteForm" method="POST">
+                    @csrf
+                    @method('DELETE')
+
+                    <button type="submit" class="btn-delete-confirm">
+                        Hapus User
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function openDeleteModal(url, name, username, role) {
+        document.getElementById('deleteForm').action = url;
+        document.getElementById('deleteName').textContent = name;
+        document.getElementById('deleteUsername').textContent = username;
+        document.getElementById('deleteRole').textContent = role;
+        document.getElementById('deleteModal').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    document.querySelectorAll('.user-delete-btn').forEach(button => {
+        button.addEventListener('click', function () {
+            openDeleteModal(
+                this.dataset.url,
+                this.dataset.name,
+                this.dataset.username,
+                this.dataset.role
+            );
+        });
+    });
+
+    document.getElementById('deleteModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeDeleteModal();
         }
+    });
 
-        const modal = document.getElementById('attendanceModal');
-        modal.classList.add('show');
-    }
-
-    function closeAttendanceModal(event) {
-        const modal = document.getElementById('attendanceModal');
-        modal.classList.remove('show');
-    }
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
 </script>
 
 @endsection
