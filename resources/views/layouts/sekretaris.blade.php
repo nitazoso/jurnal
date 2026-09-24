@@ -30,15 +30,17 @@
 
         html {
             scroll-behavior: smooth;
+            scroll-padding-top: 88px;
         }
 
         html, body {
             overflow-x: hidden;
+            margin: 0;
+            background: #f8fafc;
         }
 
         body {
             min-height: 100vh;
-            background: var(--background);
             color: var(--text);
             font-family: 'Manrope', sans-serif;
             -webkit-font-smoothing: antialiased;

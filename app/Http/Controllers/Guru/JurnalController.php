@@ -129,12 +129,16 @@ class JurnalController extends Controller
         }
 
         /*
-         * Pastikan jadwal sedang berlangsung.
+         * Guru boleh mengisi jurnal kapan saja pada hari
+         * jadwal tersebut.
+         *
+         * Tidak boleh mengisi jurnal untuk hari jadwal
+         * yang bukan hari ini.
          */
         if (! $this->isScheduleWindowOpen($jadwal)) {
             return redirect()
                 ->route('guru.jurnal.create')
-                ->with('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
+                ->with('error', 'Jurnal hanya dapat diisi pada hari jadwal mengajar.');
         }
 
         /*
@@ -413,13 +417,13 @@ class JurnalController extends Controller
         }
 
         /*
-         * Pastikan jurnal hanya dapat dibuat ketika
-         * jam mengajar sedang berlangsung.
+         * Guru hanya boleh membuat jurnal pada hari jadwalnya.
+         * Jam mulai dan jam selesai tidak menjadi batasan.
          */
         if (! $this->isScheduleWindowOpen($jadwal)) {
             return back()
                 ->withErrors([
-                    'id_jadwal' => 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.',
+                    'id_jadwal' => 'Jurnal hanya dapat diisi pada hari jadwal mengajar.',
                 ])
                 ->withInput();
         }
@@ -629,45 +633,27 @@ class JurnalController extends Controller
     }
 
     /**
-     * Cek apakah sekarang berada di dalam jam jadwal.
+     * Guru boleh mengisi jurnal kapan saja pada hari jadwalnya.
+     *
+     * Tidak boleh mengisi jurnal untuk hari yang berbeda
+     * atau hari jadwal di masa depan.
      */
     private function isScheduleWindowOpen(Jadwal $jadwal): bool
     {
-        $jadwal->loadMissing([
-            'jamMulai',
-            'jamSelesai',
-        ]);
+        $hariIndonesia = [
+            'Sunday'    => 'Minggu',
+            'Monday'    => 'Senin',
+            'Tuesday'   => 'Selasa',
+            'Wednesday' => 'Rabu',
+            'Thursday'  => 'Kamis',
+            'Friday'    => 'Jumat',
+            'Saturday'  => 'Sabtu',
+        ];
 
-        $start = $jadwal->jamMulai?->jam_mulai;
-        $end = $jadwal->jamSelesai?->jam_selesai;
+        $hariIni = $hariIndonesia[now()->format('l')] ?? null;
 
-        if (! $start || ! $end) {
-            return false;
-        }
-
-        $todayName = now()
-            ->locale('id')
-            ->isoFormat('dddd');
-
-        if (
-            strtolower((string) $jadwal->hari) !==
-            strtolower((string) $todayName)
-        ) {
-            return false;
-        }
-
-        $now = now();
-
-        $startAt = $now
-            ->copy()
-            ->setTimeFromTimeString($start);
-
-        $endAt = $now
-            ->copy()
-            ->setTimeFromTimeString($end);
-
-        return $now->gte($startAt)
-            && $now->lt($endAt);
+        return strtolower((string) $jadwal->hari)
+            === strtolower((string) $hariIni);
     }
 
     /**
