@@ -24,7 +24,6 @@ class User extends Authenticatable implements PasskeyUser
         'password',
         'nama_user',
         'role',
-        'no_wa',
         'id_guru',
         'id_kelas',
     ];
@@ -46,6 +45,17 @@ class User extends Authenticatable implements PasskeyUser
     public function hasRole(string $role): bool
     {
         return $this->role === $role;
+    }
+
+    public function hasPiketToday(): bool
+    {
+        if (! $this->id_guru) {
+            return false;
+        }
+
+        return \App\Models\PiketJadwal::where('id_guru', $this->id_guru)
+            ->whereDate('tanggal', now()->toDateString())
+            ->exists();
     }
 
     public function initials(): string

@@ -182,6 +182,7 @@
                     <th style="padding: 12px 16px; text-align: left;">NAMA KELAS</th>
                     <th style="padding: 12px 16px; text-align: left;">WALI KELAS</th>
                     <th style="padding: 12px 16px; text-align: center;">SISWA</th>
+                    <th style="padding: 12px 16px; text-align: center;">QR KELAS</th>
                     <th style="padding: 12px 16px; text-align: center; border-top-right-radius: 8px; border-bottom-right-radius: 8px;"></th>
                 </tr>
             </thead>
@@ -213,6 +214,13 @@
                             {{ $item->siswas_count ?? $item->siswas->count() ?? 0 }} Siswa
                         </span>
                     </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <a href="{{ route('admin.kelas.qr', $item) }}" target="_blank" title="Buka QR {{ $item->nama_kelas }}">
+                            <img src="{{ route('admin.kelas.qr', $item) }}" alt="QR kelas {{ $item->nama_kelas }}" width="64" height="64" style="display: inline-block; border: 4px solid #fff; box-shadow: 0 1px 5px rgba(15,23,42,.16);">
+                        </a>
+                        <br>
+                        <a href="{{ route('admin.kelas.qr.print', $item) }}" target="_blank" style="color: #2563eb; font-size: 11px; text-decoration: none;">Cetak QR</a>
+                    </td>
                     <td style="padding: 16px; text-align: center; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
                        <a href="{{ route('admin.kelas.siswa', ['kelas_id' => $item->id_kelas ?? $item->id]) }}" class="action-btn" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f8fafc; border-radius: 50%;">
                         <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
@@ -221,7 +229,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" style="padding: 32px; text-align: center; color: #94a3b8;">
+                    <td colspan="6" style="padding: 32px; text-align: center; color: #94a3b8;">
                         Belum ada data kelas.
                     </td>
                 </tr>

@@ -271,12 +271,7 @@
         text-align: center;
     }
 
-    .guru-nip {
-        font-family: monospace;
-        color: #4d5059;
-        font-size: 13px;
-        word-break: break-word;
-    }
+
 
     .guru-name {
         color: #202126;
@@ -689,7 +684,7 @@
         <div class="filters">
             <form action="{{ route('admin.guru.index') }}" method="GET" class="search-box">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau NIP guru...">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama guru...">
             </form>
 
             @if(request('search'))
@@ -706,18 +701,14 @@
             <table>
                 <colgroup>
                     <col style="width: 50px;">
-                    <col style="width: 22%;">
-                    <col style="width: 33%;">
-                    <col style="width: 25%;">
+                    <col style="width: 38%;">
                     <col style="width: 15%;">
                 </colgroup>
 
                 <thead>
                     <tr>
                         <th class="no-column">NO</th>
-                        <th>NIP</th>
                         <th>NAMA GURU</th>
-                        <th>NO. HP</th>
                         <th>AKSI</th>
                     </tr>
                 </thead>
@@ -727,12 +718,8 @@
                         <tr>
                             <td class="no-column">{{ $loop->iteration }}</td>
                             <td>
-                                <span class="guru-nip">{{ $guru->nip ?? '-' }}</span>
-                            </td>
-                            <td>
                                 <div class="guru-name">{{ $guru->nama_guru }}</div>
                             </td>
-                            <td>{{ $guru->no_hp ?? '-' }}</td>
                             <td>
                                 <div class="guru-actions">
                                     <a href="{{ route('admin.guru.edit', $guru->id_guru) }}"
@@ -742,12 +729,11 @@
                                     </a>
 
                                     <button type="button"
-                                            class="icon-action delete guru-delete-btn"
-                                            title="Hapus guru"
-                                            data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
-                                            data-name="{{ $guru->nama_guru }}"
-                                            data-nip="{{ $guru->nip ?? '-' }}"
-                                            data-hp="{{ $guru->no_hp ?? '-' }}">
+                                        class="icon-action delete guru-delete-btn"
+                                        title="Hapus guru"
+                                        data-url="{{ route('admin.guru.destroy', $guru->id_guru) }}"
+                                        data-name="{{ $guru->nama_guru }}"
+                                        >
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </div>
@@ -755,7 +741,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="empty-row">
+                            <td colspan="4" class="empty-row">
                                 @if(request('search'))
                                     Guru dengan pencarian "{{ request('search') }}" tidak ditemukan.
                                 @else
@@ -827,15 +813,6 @@
 
             <div class="delete-detail">
                 <span>
-                    <strong>NIP:</strong>
-                    <span id="guruDeleteNip">-</span>
-                </span>
-
-                <span class="dot">•</span>
-
-                <span>
-                    <strong>No. HP:</strong>
-                    <span id="guruDeleteHp">-</span>
                 </span>
             </div>
         </div>
@@ -867,11 +844,9 @@
 
 @push('scripts')
 <script>
-    function openGuruDeleteModal(url, name, nip, hp) {
+    function openGuruDeleteModal(url, name) {
         document.getElementById('guruDeleteForm').action = url;
         document.getElementById('guruDeleteName').textContent = name;
-        document.getElementById('guruDeleteNip').textContent = nip;
-        document.getElementById('guruDeleteHp').textContent = hp;
         document.getElementById('guruDeleteModal').classList.add('show');
         document.body.style.overflow = 'hidden';
     }
@@ -886,9 +861,7 @@
             button.addEventListener('click', function () {
                 openGuruDeleteModal(
                     this.dataset.url,
-                    this.dataset.name,
-                    this.dataset.nip,
-                    this.dataset.hp
+                    this.dataset.name
                 );
             });
         });

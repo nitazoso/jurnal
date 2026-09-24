@@ -34,11 +34,6 @@
             <label>Role</label>
             <div>{{ auth()->user()->role ?? '-' }}</div>
         </div>
-
-        <div class="profile-item">
-            <label>NIP</label>
-            <div>{{ auth()->user()->guru?->nip ?? '-' }}</div>
-        </div>
     </div>
 
     <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">

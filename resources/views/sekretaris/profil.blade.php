@@ -35,12 +35,6 @@
         isolation: isolate;
         transition: transform .25s ease, box-shadow .25s ease;
     }
-
-    .profile-hero::before {
-        content: "";
-        position: absolute;
-        width: 180px;
-        height: 180px;
         top: -90px;
         left: -60px;
         border-radius: 50%;
@@ -288,6 +282,7 @@
 
 @php
     $user = auth()->user();
+    $profileName = $user->nama_user ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -304,7 +299,7 @@
 
         {{-- Name --}}
         <h3 class="profile-name">
-            {{ $user->nama_user ?? '-' }}
+            {{ $profileName }}
         </h3>
 
         {{-- Role --}}
@@ -319,7 +314,7 @@
         {{-- Nama --}}
         <div class="personal-field">
             <p class="personal-label">Nama Lengkap</p>
-            <p class="personal-value">{{ $user->nama_user ?? '-' }}</p>
+            <p class="personal-value">{{ $profileName }}</p>
         </div>
 
         <hr class="personal-divider">
@@ -340,13 +335,6 @@
 
         <hr class="personal-divider">
 
-        {{-- Nomor Telepon --}}
-        <div class="personal-field">
-            <p class="personal-label">Nomor Telepon</p>
-            <p class="personal-value">
-                {{ $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
-            </p>
-        </div>
     </section>
 
     {{-- LOGOUT --}}

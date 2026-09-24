@@ -244,19 +244,29 @@
 
                     @if($jurnal->status_validasi_guru === 'Menunggu')
 
-                        <form method="POST" action="{{ route('sekretaris.validasi-jurnal.update', $jurnal) }}" class="approve-form">
-                            @csrf
-                            @method('PATCH')
-
-                            <input type="hidden" name="status_validasi_guru" value="Disetujui">
-
-                            <button type="submit" class="approve-button">
+                        <div class="review-actions">
+                            <a href="{{ route('sekretaris.validasi-jurnal.show', $jurnal) }}" class="review-button">
                                 <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z"/>
+                                    <circle cx="12" cy="12" r="3"/>
                                 </svg>
-                                Review & Validasi Jurnal
-                            </button>
-                        </form>
+                                Lihat Isi Jurnal
+                            </a>
+
+                            <form method="POST" action="{{ route('sekretaris.validasi-jurnal.update', $jurnal) }}" class="approve-form">
+                                @csrf
+                                @method('PATCH')
+
+                                <input type="hidden" name="status_validasi_guru" value="Disetujui">
+
+                                <button type="submit" class="approve-button">
+                                    <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6"/>
+                                    </svg>
+                                    Validasi Jurnal
+                                </button>
+                            </form>
+                        </div>
 
                     @else
 

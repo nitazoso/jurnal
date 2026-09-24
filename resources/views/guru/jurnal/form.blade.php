@@ -21,6 +21,22 @@
         --j-muted: #64748B;
     }
 
+    .qr-verification-card { border: 1px solid #dbe4f0; border-radius: 16px; background: #fff; margin-bottom: 20px; padding: 20px; }
+    .qr-verification-head { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
+    .qr-verification-status { align-items: center; border-radius: 999px; display: inline-flex; font-size: 12px; font-weight: 800; gap: 6px; padding: 8px 12px; }
+    .qr-verification-status.pending { background: #fff7ed; color: #9a3412; }
+    .qr-verification-status.success { background: #dcfce7; color: #166534; }
+    .qr-verification-success { background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; color: #166534; font-size: 13px; font-weight: 700; margin-top: 14px; padding: 12px 14px; }
+    .qr-scan-button { background: #1d4ed8; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font-weight: 700; padding: 10px 14px; }
+    .qr-scan-button:disabled { cursor: not-allowed; opacity: .65; }
+    .qr-scanner { background: #0f172a; border-radius: 12px; display: none; margin-top: 16px; max-width: 420px; min-height: 280px; overflow: hidden; width: 100%; }
+    .qr-scanner.open { display: block; }
+    .qr-scanner video { display: block; min-height: 280px; object-fit: cover; width: 100% !important; }
+    .qr-scanner-status { color: #e2e8f0; font-size: 13px; padding: 16px; text-align: center; }
+    .qr-scan-message { color: #b45309; font-size: 13px; font-weight: 700; margin-top: 8px; }
+    .qr-close-button { background: #e2e8f0; border: 0; border-radius: 8px; cursor: pointer; margin-top: 10px; padding: 8px 12px; }
+
+
     .journal-form {
         --primary: #2D336B;
         --secondary: #7886C7;
@@ -294,16 +310,37 @@
         transition: all .15s ease;
     }
 
-    .attendance-btn:hover { border-color: var(--secondary); }
+    .attendance-btn:hover {
+        border-color: var(--secondary);
+        transform: translateY(-1px);
+    }
     .attendance-btn[data-status="Sakit"].active { border-color: #D97706; background: #D97706; color: #FFFFFF; }
     .attendance-btn[data-status="Izin"].active { border-color: #0284C7; background: #0284C7; color: #FFFFFF; }
     .attendance-btn[data-status="Alpha"].active { border-color: #DC2626; background: #DC2626; color: #FFFFFF; }
+    .student-table .attendance-btn[data-status="Hadir"].active {
+        border-color: #245C49;
+        background: #245C49;
+        color: #FFFFFF;
+        box-shadow: 0 3px 8px rgba(36, 92, 73, .18);
+    }
+    .attendance-locked {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 7px 10px;
+        border: 1px solid #99D7B3;
+        border-radius: 8px;
+        background: #EEF8F1;
+        color: #17633F;
+        font-size: 11px;
+        font-weight: 700;
+    }
     .attendance-value { display: none; }
-
     .student-row { display: none; }
     .student-row.visible-row { display: table-row !important; }
     .student-search-empty { display: none; padding: 30px 20px; text-align: center; color: var(--muted); }
     .student-search-empty.show { display: block; }
+
 
     /* ========================= TASK ========================= */
     .task-grid { display: grid; grid-template-columns: 200px 1fr; gap: 16px; }
@@ -590,7 +627,34 @@
                 </ul>
             </div>
         @endif
-
+        <section class="qr-verification-card">
+            <div class="qr-verification-head">
+                <div>
+                    <h3 class="section-title">Verifikasi Kelas</h3>
+                    <p class="section-subtitle">Scan QR kelas sebelum mengisi dan menyimpan jurnal.</p>
+                </div>
+                <span id="qrVerificationStatus" class="qr-verification-status {{ $qrVerified ? 'success' : 'pending' }}">
+                    <span>{{ $qrVerified ? '✓' : '!' }}</span>
+                    <span>{{ $qrVerified ? 'Sudah scan - Hadir' : 'Belum scan QR' }}</span>
+                </span>
+            </div>
+            <button type="button" id="openQrScanner" class="qr-scan-button" {{ $qrVerified ? 'disabled' : '' }}>
+                {{ $qrVerified ? 'Sudah Scan' : 'Scan QR Kelas' }}
+            </button>
+            <div id="qrScanner" class="qr-scanner"></div>
+            <p id="qrScanMessage" class="qr-scan-message"></p>
+            <button type="button" id="closeQrScanner" class="qr-close-button" style="display: none">Tutup Kamera</button>
+            @if (request('scan') === 'success')
+                <div class="qr-verification-success" role="status">
+                    ✓ Scan QR berhasil. Kehadiran guru sudah tersimpan untuk kelas {{ $jadwal->kelas->nama_kelas ?? '-' }}.
+                </div>
+            @endif
+            @if (session('success'))
+                <div class="qr-verification-success" role="status">
+                    ✓ {{ session('success') }}
+                </div>
+            @endif
+        </section>
         <form action="{{ route('guru.jurnal.store') }}" method="POST" id="journalForm">
             @csrf
             <input type="hidden" name="id_jadwal" value="{{ $jadwal->id_jadwal }}">
@@ -644,6 +708,7 @@
                     </div>
 
                     <div class="status-buttons">
+                        <button type="button" class="status-btn active" data-teacher-status="Hadir" onclick="setTeacherStatus(this, 'Hadir')">Hadir</button>
                         <button type="button" class="status-btn" data-teacher-status="Izin" onclick="setTeacherStatus(this, 'Izin')">Izin</button>
                         <button type="button" class="status-btn" data-teacher-status="Sakit" onclick="setTeacherStatus(this, 'Sakit')">Sakit</button>
                     </div>
@@ -683,7 +748,12 @@
                         <div class="section-icon"><span class="material-symbols-rounded">groups</span></div>
                         <div>
                             <h3 class="section-title">Kehadiran Siswa</h3>
-                            <p class="section-subtitle">{{ $jadwal->kelas->nama_kelas ?? '-' }} · {{ $siswa->count() }} siswa</p>
+                            <p class="section-subtitle">
+                                {{ $jadwal->kelas->nama_kelas ?? '-' }} · {{ $siswa->count() }} siswa
+                                @if($activeDispenSiswa->isNotEmpty())
+                                    · <span>{{ $activeDispenSiswa->count() }} dispen aktif</span>
+                                @endif
+                            </p>
                         </div>
                     </div>
 
@@ -730,25 +800,28 @@
                     <input type="text" id="studentSearchMobile" class="field-input" placeholder="Cari siswa yang tidak masuk..." autocomplete="off" oninput="searchStudents(this.value)">
                 </div>
 
-                {{-- DISPEN --}}
-                @if(isset($siswaDispen) && $siswaDispen->count())
+                {{-- DISPEN & STUDENT TABLE --}}
+                @if($activeDispenSiswa->isNotEmpty())
                     <div class="dispen-notice">
                         <span class="material-symbols-rounded">event_available</span>
                         <div>
                             <strong>Siswa Dispensasi</strong>
-                            <span>{{ $siswaDispen->pluck('nama_siswa')->join(', ') }}</span>
+                            <span>
+                                {{ $activeDispenSiswa->count() }} siswa sedang Dispen
+                                @if($activeDispenBerakhir)
+                                    sampai {{ $activeDispenBerakhir }}
+                                @endif
+                            </span>
                         </div>
                     </div>
                 @endif
 
-                {{-- SEARCH EMPTY --}}
                 <div id="studentSearchEmpty" class="student-search-empty">
                     <span class="material-symbols-rounded">person_search</span>
                     <strong>Siswa tidak ditemukan</strong>
                     <span>Coba cari dengan nama atau NIS siswa.</span>
                 </div>
 
-                {{-- TABLE --}}
                 <div class="student-table-wrap">
                     <div class="student-table-scroll">
                         <table class="student-table">
@@ -763,22 +836,41 @@
                             <tbody>
                                 @forelse($siswa as $item)
                                     @php
-                                        $isDispen = isset($siswaDispen) && $siswaDispen->pluck('id_siswa')->contains($item->id_siswa);
+                                        $isDispenAktif = $activeDispenSiswa->contains($item->id_siswa);
                                     @endphp
-                                    <tr class="student-row {{ $isDispen ? 'dispen-row visible-row' : '' }}" data-name="{{ strtolower($item->nama_siswa) }}" data-nis="{{ strtolower($item->nis ?? '') }}" data-dispen="{{ $isDispen ? '1' : '0' }}">
+                                    <tr
+                                        class="student-row {{ $isDispenAktif ? 'visible-row' : '' }}"
+                                        data-name="{{ strtolower($item->nama_siswa) }}"
+                                        data-nis="{{ strtolower($item->nis ?? '') }}"
+                                        data-dispen="{{ $isDispenAktif ? '1' : '0' }}"
+                                    >
                                         <td class="student-number">{{ sprintf('%02d', $loop->iteration) }}</td>
                                         <td class="student-nis">{{ $item->nis }}</td>
-                                        <td class="student-name"><div class="student-name-text">{{ $item->nama_siswa }}</div></td>
+                                        <td class="student-name">
+                                            <div class="student-name-text">{{ $item->nama_siswa }}</div>
+                                        </td>
                                         <td class="attendance-cell">
-                                            @if($isDispen)
-                                                <span class="dispen-badge"><span class="material-symbols-rounded">event_available</span>Dispensasi</span>
-                                                <input type="hidden" name="absensi[{{ $item->id_siswa }}]" value="Dispen" class="attendance-value">
+                                            <span class="mobile-status-badge">{{ $isDispenAktif ? 'Dispen' : 'Hadir' }}</span>
+                                            @if($isDispenAktif)
+                                                <div class="attendance-locked">Dispen · Terkonfirmasi</div>
+                                                <input
+                                                    type="hidden"
+                                                    name="absensi[{{ $item->id_siswa }}]"
+                                                    value="Dispen"
+                                                    class="attendance-value"
+                                                >
                                             @else
                                                 <div class="attendance-options">
+                                                    <button type="button" class="attendance-btn active" data-status="Hadir" onclick="setStudentStatus(this)">Hadir</button>
                                                     <button type="button" class="attendance-btn" data-status="Sakit" onclick="setStudentStatus(this)">Sakit</button>
                                                     <button type="button" class="attendance-btn" data-status="Izin" onclick="setStudentStatus(this)">Izin</button>
                                                     <button type="button" class="attendance-btn" data-status="Alpha" onclick="setStudentStatus(this)">Alpa</button>
-                                                    <input type="hidden" name="absensi[{{ $item->id_siswa }}]" value="Hadir" class="attendance-value">
+                                                    <input
+                                                        type="hidden"
+                                                        name="absensi[{{ $item->id_siswa }}]"
+                                                        value="Hadir"
+                                                        class="attendance-value"
+                                                    >
                                                 </div>
                                             @endif
                                         </td>
@@ -824,6 +916,7 @@
                         <textarea name="catatan_umum" class="field-textarea" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_umum') }}</textarea>
                     </div>
                 </div>
+
             </section>
 
             {{-- ACTION --}}
@@ -921,6 +1014,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://unpkg.com/html5-qrcode"></script>
 <script>
     function setTeacherStatus(button, status) {
         const statusInput = document.getElementById('statusGuru');
@@ -1183,9 +1277,150 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        const openScannerButton = document.getElementById('openQrScanner');
+        const closeScannerButton = document.getElementById('closeQrScanner');
+        const scannerElement = document.getElementById('qrScanner');
+        const scanMessage = document.getElementById('qrScanMessage');
+        const statusElement = document.getElementById('qrVerificationStatus');
+        let qrScanner;
+        let qrVerificationInProgress = false;
+
+        async function stopQrScanner() {
+            if (qrScanner) {
+                const scanner = qrScanner;
+                qrScanner = null;
+                await scanner.stop().catch(() => {});
+                await scanner.clear().catch(() => {});
+            }
+            scannerElement.classList.remove('open');
+            closeScannerButton.style.display = 'none';
+        }
+
+        async function verifyQr(decodedText) {
+            if (qrVerificationInProgress) {
+                return;
+            }
+
+            qrVerificationInProgress = true;
+            openScannerButton.disabled = true;
+            scanMessage.textContent = 'Memverifikasi QR kelas...';
+            try {
+                const response = await fetch('{{ route('guru.jurnal.verify-qr', $jadwal) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    },
+                    body: JSON.stringify({ qr_token: decodedText.trim() }),
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'QR bukan milik kelas ini.');
+                }
+
+                stopQrScanner();
+                statusElement.classList.remove('pending');
+                statusElement.classList.add('success');
+                statusElement.innerHTML = '<span>✓</span><span>Sudah scan - Hadir</span>';
+                openScannerButton.disabled = true;
+                openScannerButton.textContent = 'Sudah Scan';
+                scanMessage.textContent = `${result.message} (${result.kelas})`;
+            } catch (error) {
+                const detail = error && error.message ? error.message : 'QR tidak cocok dengan kelas ini atau scanner gagal membaca data.';
+                scanMessage.textContent = `QR terbaca, tetapi belum berhasil diverifikasi: ${detail}`;
+                qrVerificationInProgress = false;
+                openScannerButton.disabled = false;
+                if (!qrScanner) {
+                    startQrScanner();
+                }
+            }
+        }
+
+        function startQrScanner() {
+            if (typeof Html5Qrcode === 'undefined') {
+                scanMessage.textContent = 'Scanner QR khusus belum siap. Gunakan pemindai QR di browser ini dan pastikan kamera aktif.';
+                return;
+            }
+            if (qrScanner) {
+                return;
+            }
+            scannerElement.classList.add('open');
+            closeScannerButton.style.display = 'inline-block';
+            scannerElement.innerHTML = '<div class="qr-scanner-status">Menyiapkan kamera...</div>';
+            scanMessage.textContent = 'Izinkan kamera, lalu arahkan ke QR kelas yang sesuai dengan jadwal Anda.';
+            qrScanner = new Html5Qrcode('qrScanner');
+
+            const timeout = new Promise((_, reject) => {
+                window.setTimeout(() => reject(new Error('Permintaan kamera terlalu lama. Periksa izin kamera browser.')), 8000);
+            });
+
+            Promise.race([
+                Html5Qrcode.getCameras().catch(() => []),
+                timeout,
+            ])
+                .then(cameras => {
+                    if (!cameras.length) {
+                        throw new Error('Tidak ada kamera yang ditemukan pada perangkat ini.');
+                    }
+
+                    const camera = cameras.find(item => /back|rear|environment|belakang/i.test(item.label)) || cameras[0];
+                    scannerElement.innerHTML = '';
+                    scanMessage.textContent = 'Kamera aktif. Arahkan QR kelas ke kotak pemindai.';
+
+                    return qrScanner.start(
+                        camera.id,
+                        { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1 },
+                        decodedText => verifyQr(decodedText),
+                        () => {}
+                    );
+                })
+                .catch(error => {
+                    const message = error.name === 'NotAllowedError'
+                        ? 'Akses kamera ditolak. Klik ikon kamera di address bar, izinkan kamera, lalu refresh halaman.'
+                        : error.message || 'Kamera tidak dapat dibuka.';
+                    scanMessage.textContent = message;
+                    scannerElement.innerHTML = `<div class="qr-scanner-status">${message}</div>`;
+                    if (qrScanner) {
+                        qrScanner.clear().catch(() => {});
+                        qrScanner = null;
+                    }
+                });
+        }
+
+        openScannerButton?.addEventListener('click', startQrScanner);
+
+        closeScannerButton?.addEventListener('click', stopQrScanner);
+
+        // Scanner langsung terbuka saat Guru masuk ke form jurnal.
+        if (!@json($qrVerified)) {
+            let attempts = 0;
+            const autoStart = window.setInterval(() => {
+                attempts++;
+                if (typeof Html5Qrcode !== 'undefined' || attempts >= 20) {
+                    window.clearInterval(autoStart);
+                    startQrScanner();
+                }
+            }, 250);
+        }
+
         updateSummary();
         searchStudents('');
+        const activeDispenBerakhir = @json($activeDispenBerakhir);
+        if (activeDispenBerakhir) {
+            const [hour, minute, second] = activeDispenBerakhir.split(':').map(Number);
+            const waktuSelesai = new Date();
+            waktuSelesai.setHours(hour, minute, second || 0, 0);
+            const delay = waktuSelesai.getTime() - Date.now();
 
+
+            if (delay > 0) {
+                // Saat jam dispen berakhir, muat ulang agar siswa dapat dipilih
+                // kembali sesuai status kehadiran yang sebenarnya.
+                window.setTimeout(() => window.location.reload(), delay + 1000);
+            }
+        }
         const form = document.getElementById('journalForm');
         if (form) {
             form.addEventListener('submit', function (event) {

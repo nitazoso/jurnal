@@ -14,8 +14,6 @@ class Guru extends Model
     protected $primaryKey = 'id_guru';
 
     protected $fillable = [
-        'nip',
         'nama_guru',
-        'no_hp',
     ];
 }

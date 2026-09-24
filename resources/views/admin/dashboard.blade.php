@@ -814,8 +814,14 @@
                         </span>
                     </td>
 
-                    <td class="teacher" style=" font-weight: 600; color: #1e293b;">
-                        {{ $item->guru->nama }}
+                    <td
+                        class="teacher"
+                        style="
+                            font-weight: 600;
+                            color: #1e293b;
+                        "
+                    >
+                        {{ $item->guru?->nama_guru ?? '-' }}
                     </td>
 
                     <td class="subject">
@@ -824,7 +830,7 @@
 
                     <td>
                         <span class="class-badge">
-                            {{ $item->kelas->nama_kelas }}
+                            {{ $item->kelas?->nama_kelas ?? '-' }}
                         </span>
                     </td>
 

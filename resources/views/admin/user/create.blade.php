@@ -189,7 +189,7 @@
                             </option>
 
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
-                                Sekretaris / Kurikulum
+                                Sekretaris
                             </option>
 
                             <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>
@@ -202,29 +202,12 @@
                         </span>
                     </div>
 
-                    {{-- NOMOR WHATSAPP KESISWAAN --}}
-                    <div class="field-group" id="waContainer" style="display: none;">
-                        <label class="field-label" for="no_wa">
-                            Nomor WhatsApp Kesiswaan <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            name="no_wa"
-                            id="no_wa"
-                            value="{{ old('no_wa') }}"
-                            placeholder="Contoh: 628123456789"
-                            inputmode="tel"
-                            class="custom-input @error('no_wa') is-invalid @enderror"
-                        >
-
-                        <span class="field-hint">
-                            Digunakan untuk notifikasi & pengajuan dispen via WA.
-                        </span>
-                    </div>
-
                     {{-- DATA GURU --}}
-                    <div class="field-group" id="guruContainer">
+                    <div
+                        class="field-group"
+                        id="guruContainer"
+                        @if (!in_array(old('role'), ['Guru', 'Kesiswaan', 'Staff Piket'], true)) hidden @endif
+                    >
                         <label class="field-label" for="id_guru">
                             Data Guru <span class="req">*</span>
                         </label>
@@ -242,9 +225,6 @@
                                     {{ old('id_guru') == $guru->id_guru ? 'selected' : '' }}
                                 >
                                     {{ $guru->nama_guru }}
-                                    @if ($guru->nip)
-                                        - NIP {{ $guru->nip }}
-                                    @endif
                                 </option>
                             @endforeach
                         </select>
@@ -704,9 +684,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const idGuru = document.getElementById('id_guru');
     const guruError = document.getElementById('guruError');
 
-    const waContainer = document.getElementById('waContainer');
-    const noWa = document.getElementById('no_wa');
-
     const form = document.getElementById('addUserForm');
 
     // Mencegah spasi pada username
@@ -775,12 +752,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Field Guru
     function updateGuruField() {
-        const needsGuru = role.value === 'Guru' || role.value === 'Staff Piket';
+        const showGuru = ['Guru', 'Kesiswaan', 'Staff Piket'].includes(role.value);
+        const needsGuru = ['Guru', 'Staff Piket'].includes(role.value);
 
-        if (needsGuru) {
+        if (showGuru) {
+            guruContainer.hidden = false;
             guruContainer.style.display = 'flex';
-            idGuru.required = true;
+            idGuru.required = needsGuru;
         } else {
+            guruContainer.hidden = true;
             guruContainer.style.display = 'none';
             idGuru.required = false;
             idGuru.value = '';
@@ -788,25 +768,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Field WhatsApp Kesiswaan
-    function updateWaField() {
-        const isKesiswaan = role.value === 'Kesiswaan';
-
-        waContainer.style.display = isKesiswaan ? 'flex' : 'none';
-        noWa.required = isKesiswaan;
-
-        if (!isKesiswaan) {
-            noWa.value = '';
-        }
-    }
-
     role.addEventListener('change', function () {
         updateGuruField();
-        updateWaField();
     });
 
     updateGuruField();
-    updateWaField();
 
     // Validasi sebelum submit
     form.addEventListener('submit', function (event) {
@@ -830,7 +796,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            (role.value === 'Guru' || role.value === 'Staff Piket') &&
+            ['Guru', 'Staff Piket'].includes(role.value) &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

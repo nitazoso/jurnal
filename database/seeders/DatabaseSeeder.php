@@ -20,15 +20,11 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Data guru utama
         $guruSendang = Guru::create([
-            'nip' => '197905151998031002',
             'nama_guru' => 'Sendang',
-            'no_hp' => '081234567890',
         ]);
 
         $guruBudi = Guru::create([
-            'nip' => '198501012010011001',
             'nama_guru' => 'Budi Santoso, S.Pd',
-            'no_hp' => '081298765432',
         ]);
 
         // 2. Data kelas
@@ -45,14 +41,14 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 3. User role admin dan guru
-        User::create([
-            'username' => 'admin',
-            'password' => Hash::make('password123'),
-            'nama_user' => 'Admin Utama',
-            'role' => 'Admin',
-            'id_guru' => null,
-            'id_kelas' => null,
-        ]);
+        $admin = User::withTrashed()->firstOrNew(['username' => 'admin']);
+        $admin->password = Hash::make('password123');
+        $admin->nama_user = 'Admin Utama';
+        $admin->role = 'Admin';
+        $admin->id_guru = null;
+        $admin->id_kelas = null;
+        $admin->deleted_at = null;
+        $admin->save();
 
         User::create([
             'username' => 'sendang',

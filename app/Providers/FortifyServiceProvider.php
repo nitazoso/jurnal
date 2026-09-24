@@ -5,14 +5,16 @@ namespace App\Providers;
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -25,9 +27,19 @@ class FortifyServiceProvider extends ServiceProvider
     $this->app->instance(LoginResponse::class, new class implements LoginResponse {
         public function toResponse($request)
         {
-            $role = Auth::user()->role;
+            $redirectTarget = $request->query('redirect');
 
-            // Menggunakan route() biasa agar selalu langsung ke dashboard
+            if (filled($redirectTarget) && Str::startsWith($redirectTarget, 'http')) {
+                return redirect()->to($redirectTarget);
+            }
+
+            $user = Auth::user();
+            $role = $user?->role;
+
+            if ($role === 'Guru' && $user->hasPiketToday()) {
+                return redirect()->route('piket.dashboard');
+            }
+
             return match ($role) {
                 'Admin'       => redirect()->route('admin.dashboard'),
                 'Guru'        => redirect()->route('guru.dashboard'),
@@ -36,6 +48,13 @@ class FortifyServiceProvider extends ServiceProvider
                 'Staff Piket' => redirect()->route('piket.dashboard'),
                 default       => redirect()->route('dashboard'),
             };
+        }
+    });
+
+    $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+        public function toResponse($request)
+        {
+            return redirect()->route('login');
         }
     });
 }
@@ -48,21 +67,15 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
-        $this->configureAuthenticatedRedirect();
-    }
 
-    private function configureAuthenticatedRedirect(): void
-    {
-        RedirectIfAuthenticated::redirectUsing(function (): string {
-            return match (Auth::user()?->role) {
-                'Admin' => route('admin.dashboard'),
-                'Guru' => route('guru.dashboard'),
-                'Kesiswaan' => route('kesiswaan.dashboard'),
-                'Sekretaris' => route('sekretaris.dashboard'),
-                'Staff Piket' => route('piket.dashboard'),
-                default => '/',
-            };
+        Route::group([
+            'namespace' => 'Laravel\Fortify\Http\Controllers',
+            'domain' => config('fortify.domain', null),
+            'prefix' => config('fortify.prefix'),
+        ], function () {
+            $this->loadRoutesFrom(base_path('vendor/laravel/fortify/routes/routes.php'));
         });
+
     }
 
     /**

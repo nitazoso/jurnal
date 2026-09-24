@@ -12,6 +12,7 @@ class Dispen extends Model
 
     protected $fillable = [
         'id_siswa',
+        'id_kesiswaan',
         'tanggal',
         'id_jam_mulai',
         'id_jam_selesai',
@@ -27,23 +28,60 @@ class Dispen extends Model
         'disetujui_pada' => 'datetime',
     ];
 
+
+    // =========================
+    // SISWA
+    // =========================
+
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id_siswa');
     }
 
+    public function petugasKesiswaan()
+    {
+        return $this->belongsTo(User::class, 'id_kesiswaan', 'id_user');
+    }
+
+
+    // =========================
+    // JAM MULAI
+    // =========================
+
     public function jamMulai()
     {
-        return $this->belongsTo(JamPel::class, 'id_jam_mulai', 'id_jam');
+        return $this->belongsTo(
+            JamPel::class,
+            'id_jam_mulai',
+            'id_jam'
+        );
     }
+
+
+    // =========================
+    // JAM SELESAI
+    // =========================
 
     public function jamSelesai()
     {
-        return $this->belongsTo(JamPel::class, 'id_jam_selesai', 'id_jam');
+        return $this->belongsTo(
+            JamPel::class,
+            'id_jam_selesai',
+            'id_jam'
+        );
     }
+
+
+    // =========================
+    // PETUGAS KESISWAAN YANG MENGONFIRMASI
+    // =========================
 
     public function approver()
     {
-        return $this->belongsTo(User::class, 'disetujui_oleh', 'id_user');
+        return $this->belongsTo(
+            User::class,
+            'disetujui_oleh',
+            'id_user'
+        );
     }
 }

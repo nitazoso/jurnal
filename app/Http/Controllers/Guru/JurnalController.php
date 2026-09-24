@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Guru;
 
 use App\Http\Controllers\Controller;
 use App\Models\DetailAbsensi;
+use App\Models\Dispen;
 use App\Models\Jadwal;
 use App\Models\Jurnal;
+use App\Models\GuruQrAttendance;
 use App\Models\Siswa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class JurnalController extends Controller
 {
@@ -97,6 +100,10 @@ class JurnalController extends Controller
         $user = Auth::user();
         $today = Carbon::today();
 
+        /*
+         * Ambil jadwal sekaligus memastikan jadwal
+         * memang milik guru yang sedang login.
+         */
         $jadwal = Jadwal::with([
             'kelas',
             'mapel',
@@ -108,7 +115,8 @@ class JurnalController extends Controller
             ->firstOrFail();
 
         /*
-         * Pastikan jurnal untuk jadwal ini belum dibuat hari ini.
+         * Jurnal hanya boleh dibuat sekali untuk jadwal
+         * yang sama pada hari yang sama.
          */
         $sudahAdaJurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)
             ->whereDate('tanggal', $today)
@@ -121,37 +129,190 @@ class JurnalController extends Controller
         }
 
         /*
+         * Pastikan jadwal sedang berlangsung.
+         */
+        if (! $this->isScheduleWindowOpen($jadwal)) {
+            return redirect()
+                ->route('guru.jurnal.create')
+                ->with('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
+        }
+
+        /*
          * Ambil seluruh siswa kelas.
-         *
-         * Semua siswa tetap dikirim ke Blade karena:
-         * - total siswa harus tetap dihitung
-         * - siswa Hadir tetap dikirim sebagai absensi[id_siswa]=Hadir
-         * - hanya siswa yang tidak hadir yang ditampilkan oleh JavaScript
          */
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)
             ->orderBy('nama_siswa')
             ->get();
 
         /*
-         * SUMBER DISPEN
-         *
-         * Saat ini source/model Dispen belum terverifikasi dari project.
-         * Jangan mengarang nama tabel/model karena bisa merusak BE.
-         *
-         * Blade sudah siap menerima:
-         * - id_siswa
-         * - nama_siswa
-         *
-         * Ganti collection ini dengan query Dispen asli project
-         * setelah model/tabel Dispen sudah tersedia.
+         * Ambil siswa yang sedang mendapat dispensasi aktif.
          */
-        $siswaDispen = collect();
+        $activeDispenSiswa = $this->activeDispenSiswa(
+            $jadwal->id_kelas,
+            today()->toDateString()
+        );
+
+        $activeDispenBerakhir = $this->activeDispenBerakhir(
+            $jadwal->id_kelas,
+            today()->toDateString()
+        );
+
+        /*
+         * QR dianggap sudah diverifikasi jika:
+         * - session masih menyimpan status scan, atau
+         * - sudah ada record GuruQrAttendance hari ini.
+         */
+        $qrVerified = session()->get($this->qrSessionKey($jadwal)) === true
+            || GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)
+                ->where('id_guru', $user->id_guru)
+                ->whereDate('tanggal', today())
+                ->exists();
 
         return view('guru.jurnal.form', compact(
             'jadwal',
             'siswa',
-            'siswaDispen'
+            'activeDispenSiswa',
+            'activeDispenBerakhir',
+            'qrVerified'
         ));
+    }
+
+    /**
+     * Verifikasi QR kelas.
+     */
+    public function verifyClassQr(Request $request, Jadwal $jadwal)
+    {
+        abort_unless(
+            $jadwal->id_guru === auth()->user()->id_guru,
+            403
+        );
+
+        $validated = $request->validate([
+            'qr_token' => ['required', 'string'],
+        ]);
+
+        $jadwal->loadMissing('kelas');
+
+        $qrToken = trim((string) ($validated['qr_token'] ?? ''));
+
+        if (! hash_equals(
+            (string) $jadwal->kelas?->qr_token,
+            $qrToken
+        )) {
+            return response()->json([
+                'message' => 'QR tidak valid untuk kelas ini. Pastikan Anda memindai QR kelas yang benar.',
+            ], 422);
+        }
+
+        GuruQrAttendance::updateOrCreate(
+            [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'id_guru' => auth()->user()->id_guru,
+                'tanggal' => today()->toDateString(),
+            ],
+            [
+                'id_kelas' => $jadwal->id_kelas,
+                'discan_pada' => now(),
+            ]
+        );
+
+        session()->put(
+            $this->qrSessionKey($jadwal),
+            true
+        );
+
+        return response()->json([
+            'message' => 'Scan QR berhasil. Kehadiran guru sudah tersimpan.',
+            'kelas' => $jadwal->kelas?->nama_kelas,
+            'redirect' => route('guru.jurnal.form', $jadwal) . '?scan=success',
+        ]);
+    }
+
+    /**
+     * Halaman konfirmasi kehadiran guru setelah scan QR.
+     */
+    public function confirmAttendance(Jadwal $jadwal)
+    {
+        abort_unless(
+            $jadwal->id_guru === auth()->user()->id_guru,
+            403
+        );
+
+        $pending = session('guru.jurnal.qr_pending');
+
+        abort_unless(
+            ($pending['jadwal_id'] ?? null) === $jadwal->id_jadwal,
+            419,
+            'Sesi scan QR sudah berakhir.'
+        );
+
+        $jadwal->load([
+            'kelas',
+            'mapel',
+            'jamMulai',
+            'jamSelesai',
+        ]);
+
+        return view(
+            'guru.jurnal.confirm-attendance',
+            compact('jadwal')
+        );
+    }
+
+    /**
+     * Simpan konfirmasi kehadiran guru.
+     */
+    public function storeAttendance(Jadwal $jadwal)
+    {
+        abort_unless(
+            $jadwal->id_guru === auth()->user()->id_guru,
+            403
+        );
+
+        $pending = session('guru.jurnal.qr_pending');
+
+        abort_unless(
+            ($pending['jadwal_id'] ?? null) === $jadwal->id_jadwal,
+            419,
+            'Sesi scan QR sudah berakhir.'
+        );
+
+        $jadwal->load('kelas');
+
+        abort_unless(
+            hash_equals(
+                (string) $jadwal->kelas?->qr_token,
+                (string) ($pending['qr_token'] ?? '')
+            ),
+            422
+        );
+
+        GuruQrAttendance::updateOrCreate(
+            [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'id_guru' => auth()->user()->id_guru,
+                'tanggal' => today()->toDateString(),
+            ],
+            [
+                'id_kelas' => $jadwal->id_kelas,
+                'discan_pada' => now(),
+            ]
+        );
+
+        session()->put(
+            $this->qrSessionKey($jadwal),
+            true
+        );
+
+        session()->forget('guru.jurnal.qr_pending');
+
+        return redirect()
+            ->route('guru.jurnal.form', $jadwal)
+            ->with(
+                'success',
+                'Kehadiran guru berhasil dikonfirmasi untuk kelas ' .
+                $jadwal->kelas->nama_kelas . '.'
+            );
     }
 
     /**
@@ -223,7 +384,7 @@ class JurnalController extends Controller
         $tanggal = $today->toDateString();
 
         /*
-         * Pastikan jadwal benar-benar milik guru yang login.
+         * Pastikan jadwal memang milik guru yang login.
          */
         $jadwal = Jadwal::with([
             'kelas',
@@ -236,7 +397,7 @@ class JurnalController extends Controller
             ->firstOrFail();
 
         /*
-         * Cegah jurnal ganda untuk jadwal yang sama di hari yang sama.
+         * Cegah jurnal ganda pada jadwal dan tanggal yang sama.
          */
         $existingJurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)
             ->whereDate('tanggal', $tanggal)
@@ -245,34 +406,92 @@ class JurnalController extends Controller
         if ($existingJurnal) {
             return redirect()
                 ->route('guru.jurnal.create')
-                ->with('error', 'Jurnal untuk jadwal ini hari ini sudah dibuat.');
+                ->with(
+                    'error',
+                    'Jurnal untuk jadwal ini hari ini sudah dibuat.'
+                );
         }
 
         /*
-         * Validasi absensi agar hanya siswa dari kelas jadwal
-         * yang boleh dikirim.
+         * Pastikan jurnal hanya dapat dibuat ketika
+         * jam mengajar sedang berlangsung.
          */
-        $siswaKelas = Siswa::where('id_kelas', $jadwal->id_kelas)
-            ->pluck('id_siswa')
-            ->map(fn ($id) => (string) $id)
-            ->toArray();
+        if (! $this->isScheduleWindowOpen($jadwal)) {
+            return back()
+                ->withErrors([
+                    'id_jadwal' => 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.',
+                ])
+                ->withInput();
+        }
 
+        /*
+         * Pastikan guru sudah melakukan verifikasi QR.
+         *
+         * Session digunakan sebagai pengecekan cepat,
+         * database digunakan sebagai fallback jika session
+         * sudah tidak tersedia.
+         */
+        $qrVerified = session()->get($this->qrSessionKey($jadwal)) === true
+            || GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)
+                ->where('id_guru', $user->id_guru)
+                ->whereDate('tanggal', today())
+                ->exists();
+
+        if (! $qrVerified) {
+            return back()
+                ->withErrors([
+                    'qr_token' => 'Silakan scan QR kelas terlebih dahulu sebelum menyimpan jurnal.',
+                ])
+                ->withInput();
+        }
+
+        /*
+         * Ambil ID siswa yang memang berada di kelas jadwal.
+         */
+        $idSiswaKelas = Siswa::where(
+            'id_kelas',
+            $jadwal->id_kelas
+        )->pluck('id_siswa');
+
+        /*
+         * Pastikan tidak ada ID siswa asing dari browser.
+         */
+        $idSiswaDikirim = collect(
+            array_keys($validated['absensi'])
+        )->map(
+            fn ($id) => (int) $id
+        );
+
+        if ($idSiswaDikirim->diff($idSiswaKelas)->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'absensi' => 'Data absensi harus berasal dari siswa pada kelas jadwal ini.',
+            ]);
+        }
+
+        /*
+         * Dispen yang sudah disetujui dan sedang aktif
+         * otomatis dipaksa menjadi Dispen.
+         *
+         * Jadi status dari browser tidak bisa mengubah
+         * siswa yang sebenarnya sedang Dispen menjadi Hadir.
+         */
+        $this->activeDispenSiswa(
+            $jadwal->id_kelas,
+            $tanggal
+        )->each(function ($idSiswa) use (&$validated) {
+            $validated['absensi'][$idSiswa] = 'Dispen';
+        });
+
+        /*
+         * Filter hanya siswa dari kelas tersebut.
+         */
         $absensi = collect($validated['absensi'])
-            ->filter(function ($status, $idSiswa) use ($siswaKelas) {
-                return in_array((string) $idSiswa, $siswaKelas, true);
+            ->filter(function ($status, $idSiswa) use ($idSiswaKelas) {
+                return $idSiswaKelas->contains((int) $idSiswa);
             });
 
         /*
-         * Hitung seluruh siswa.
-         *
-         * Hadir:
-         *     status Hadir
-         *
-         * Tidak hadir:
-         *     Sakit
-         *     Izin
-         *     Alpha
-         *     Dispen
+         * Hitung jumlah hadir dan tidak hadir.
          */
         $jmlHadir = $absensi
             ->filter(fn ($status) => $status === 'Hadir')
@@ -292,14 +511,18 @@ class JurnalController extends Controller
             ) {
                 /*
                  * Jika guru Hadir:
-                 * tugas tetap mengikuti input default Tidak.
+                 * tugas selalu Tidak.
                  *
                  * Jika guru Izin/Sakit:
-                 * tugas bisa diisi.
+                 * tugas mengikuti input.
                  */
                 $statusGuru = $validated['status_guru'];
 
-                $adaTugas = in_array($statusGuru, ['Izin', 'Sakit'], true)
+                $adaTugas = in_array(
+                    $statusGuru,
+                    ['Izin', 'Sakit'],
+                    true
+                )
                     ? ($validated['ada_tugas'] ?? 'Tidak')
                     : 'Tidak';
 
@@ -338,11 +561,13 @@ class JurnalController extends Controller
                 ]);
 
                 /*
-                 * Detail absensi:
                  * HANYA simpan siswa yang tidak hadir.
                  *
-                 * Siswa Hadir tetap dikirim dari Blade,
-                 * tetapi tidak perlu dibuat sebagai DetailAbsensi.
+                 * Hadir:
+                 * tidak dibuat DetailAbsensi.
+                 *
+                 * Sakit / Izin / Alpha / Dispen:
+                 * dibuat DetailAbsensi.
                  */
                 foreach ($absensi as $idSiswa => $status) {
                     if ($status === 'Hadir') {
@@ -362,7 +587,10 @@ class JurnalController extends Controller
 
             return redirect()
                 ->route('guru.jurnal.index')
-                ->with('success', 'Jurnal berhasil disimpan dan menunggu validasi.');
+                ->with(
+                    'success',
+                    'Jurnal berhasil disimpan dan menunggu validasi.'
+                );
         } catch (\Throwable $e) {
             return back()
                 ->withInput()
@@ -390,5 +618,133 @@ class JurnalController extends Controller
             ->findOrFail($id);
 
         return view('guru.jurnal.show', compact('jurnal'));
+    }
+
+    /**
+     * Session key untuk status QR.
+     */
+    private function qrSessionKey(Jadwal $jadwal): string
+    {
+        return 'guru.jurnal.qr_verified.' . $jadwal->id_jadwal;
+    }
+
+    /**
+     * Cek apakah sekarang berada di dalam jam jadwal.
+     */
+    private function isScheduleWindowOpen(Jadwal $jadwal): bool
+    {
+        $jadwal->loadMissing([
+            'jamMulai',
+            'jamSelesai',
+        ]);
+
+        $start = $jadwal->jamMulai?->jam_mulai;
+        $end = $jadwal->jamSelesai?->jam_selesai;
+
+        if (! $start || ! $end) {
+            return false;
+        }
+
+        $todayName = now()
+            ->locale('id')
+            ->isoFormat('dddd');
+
+        if (
+            strtolower((string) $jadwal->hari) !==
+            strtolower((string) $todayName)
+        ) {
+            return false;
+        }
+
+        $now = now();
+
+        $startAt = $now
+            ->copy()
+            ->setTimeFromTimeString($start);
+
+        $endAt = $now
+            ->copy()
+            ->setTimeFromTimeString($end);
+
+        return $now->gte($startAt)
+            && $now->lt($endAt);
+    }
+
+    /**
+     * ID siswa dengan Dispen yang:
+     * - tanggalnya hari ini
+     * - statusnya disetujui
+     * - berada di kelas yang sesuai
+     * - waktunya sedang aktif
+     */
+    private function activeDispenSiswa(
+        int $idKelas,
+        string $tanggal
+    ) {
+        return $this->activeDispenQuery(
+            $idKelas,
+            $tanggal
+        )->pluck('id_siswa');
+    }
+
+    /**
+     * Mengambil waktu selesai paling awal
+     * dari Dispen yang sedang aktif.
+     */
+    private function activeDispenBerakhir(
+        int $idKelas,
+        string $tanggal
+    ): ?string {
+        return $this->activeDispenQuery(
+            $idKelas,
+            $tanggal
+        )
+            ->with('jamSelesai:id_jam,jam_selesai')
+            ->get()
+            ->map(
+                fn (Dispen $dispen) =>
+                    $dispen->jamSelesai?->jam_selesai
+            )
+            ->filter()
+            ->min();
+    }
+
+    /**
+     * Query Dispen aktif.
+     */
+    private function activeDispenQuery(
+        int $idKelas,
+        string $tanggal
+    ) {
+        /*
+         * Dispen hanya dianggap aktif untuk hari ini.
+         */
+        if ($tanggal !== today()->toDateString()) {
+            return Dispen::query()
+                ->whereRaw('1 = 0');
+        }
+
+        $waktuSekarang = now()->format('H:i:s');
+
+        return Dispen::query()
+            ->whereDate('tanggal', $tanggal)
+            ->where('status', 'disetujui')
+            ->whereHas('siswa', function ($query) use ($idKelas) {
+                $query->where('id_kelas', $idKelas);
+            })
+            ->whereHas('jamMulai', function ($query) use ($waktuSekarang) {
+                $query->where(
+                    'jam_mulai',
+                    '<=',
+                    $waktuSekarang
+                );
+            })
+            ->whereHas('jamSelesai', function ($query) use ($waktuSekarang) {
+                $query->where(
+                    'jam_selesai',
+                    '>=',
+                    $waktuSekarang
+                );
+            });
     }
 }

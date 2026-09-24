@@ -42,7 +42,7 @@
                                 value="{{ $guru->id_guru }}"
                                 {{ old('id_guru', $jadwal->id_guru) == $guru->id_guru ? 'selected' : '' }}
                             >
-                                {{ $guru->nip }} - {{ $guru->nama_guru }}
+                                {{ $guru->nama_guru }}
                             </option>
                         @endforeach
 

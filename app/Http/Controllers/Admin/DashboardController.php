@@ -27,7 +27,7 @@ class DashboardController extends Controller
                   $q->where('nama_mapel', 'like', "%{$search}%"); 
               })
               ->orWhereHas('guru', function ($q) use ($search) {
-                  $q->where('nama', 'like', "%{$search}%");
+                  $q->where('nama_guru', 'like', "%{$search}%");
               });
              })
              ->when($request->status, function ($query, $status) {

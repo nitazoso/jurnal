@@ -4,13 +4,9 @@
 @section('page-subtitle', 'Informasi Data Diri & Akun Administrator')
 @section('content')
 
-{{-- Font Manrope --}}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 @php
     $user = auth()->user();
+    $profileName = $user->nama_user ?? '-';
 @endphp
 
 <div class="profile-page">
@@ -46,10 +42,9 @@
             </svg>
         </div>
 
-        {{-- Name --}}
-        <h3 class="profile-name">
-            {{ $user->nama_user ?? 'Admin' }}
-        </h3>
+        <h1 class="profile-name">
+            {{ $profileName }}
+        </h1>
 
         {{-- Role --}}
         <span class="profile-role">
@@ -58,60 +53,19 @@
 
     </section>
 
-    {{-- PERSONAL DETAILS --}}
-    <section class="personal-card">
+    <div class="profile-info-item">
+        <span class="profile-label">Nama Lengkap</span>
+        <span class="profile-value">
+            {{ $profileName }}
+        </span>
+    </div>
 
-        {{-- Nama --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Nama Lengkap
-            </p>
-
-            <p class="personal-value">
-                {{ $user->nama_user ?? '-' }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Username / Email --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Email
-            </p>
-
-            <p class="personal-value">
-                {{ $user->email ?? '-' }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Role --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Role
-            </p>
-
-            <p class="personal-value">
-                {{ ucfirst($user->role ?? 'Admin') }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Nomor Telepon --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Nomor Telepon
-            </p>
-
-            <p class="personal-value">
-                {{ $user->no_hp ?? $user->no_telepon ?? $user->nomor_telepon ?? '-' }}
-            </p>
-        </div>
-
-    </section>
+    <div class="profile-info-item">
+        <span class="profile-label">Username</span>
+        <span class="profile-value">
+            {{ $user->username ?? '-' }}
+        </span>
+    </div>
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">

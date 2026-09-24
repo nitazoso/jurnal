@@ -37,6 +37,8 @@
                     <th class="px-4 py-3 text-left">Jam Mulai</th>
                     <th class="px-4 py-3 text-left">Jam Selesai</th>
                     <th class="px-4 py-3 text-left">Alasan</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-left">Dikonfirmasi oleh</th>
                     <th class="px-4 py-3 text-left">Aksi</th>
                 </tr>
             </thead>
@@ -68,7 +70,35 @@
                             {{ $dispen->alasan }}
                         </td>
                         <td class="px-4 py-3">
+                            @php
+                                $statusClass = match($dispen->status) {
+                                    'disetujui' => 'bg-green-100 text-green-700',
+                                    'ditolak' => 'bg-red-100 text-red-700',
+                                    default => 'bg-yellow-100 text-yellow-700',
+                                };
+                            @endphp
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold {{ $statusClass }}">
+                                {{ $dispen->status === 'disetujui' ? 'Sudah terkonfirmasi' : ucfirst($dispen->status) }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3">
+                            @if ($dispen->approver)
+                                <div class="font-medium">{{ $dispen->approver->nama_user }}</div>
+                                @if ($dispen->disetujui_pada)
+                                    <div class="text-xs text-gray-500">{{ $dispen->disetujui_pada->format('d-m-Y H:i') }}</div>
+                                @endif
+                            @else
+                                <span class="text-gray-400">Belum dikonfirmasi</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
          <div class="flex gap-2">
+
+        <a href="{{ route('piket.dispen.whatsapp', $dispen->id_dispen) }}"
+           class="px-3 py-1 rounded-lg bg-green-600 text-white"
+           target="_blank">
+            Kirim ke Kesiswaan
+        </a>
 
         <a href="{{ route('piket.dispen.edit', $dispen->id_dispen) }}"
            class="px-3 py-1 rounded-lg bg-yellow-500 text-white">
@@ -94,7 +124,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="9" class="px-4 py-8 text-center text-gray-500">
                             Belum ada data dispen.
                         </td>
                     </tr>

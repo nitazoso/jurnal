@@ -19,21 +19,31 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        if ($user->role !== 'Staff Piket') {
+        if (! in_array($user->role, ['Guru', 'Staff Piket'], true)) {
             abort(403, 'Akses ditolak.');
+        }
+
+        if ($user->role === 'Guru' && ! $user->hasPiketToday()) {
+            return redirect()->route('guru.dashboard')->with('info', 'Anda tidak memiliki jadwal piket hari ini.');
         }
 
         $today = now()->toDateString();
 
         $jurnals = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
-            ->where('status_validasi_guru', 'Disetujui')
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
             ->latest('tanggal')
             ->take(5)
             ->get();
 
-        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->count();
-        $totalHadir = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_hadir');
-        $totalAbsen = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->sum('jml_tidak_hadir');
+        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->count();
+        $totalHadir = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->sum('jml_hadir');
+        $totalAbsen = Jurnal::whereDate('tanggal', $today)
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
+            ->sum('jml_tidak_hadir');
 
         $dispens = Dispen::with(['siswa.kelas', 'jamMulai', 'jamSelesai'])
             ->latest('tanggal')

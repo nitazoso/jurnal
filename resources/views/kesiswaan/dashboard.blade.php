@@ -6,7 +6,6 @@
 @section('content')
 <div class="card">
     <h3>Selamat datang, {{ auth()->user()->nama_user ?? '-' }}</h3>
-    <p>Nomor WhatsApp: {{ $user->no_wa ?: 'Belum diatur' }}</p>
     <p>Pengajuan menunggu: {{ $dispensMenunggu }}</p>
     <p><a href="{{ route('kesiswaan.dispen.index') }}">Buka semua pengajuan dispen</a></p>
 

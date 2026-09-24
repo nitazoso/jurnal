@@ -27,11 +27,28 @@
             padding: 0;
         }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Manrope', sans-serif;
             background: #fbfbfb;
             color: #1f2937;
             min-height: 100vh;
+        }
+
+        img, svg, video, canvas, iframe, embed, object {
+            max-width: 100%;
+            height: auto;
+        }
+
+        a, button, input, select, textarea {
+            max-width: 100%;
+        }
+
+        .content * {
+            max-width: 100%;
         }
 
         /* Overlay untuk menutup sidebar saat klik di luar (Mobile) */
@@ -217,6 +234,47 @@
             gap: 16px;
         }
 
+        .topbar-meta {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topbar-clock {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f6f8ff;
+            border: 1px solid #dde5ff;
+            border-radius: 12px;
+            padding: 8px 12px;
+            min-width: 240px;
+            justify-content: flex-end;
+        }
+
+        .topbar-clock .material-symbols-outlined {
+            font-size: 18px;
+            color: #3b5bd4;
+        }
+
+        .topbar-clock small {
+            display: block;
+            color: #53627d;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .topbar-clock strong {
+            display: block;
+            color: #17265d;
+            font-size: 13px;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
         /* Tombol Menu Garis 3 (Sembunyi di Desktop) */
         .menu-toggle {
             display: none;
@@ -252,12 +310,10 @@
            RESPONSIVE (HP & TABLET)
         ========================= */
         @media (max-width: 800px) {
-            /* Sembunyikan sidebar ke kiri luar layar */
             .sidebar {
                 transform: translateX(-100%);
             }
 
-            /* Tampilkan sidebar saat status open */
             .sidebar.active {
                 transform: translateX(0);
             }
@@ -266,9 +322,28 @@
                 margin-left: 0;
             }
 
-            /* Tampilkan Tombol Garis Tiga */
             .menu-toggle {
                 display: flex;
+            }
+
+            .topbar {
+                flex-wrap: wrap;
+                height: auto;
+                min-height: 72px;
+                padding: 12px 16px;
+            }
+
+            .topbar h2 {
+                flex: 1 1 100%;
+            }
+
+            .topbar-meta {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .content {
+                padding: 20px 12px 24px;
             }
         }
     </style>
@@ -307,6 +382,10 @@
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
                 </a>
+                <a href="{{ route('piket.dispen.history') }}" class="nav-item {{ request()->routeIs('piket.dispen.history') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">history</span>
+                    <span>Riwayat Dispen</span>
+                </a>
                 <a href="{{ route('piket.profil') }}" class="nav-item {{ request()->routeIs('piket.profil') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">person</span> 
                     <span>Profil</span>
@@ -333,6 +412,16 @@
                 </button>
 
                 <h2>@yield('page-title', 'Dashboard')</h2>
+
+                <div class="topbar-meta">
+                    <div class="topbar-clock">
+                        <span class="material-symbols-outlined">schedule</span>
+                        <div>
+                            <small id="liveDate">Tanggal</small>
+                            <strong id="liveTime">--:--:--</strong>
+                        </div>
+                    </div>
+                </div>
             </header>
 
             <div class="content">
@@ -341,8 +430,32 @@
         </main>
     </div>
 
-    <!-- Script Toggler Sidebar Mobile -->
     <script>
+        function updateDashboardClock() {
+            const dateEl = document.getElementById('liveDate');
+            const timeEl = document.getElementById('liveTime');
+
+            if (!dateEl || !timeEl) return;
+
+            const now = new Date();
+            const dateText = new Intl.DateTimeFormat('id-ID', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            }).format(now);
+
+            const timeText = new Intl.DateTimeFormat('id-ID', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }).format(now);
+
+            dateEl.textContent = dateText;
+            timeEl.textContent = timeText;
+        }
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('sidebarOverlay');
@@ -350,6 +463,9 @@
             sidebar.classList.toggle('active');
             overlay.classList.toggle('show');
         }
+
+        updateDashboardClock();
+        setInterval(updateDashboardClock, 1000);
     </script>
 </body>
 </html>

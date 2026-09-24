@@ -11,89 +11,85 @@ class JurnalController extends Controller
 {
     public function index(Request $request)
     {
-        // Ambil semua kelas
-        $kelases = Kelas::orderBy('nama_kelas', 'asc')->get();
+        $kelasesQuery = Kelas::orderBy('nama_kelas', 'asc');
 
-        // Ambil jurnal yang sudah disetujui
-        $jurnalQuery = Jurnal::with(['guru', 'kelas'])
-            ->where('status_validasi_guru', 'Disetujui');
-
-        // Search
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = $request->string('search')->trim()->toString();
+            $kelasesQuery->where('nama_kelas', 'like', "%{$search}%");
+        }
+
+        $kelases = $kelasesQuery->get();
+
+        // Ambil jurnal yang sudah masuk dan menunggu validasi agar staf piket bisa melihat data baru
+        $jurnalQuery = Jurnal::with(['guru', 'kelas'])
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui']);
+
+        if ($request->filled('id_kelas')) {
+            $jurnalQuery->where('id_kelas', $request->integer('id_kelas'));
+        }
+
+        // Search hanya berdasarkan nama kelas.
+        if ($request->filled('search')) {
+            $search = $request->string('search')->trim()->toString();
 
             $jurnalQuery->where(function ($query) use ($search) {
-                $query->where('materi', 'like', "%{$search}%")
-                    ->orWhereHas('guru', function ($query) use ($search) {
-                        $query->where(
-                            'nama_guru',
-                            'like',
-                            "%{$search}%"
-                        );
-                    })
-                    ->orWhereHas('kelas', function ($query) use ($search) {
-                        $query->where(
-                            'nama_kelas',
-                            'like',
-                            "%{$search}%"
-                        );
-                    });
+                $query->whereHas('kelas', function ($query) use ($search) {
+                    $query->where('nama_kelas', 'like', "%{$search}%");
+                });
             });
         }
 
-        // Filter bulan
         if ($request->filled('bulan')) {
-            $jurnalQuery->whereMonth(
-                'tanggal',
-                $request->bulan
-            );
+            $jurnalQuery->whereMonth('tanggal', $request->integer('bulan'));
         }
 
-        // Filter tahun
         if ($request->filled('tahun')) {
-            $jurnalQuery->whereYear(
-                'tanggal',
-                $request->tahun
-            );
+            $jurnalQuery->whereYear('tanggal', $request->integer('tahun'));
         }
 
         $jurnals = $jurnalQuery
             ->orderByDesc('tanggal')
             ->get();
 
+        $kelasTerpilih = $request->filled('id_kelas')
+            ? $kelases->firstWhere('id_kelas', $request->integer('id_kelas'))
+            : null;
+
         // Jumlah jurnal per kelas
-        $jumlahJurnalPerKelas = Jurnal::where(
+        $jumlahJurnalPerKelas = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
         ->selectRaw('id_kelas, COUNT(*) as total')
         ->groupBy('id_kelas')
         ->pluck('total', 'id_kelas');
 
         // Statistik
-        $totalJurnal = Jurnal::where(
+        $totalJurnal = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )->count();
 
         $totalKelas = Kelas::count();
 
-        $jurnalHariIni = Jurnal::where(
+        $jurnalHariIni = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
         ->whereDate('tanggal', today())
         ->count();
 
-        // Tahun yang tersedia
-        $tahunList = Jurnal::where(
+        // Tahun yang tersedia. Ambil tanggal lalu bentuk tahunnya di PHP agar
+        // query ini berjalan baik pada MySQL dan SQLite.
+        $tahunList = Jurnal::whereIn(
             'status_validasi_guru',
-            'Disetujui'
+            ['Menunggu', 'Disetujui']
         )
-        ->selectRaw('YEAR(tanggal) as tahun')
-        ->distinct()
-        ->orderByDesc('tahun')
-        ->pluck('tahun');
+        ->pluck('tanggal')
+        ->map(fn ($tanggal) => (int) date('Y', strtotime($tanggal)))
+        ->unique()
+        ->sortDesc()
+        ->values();
 
         return view('piket.jurnal.index', compact(
             'kelases',
@@ -103,6 +99,7 @@ class JurnalController extends Controller
             'totalKelas',
             'jurnalHariIni',
             'tahunList'
+            , 'kelasTerpilih'
         ));
     }
 }

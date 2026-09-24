@@ -64,7 +64,7 @@
         <div class="form-card">
             <div class="card-header-inner">
                 <h2 class="card-title">Informasi Guru</h2>
-                <p class="card-subtitle">Pastikan NIP belum pernah terdaftar sebelumnya di sistem.</p>
+                <p class="card-subtitle">Lengkapi nama guru yang akan ditambahkan.</p>
             </div>
 
             <form action="{{ route('admin.guru.store') }}" method="POST">
@@ -72,25 +72,6 @@
 
                 <div class="card-body-inner">
                     <div class="form-grid">
-
-                        {{-- NIP --}}
-                        <div class="form-group">
-                            <label for="nip" class="form-label">
-                                NIP <span class="required">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                id="nip"
-                                name="nip"
-                                value="{{ old('nip') }}"
-                                placeholder="Masukkan NIP guru"
-                                maxlength="18"
-                                required
-                                autofocus
-                                class="form-input @error('nip') is-invalid @enderror"
-                            >
-                            <span class="form-hint">Nomor Induk Pegawai resmi.</span>
-                        </div>
 
                         {{-- NAMA GURU --}}
                         <div class="form-group">
@@ -104,26 +85,10 @@
                                 value="{{ old('nama_guru') }}"
                                 placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd."
                                 required
+                                autofocus
                                 class="form-input @error('nama_guru') is-invalid @enderror"
                             >
                             <span class="form-hint">Nama lengkap beserta gelar akademik.</span>
-                        </div>
-
-                        {{-- NO HP --}}
-                        <div class="form-group full-width">
-                            <label for="no_hp" class="form-label">
-                                Nomor HP / WhatsApp
-                            </label>
-                            <input
-                                type="text"
-                                id="no_hp"
-                                name="no_hp"
-                                value="{{ old('no_hp') }}"
-                                placeholder="Contoh: 081234567890"
-                                inputmode="tel"
-                                class="form-input @error('no_hp') is-invalid @enderror"
-                            >
-                            <span class="form-hint">Digunakan untuk kontak dan koordinasi piket.</span>
                         </div>
 
                     </div>
@@ -465,5 +430,5 @@
         }
     }
 </style>
-
 @endsection
+
