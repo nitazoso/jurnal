@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guru;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
@@ -11,51 +12,112 @@ class JurnalController extends Controller
 {
     public function index(Request $request)
     {
-        $kelasesQuery = Kelas::orderBy('nama_kelas', 'asc');
+        $view = $request->get('view', 'kelas');
 
-        if ($request->filled('search')) {
-            $search = $request->string('search')->trim()->toString();
-            $kelasesQuery->where('nama_kelas', 'like', "%{$search}%");
-        }
+        // =========================
+        // DATA KELAS & GURU
+        // =========================
+        $kelases = Kelas::orderBy('nama_kelas', 'asc')->get();
+        $gurus = Guru::orderBy('nama_guru', 'asc')->get();
 
-        $kelases = $kelasesQuery->get();
-
-        // Ambil jurnal yang sudah masuk dan menunggu validasi agar staf piket bisa melihat data baru
+        // =========================
+        // QUERY JURNAL
+        // =========================
         $jurnalQuery = Jurnal::with(['guru', 'kelas'])
-            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui']);
+            ->whereIn('status_validasi_guru', [
+                'Menunggu',
+                'Disetujui'
+            ]);
 
-        if ($request->filled('id_kelas')) {
-            $jurnalQuery->where('id_kelas', $request->integer('id_kelas'));
+        // =========================
+        // FILTER BERDASARKAN VIEW (KELAS / GURU)
+        // =========================
+        if ($view === 'kelas' && $request->filled('id_kelas')) {
+            $jurnalQuery->where(
+                'id_kelas',
+                $request->integer('id_kelas')
+            );
+        } elseif ($view === 'guru' && $request->filled('id_guru')) {
+            $jurnalQuery->where(
+                'id_guru',
+                $request->integer('id_guru')
+            );
         }
 
-        // Search hanya berdasarkan nama kelas.
+        // =========================
+        // SEARCH (Materi, Guru, Kelas)
+        // =========================
         if ($request->filled('search')) {
             $search = $request->string('search')->trim()->toString();
 
             $jurnalQuery->where(function ($query) use ($search) {
-                $query->whereHas('kelas', function ($query) use ($search) {
-                    $query->where('nama_kelas', 'like', "%{$search}%");
+                $query->where(
+                    'materi',
+                    'like',
+                    "%{$search}%"
+                )
+                ->orWhereHas('guru', function ($query) use ($search) {
+                    $query->where(
+                        'nama_guru',
+                        'like',
+                        "%{$search}%"
+                    );
+                })
+                ->orWhereHas('kelas', function ($query) use ($search) {
+                    $query->where(
+                        'nama_kelas',
+                        'like',
+                        "%{$search}%"
+                    );
                 });
             });
         }
 
+        // =========================
+        // FILTER BULAN
+        // =========================
         if ($request->filled('bulan')) {
-            $jurnalQuery->whereMonth('tanggal', $request->integer('bulan'));
+            $jurnalQuery->whereMonth(
+                'tanggal',
+                $request->integer('bulan')
+            );
         }
 
+        // =========================
+        // FILTER TAHUN
+        // =========================
         if ($request->filled('tahun')) {
-            $jurnalQuery->whereYear('tanggal', $request->integer('tahun'));
+            $jurnalQuery->whereYear(
+                'tanggal',
+                $request->integer('tahun')
+            );
         }
 
-        $jurnals = $jurnalQuery
-            ->orderByDesc('tanggal')
-            ->get();
+        // =========================
+        // AMBIL JURNAL
+        // =========================
+        // Hanya ambil data jurnal jika kelas/guru sudah dipilih
+        $hasSelection = ($view === 'kelas' && $request->filled('id_kelas')) ||
+                        ($view === 'guru' && $request->filled('id_guru'));
 
-        $kelasTerpilih = $request->filled('id_kelas')
+        $jurnals = $hasSelection
+            ? $jurnalQuery->orderByDesc('tanggal')->get()
+            : collect();
+
+        // =========================
+        // ITEM YANG DIPILIH
+        // =========================
+        $selectedKelas = ($view === 'kelas' && $request->filled('id_kelas'))
             ? $kelases->firstWhere('id_kelas', $request->integer('id_kelas'))
             : null;
 
-        // Jumlah jurnal per kelas
+        $selectedGuru = ($view === 'guru' && $request->filled('id_guru'))
+            ? $gurus->firstWhere('id_guru', $request->integer('id_guru'))
+            : null;
+
+        // =========================
+        // JUMLAH JURNAL PER KELAS
+        // =========================
         $jumlahJurnalPerKelas = Jurnal::whereIn(
             'status_validasi_guru',
             ['Menunggu', 'Disetujui']
@@ -64,7 +126,9 @@ class JurnalController extends Controller
         ->groupBy('id_kelas')
         ->pluck('total', 'id_kelas');
 
-        // Statistik
+        // =========================
+        // STATISTIK
+        // =========================
         $totalJurnal = Jurnal::whereIn(
             'status_validasi_guru',
             ['Menunggu', 'Disetujui']
@@ -79,8 +143,10 @@ class JurnalController extends Controller
         ->whereDate('tanggal', today())
         ->count();
 
-        // Tahun yang tersedia. Ambil tanggal lalu bentuk tahunnya di PHP agar
-        // query ini berjalan baik pada MySQL dan SQLite.
+        // =========================
+        // TAHUN TERSEDIA
+        // =========================
+        // Dibuat di PHP agar kompatibel dengan MySQL dan SQLite
         $tahunList = Jurnal::whereIn(
             'status_validasi_guru',
             ['Menunggu', 'Disetujui']
@@ -91,15 +157,20 @@ class JurnalController extends Controller
         ->sortDesc()
         ->values();
 
+        // =========================
+        // KIRIM KE BLADE
+        // =========================
         return view('piket.jurnal.index', compact(
             'kelases',
+            'gurus',
             'jurnals',
             'jumlahJurnalPerKelas',
             'totalJurnal',
             'totalKelas',
             'jurnalHariIni',
-            'tahunList'
-            , 'kelasTerpilih'
+            'tahunList',
+            'selectedKelas',
+            'selectedGuru'
         ));
     }
 }

@@ -430,5 +430,5 @@
         }
     }
 </style>
-@endsection
 
+@endsection

@@ -41,12 +41,22 @@ class UserController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        // Statistik
+        // =========================
+        // STATISTIK
+        // =========================
         $totalUser = User::count();
-        $totalGuru = User::where('role', 'Guru')->count();
+
+        // TAMBAHAN: Total Admin
         $totalAdmin = User::where('role', 'Admin')->count();
+
+        $totalGuru = User::where('role', 'Guru')->count();
+
         $totalKesiswaan = User::where('role', 'Kesiswaan')->count();
+
+        $totalStaffPiket = User::where('role', 'Staff Piket')->count();
+
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
+
         $totalSiswa = \App\Models\Siswa::count();
 
         return view('admin.user.index', compact(
@@ -55,6 +65,7 @@ class UserController extends Controller
             'totalAdmin',
             'totalGuru',
             'totalKesiswaan',
+            'totalStaffPiket',
             'totalSekretaris',
             'totalSiswa'
         ));
@@ -83,16 +94,13 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username',
             'nama_user' => 'required|string|max:255',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
-            'id_guru' => 'nullable|required_if:role,Guru|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
+            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
+            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
         $plainPassword = $validated['password'];
-
-        if ($validated['role'] !== 'Guru') {
-            $validated['id_guru'] = null;
-        }
 
         $validated['password'] = Hash::make($plainPassword);
 
@@ -157,24 +165,11 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
             'nama_user' => 'required|string|max:255',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
-            'id_guru' => 'nullable|required_if:role,Guru|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
+            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
+            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
-
-        if (
-            $user->role === 'Admin'
-            && $validated['role'] !== 'Admin'
-            && User::where('role', 'Admin')->count() <= 1
-        ) {
-            return back()
-                ->withInput()
-                ->with('error', 'Admin terakhir tidak dapat diganti rolenya. Buat akun Admin lain terlebih dahulu.');
-        }
-
-            if ($validated['role'] !== 'Guru') {
-                $validated['id_guru'] = null;
-            }
 
         // Kalau password diisi, hash password baru
         if (!empty($validated['password'])) {
@@ -197,12 +192,6 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
-
-        if ($user->role === 'Admin' && User::where('role', 'Admin')->count() <= 1) {
-            return redirect()
-                ->route('admin.user.index')
-                ->with('error', 'Admin terakhir tidak dapat dihapus. Buat akun Admin lain terlebih dahulu.');
-        }
 
         $user->delete();
 

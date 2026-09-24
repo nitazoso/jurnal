@@ -150,28 +150,31 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::delete('/admin/kelas/{kelas}', [KelasController::class, 'destroy'])
         ->name('admin.kelas.destroy');
+// ====================
+// SISWA PER KELAS
+// ====================
 
-    // ====================
-    // SISWA PER KELAS
-    // ====================
-    Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
-        ->name('admin.kelas.siswa');
+Route::get('/admin/kelas/siswa', [SiswaController::class, 'index'])
+    ->name('admin.kelas.siswa');
 
-    Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
-        ->name('admin.siswa.create');
+Route::get('/admin/siswa/create', [SiswaController::class, 'create'])
+    ->name('admin.siswa.create');
 
-    Route::post('/admin/siswa', [SiswaController::class, 'store'])
-        ->name('admin.siswa.store');
+Route::post('/admin/siswa', [SiswaController::class, 'store'])
+    ->name('admin.siswa.store');
 
-    Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
-        ->name('admin.siswa.edit');
+Route::get('/admin/siswa/{siswa}/edit', [SiswaController::class, 'edit'])
+    ->name('admin.siswa.edit');
 
-    Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
-        ->name('admin.siswa.update');
+Route::put('/admin/siswa/{siswa}', [SiswaController::class, 'update'])
+    ->name('admin.siswa.update');
 
-    Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
-        ->name('admin.siswa.destroy');
+// CEK NIS
+Route::get('/admin/siswa/check-nis', [SiswaController::class, 'checkNis'])
+    ->name('admin.siswa.checkNis');
 
+Route::delete('/admin/siswa/{siswa}', [SiswaController::class, 'destroy'])
+    ->name('admin.siswa.destroy');
     // ====================
     // MAPEL ADMIN
     // ====================

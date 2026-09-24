@@ -89,4 +89,13 @@ class Jurnal extends Model
             'id_jam'
         );
     }
+
+    public function absensiSiswa()
+{
+    return $this->hasMany(
+        DetailAbsensi::class,
+        'id_jurnal',
+        'id_jurnal'
+    );
+}
 }

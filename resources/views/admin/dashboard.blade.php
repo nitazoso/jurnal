@@ -353,6 +353,10 @@
         background-color: #fafbff !important;
     }
 
+    tbody tr[data-href] {
+        cursor: pointer;
+    }
+
     .teacher {
         transition: color .18s ease;
     }
@@ -798,7 +802,7 @@
 
         <tbody>
             @forelse($jurnals as $index => $item)
-                <tr style="animation-delay: {{ $index * 0.04 }};">
+                <tr data-href="{{ route('admin.jurnal.show', $item) }}" style="animation-delay: {{ $index * 0.04 }};">
 
                     <td class="number">
                         {{ $jurnals->firstItem() + $index }}
@@ -886,5 +890,21 @@
 
 
 </section>
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('tbody tr[data-href]').forEach(function (row) {
+                row.addEventListener('click', function (event) {
+                    if (event.target.closest('a, button, input, select, textarea, label, option')) {
+                        return;
+                    }
+
+                    window.location.href = row.dataset.href;
+                });
+            });
+        });
+    </script>
+@endpush
 
 @endsection

@@ -67,12 +67,6 @@
                     <div class="inline-flex items-center gap-2 bg-slate-100 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl">
                         <i class="fa-regular fa-calendar text-slate-400"></i>
 
-                        <span>
-                            Tahun Ajaran:
-                            <strong class="text-slate-800">
-                                2026/2027 Semester Ganjil
-                            </strong>
-                        </span>
                     </div>
 
                 </div>

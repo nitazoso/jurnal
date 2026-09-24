@@ -1,10 +1,6 @@
 @extends('layouts.guru')
-
 @section('title', 'Dashboard - Jurnify')
-@section('tahun_ajaran', $tahunAjaran)
-
 @section('content')
-
 {{-- Font Manrope --}}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +14,6 @@
 
             {{-- WELCOME CARD --}}
             <div class="welcome-card dashboard-card">
-
                 <div class="welcome-avatar">
                     <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
@@ -33,12 +28,10 @@
                         Pantau dan kelola aktivitas pembelajaran Anda melalui Jurnify.
                     </p>
                 </div>
-
             </div>
 
             {{-- TOTAL CARD --}}
             <div class="total-card dashboard-card">
-
                 <div class="total-content">
                     <span class="total-label">Total Jurnal</span>
                     <div class="total-number">{{ $totalJurnal }}</div>
@@ -50,8 +43,21 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                     </svg>
                 </div>
-
             </div>
+
+            {{-- ACTION CARD (TOMBOL ISI JURNAL - IKON DI SAMPING KANAN) --}}
+            <a href="{{ route('guru.jurnal.create') }}" class="action-card dashboard-card">
+                <div class="action-info">
+                    <h3 class="action-title">Isi Jurnal</h3>
+                    <p class="action-subtitle">Buat entri baru</p>
+                </div>
+
+                <div class="action-btn">
+                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                </div>
+            </a>
 
         </section>
 
@@ -126,7 +132,7 @@
                             <span class="meta-item">
                                 <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                     <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
+                                    <polyline points="12 6 12 16 14" />
                                 </svg>
                                 Jam Ke-{{ $jurnal->jamMulai->jam_ke ?? '-' }} - {{ $jurnal->jamSelesai->jam_ke ?? '-' }}
                             </span>
@@ -213,12 +219,16 @@
     }
 }
 
-/* OVERVIEW GRID */
+/* OVERVIEW GRID (DESKTOP) */
 .overview-grid {
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-bottom: 32px;
+}
+
+.welcome-card {
+    grid-column: span 2; /* Mengambil baris atas secara penuh di Desktop */
 }
 
 .dashboard-card {
@@ -231,7 +241,7 @@
 
 /* WELCOME CARD */
 .welcome-card {
-    min-height: 150px;
+    min-height: 140px;
     padding: 24px 28px;
     border-radius: 18px;
     background: linear-gradient(135deg, #2D336B 0%, #47539B 100%);
@@ -316,8 +326,8 @@
 
 /* TOTAL CARD */
 .total-card {
-    min-height: 150px;
-    padding: 24px 28px;
+    min-height: 140px;
+    padding: 22px 24px;
     border-radius: 18px;
     background: #E0E7FF;
     border: 1px solid #C7D2FE;
@@ -354,7 +364,7 @@
 
 .total-number {
     color: #1E1B4B;
-    font-size: 38px;
+    font-size: 36px;
     line-height: 1.1;
     font-weight: 800;
     letter-spacing: -.8px;
@@ -363,7 +373,7 @@
 
 .total-text {
     display: block;
-    margin-top: 6px;
+    margin-top: 4px;
     color: #4338CA;
     font-size: 12px;
     font-weight: 600;
@@ -371,8 +381,8 @@
 }
 
 .total-icon {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
     flex-shrink: 0;
     border-radius: 14px;
     background: #FFFFFF;
@@ -388,6 +398,90 @@
     width: 24px;
     height: 24px;
     color: var(--primary);
+}
+
+/* ACTION CARD - WARM CREAM (ISI JURNAL) */
+.action-card {
+    min-height: 140px;
+    padding: 22px 24px;
+    border-radius: 18px;
+    background: #FFFDF9;
+    border: 1.5px solid #E2DFD8;
+    color: #1E293B;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .04);
+    transition: all .3s cubic-bezier(.16, 1, .3, 1);
+}
+
+.action-card:hover {
+    transform: translateY(-4px);
+    border-color: #2D336B;
+    box-shadow: 0 10px 24px rgba(45, 51, 107, .12);
+}
+
+.action-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    z-index: 1;
+}
+
+.action-badge {
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: #F2EFE7;
+    color: #475569;
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.action-title {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.2;
+    letter-spacing: -.3px;
+}
+
+.action-subtitle {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 600;
+}
+
+.action-btn {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: #2D336B;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    transition: transform .3s ease, background-color .3s ease;
+}
+
+.action-card:hover .action-btn {
+    transform: scale(1.08) rotate(90deg);
+    background: #1E234A;
+}
+
+.action-btn svg {
+    width: 22px;
+    height: 22px;
 }
 
 /* SUMMARY SECTION */
@@ -669,33 +763,82 @@
     font-size: 13px;
 }
 
-/* RESPONSIVE DESIGN */
-@media (max-width: 900px) {
-    .overview-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-}
-
+/* RESPONSIVE DESIGN (MOBILE & TABLET) */
 @media (max-width: 767px) {
-    .welcome-card,
-    .total-card {
-        padding: 20px;
-        gap: 16px;
+    .overview-grid {
+        grid-template-columns: 1fr 1fr; /* 2 kolom untuk Total Jurnal & Isi Jurnal di bawahnya */
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .welcome-card {
+        grid-column: span 2; /* Paling atas mengambil baris penuh */
+        padding: 18px 20px;
+        gap: 14px;
     }
 
     .welcome-avatar {
-        width: 48px;
-        height: 48px;
-        flex-basis: 48px;
+        width: 44px;
+        height: 44px;
     }
 
     .welcome-title {
-        font-size: 19px;
+        font-size: 17px;
+    }
+
+    .welcome-text {
+        font-size: 12.5px;
+    }
+
+    /* Total Jurnal & Isi Jurnal Berdampingan di Mobile */
+    .total-card,
+    .action-card {
+        min-height: 110px;
+        padding: 14px 16px;
+        border-radius: 14px;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
     }
 
     .total-number {
-        font-size: 32px;
+        font-size: 26px;
+    }
+
+    .total-label {
+        font-size: 12px;
+    }
+
+    .total-text {
+        display: none; /* Sembunyikan deskripsi panjang di layar HP agar hemat ruang */
+    }
+
+    .total-icon {
+        display: none; /* Sembunyikan ikon besar di total card pada layar HP */
+    }
+
+    .action-badge {
+        display: none; /* Sembunyikan badge kecil di layar HP */
+    }
+
+    .action-title {
+        font-size: 16px;
+    }
+
+    .action-subtitle {
+        font-size: 11px;
+    }
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        align-self: flex-end; /* Posisikan tombol ikon di sudut kanan bawah kartu pada layar HP */
+    }
+
+    .action-btn svg {
+        width: 18px;
+        height: 18px;
     }
 
     .summary-header {
@@ -715,12 +858,8 @@
 }
 
 @media (max-width: 420px) {
-    .welcome-card {
-        align-items: flex-start;
-    }
-
     .journal-card {
-        padding: 16px;
+        padding: 14px;
     }
 
     .journal-material {
@@ -739,7 +878,8 @@
     .dashboard-card,
     .journal-card,
     .see-all,
-    .detail-link {
+    .detail-link,
+    .action-btn {
         animation: none;
         transition: none;
     }

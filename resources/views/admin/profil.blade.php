@@ -4,9 +4,17 @@
 @section('page-subtitle', 'Informasi Data Diri & Akun Administrator')
 @section('content')
 
+{{-- Font Manrope --}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
 @php
     $user = auth()->user();
-    $profileName = $user->nama_user ?? '-';
+
+    $profileName = $user->nama_user ?? 'Admin';
+    $profilePhone = $user->no_wa ?? $user->no_hp ?? $user->guru?->no_hp ?? $user->no_telepon ?? '-';
+
 @endphp
 
 <div class="profile-page">
@@ -42,9 +50,10 @@
             </svg>
         </div>
 
-        <h1 class="profile-name">
+        {{-- Name --}}
+        <h3 class="profile-name">
             {{ $profileName }}
-        </h1>
+        </h3>
 
         {{-- Role --}}
         <span class="profile-role">
@@ -53,19 +62,56 @@
 
     </section>
 
-    <div class="profile-info-item">
-        <span class="profile-label">Nama Lengkap</span>
-        <span class="profile-value">
-            {{ $profileName }}
-        </span>
-    </div>
+    {{-- PERSONAL DETAILS --}}
+    <section class="personal-card">
 
-    <div class="profile-info-item">
-        <span class="profile-label">Username</span>
-        <span class="profile-value">
-            {{ $user->username ?? '-' }}
-        </span>
-    </div>
+        {{-- Nama Lengkap --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Nama Lengkap
+            </p>
+            <p class="personal-value">
+                {{ $profileName }}
+            </p>
+        </div>
+
+        <hr class="personal-divider">
+
+        {{-- Username / Email --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Email / Username
+            </p>
+            <p class="personal-value">
+                {{ $user->email ?? $user->username ?? '-' }}
+            </p>
+        </div>
+
+        <hr class="personal-divider">
+
+        {{-- Role --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Role
+            </p>
+            <p class="personal-value">
+                {{ ucfirst($user->role ?? 'Admin') }}
+            </p>
+        </div>
+
+        <hr class="personal-divider">
+
+        {{-- Nomor Telepon --}}
+        <div class="personal-field">
+            <p class="personal-label">
+                Nomor Telepon
+            </p>
+            <p class="personal-value">
+                {{ $profilePhone }}
+            </p>
+        </div>
+
+    </section>
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">

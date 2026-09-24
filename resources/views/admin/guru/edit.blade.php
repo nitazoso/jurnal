@@ -58,12 +58,19 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.guru.update', $guru->id_guru) }}" method="POST">
-            @csrf
-            @method('PUT')
+        {{-- FORM CARD --}}
+        <div class="form-card">
+            <div class="card-header-inner">
+                <h2 class="card-title">Informasi Guru</h2>
+                <p class="card-subtitle">Pastikan NIP dan nama yang dimasukkan sudah sesuai.</p>
+            </div>
 
-            <div class="card-body-inner">
-                <div class="form-grid">
+            <form action="{{ route('admin.guru.update', $guru->id_guru) }}" method="POST">
+                @csrf
+                @method('PUT')
+
+                <div class="card-body-inner">
+                    <div class="form-grid">
 
                         {{-- NAMA GURU --}}
                         <div class="form-group">
