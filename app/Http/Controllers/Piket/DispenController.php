@@ -9,6 +9,7 @@ use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class DispenController extends Controller
 {
@@ -58,6 +59,78 @@ class DispenController extends Controller
             ->get();
 
         return view('piket.dispen.create', $this->formData($jamPels));
+    }
+
+    public function sickCreate()
+    {
+        $kelases = Kelas::with(['siswas' => fn ($query) => $query->orderBy('nama_siswa')])
+            ->orderBy('nama_kelas')->get();
+
+        $siswaPerKelas = $kelases->mapWithKeys(fn ($kelas) => [
+            $kelas->id_kelas => $kelas->siswas->map(fn ($siswa) => [
+                'id' => $siswa->id_siswa,
+                'nama' => $siswa->nama_siswa,
+                'nis' => $siswa->nis,
+            ])->values(),
+        ]);
+
+        $sickReports = Dispen::with('siswa.kelas')
+            ->where('jenis', 'sakit')
+            ->whereDate('tanggal', today())
+            ->latest()
+            ->get();
+
+        return view('piket.dispen.sakit-create', compact('kelases', 'siswaPerKelas', 'sickReports'));
+    }
+
+    public function sickStore(Request $request)
+    {
+        $validated = $request->validate([
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => [
+                'required',
+                Rule::exists('siswas', 'id_siswa')->where(fn ($query) =>
+                    $query->where('id_kelas', $request->input('id_kelas'))
+                ),
+            ],
+            'tanggal' => 'required|date',
+            'alasan' => 'required|string|max:255',
+            'surat' => 'nullable|image|max:5120',
+        ]);
+
+        $suratPath = $request->hasFile('surat')
+            ? $request->file('surat')->store('surat-sakit', 'public')
+            : null;
+
+        $jamMulai = JamPel::where('jenis', 'pelajaran')->orderBy('jam_ke')->firstOrFail();
+        $jamSelesai = JamPel::where('jenis', 'pelajaran')->orderByDesc('jam_ke')->firstOrFail();
+
+        $sickData = [
+            'id_kesiswaan' => null,
+            'submitted_by' => auth()->user()->id_user,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'alasan' => $validated['alasan'],
+            'status' => 'disetujui',
+            'disetujui_oleh' => auth()->user()->id_user,
+            'disetujui_pada' => now(),
+        ];
+
+        if ($suratPath) {
+            $sickData['surat_path'] = $suratPath;
+        }
+
+        Dispen::updateOrCreate(
+            [
+                'id_siswa' => $validated['id_siswa'],
+                'jenis' => 'sakit',
+                'tanggal' => $validated['tanggal'],
+            ],
+            $sickData
+        );
+
+        return redirect()->route('piket.dispen.sakit.create')
+            ->with('success', 'Surat sakit berhasil dikirim dan akan tersinkron ke jurnal guru.');
     }
 
     /**

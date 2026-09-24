@@ -904,7 +904,6 @@
         }
     }
 </style>
-@endpush
 
 @section('content')
 

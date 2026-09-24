@@ -374,6 +374,10 @@
                     <span class="material-symbols-outlined">menu_book</span> 
                     <span>Riwayat Jurnal</span>
                 </a>
+                <a href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}" class="nav-item {{ request()->routeIs('piket.jurnal.index') && request('view') === 'semua' ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">summarize</span>
+                    <span>Rekap Aktivitas Jurnal</span>
+                </a>
                 <a href="{{ route('piket.jadwal.index') }}" class="nav-item {{ request()->routeIs('piket.jadwal.*') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">calendar_today</span> 
                     <span>Jadwal Piket</span>
@@ -381,6 +385,10 @@
                 <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
+                </a>
+                <a href="{{ route('piket.dispen.sakit.create') }}" class="nav-item {{ request()->routeIs('piket.dispen.sakit.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">medical_services</span>
+                    <span>Surat Sakit</span>
                 </a>
                 <a href="{{ route('piket.dispen.history') }}" class="nav-item {{ request()->routeIs('piket.dispen.history') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">history</span>

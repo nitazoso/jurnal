@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Jurnal;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class JurnalController extends Controller
@@ -46,7 +47,24 @@ class JurnalController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return view('admin.jurnal.index', compact('jurnals'));
+        $users = User::with(['guru', 'kelas'])
+            ->latest('id_user')
+            ->paginate(10, ['*'], 'users_page')
+            ->withQueryString();
+
+        $totalUser = User::count();
+        $totalGuru = User::where('role', 'Guru')->count();
+        $totalStaffPiket = User::where('role', 'Staff Piket')->count();
+        $totalSekretaris = User::where('role', 'Sekretaris')->count();
+
+        return view('admin.jurnal.index', compact(
+            'jurnals',
+            'users',
+            'totalUser',
+            'totalGuru',
+            'totalStaffPiket',
+            'totalSekretaris'
+        ));
     }
 
     public function show(Jurnal $jurnal)

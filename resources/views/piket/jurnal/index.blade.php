@@ -495,6 +495,17 @@
                 Rekap Guru
             </a>
 
+            <a
+                href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}"
+                class="tab-button {{ request('view') === 'semua' ? 'active' : '' }}"
+            >
+                <span class="material-symbols-outlined">
+                    summarize
+                </span>
+
+                Semua Aktivitas
+            </a>
+
         </div>
 
     </div>
@@ -523,7 +534,7 @@
                     </p>
 
                     <p class="text-[11px] text-slate-400 mt-1">
-                        Jurnal telah disetujui
+                        Seluruh status jurnal
                     </p>
 
                 </div>
@@ -593,7 +604,7 @@
                     </p>
 
                     <p class="text-[11px] text-slate-400 mt-1">
-                        Jurnal yang telah disetujui
+                        Seluruh status jurnal
                     </p>
 
                 </div>
@@ -617,7 +628,123 @@
          REKAP KELAS
     ========================================================== --}}
 
-    @if(request('view', 'kelas') === 'kelas')
+    @if(request('view') === 'semua')
+
+        <div class="jurnal-card p-5">
+            <form
+                method="GET"
+                action="{{ route('piket.jurnal.index') }}"
+                class="grid grid-cols-1 md:grid-cols-4 gap-3"
+            >
+                <input type="hidden" name="view" value="semua">
+
+                <div class="md:col-span-2">
+                    <label class="block text-[11px] font-extrabold text-slate-500 mb-1.5">
+                        Cari Aktivitas
+                    </label>
+                    <div class="search-wrapper">
+                        <span class="material-symbols-outlined search-icon">search</span>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ request('search') }}"
+                            placeholder="Cari guru, kelas, materi, atau mapel..."
+                            class="filter-input search-input"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-slate-500 mb-1.5">
+                        Bulan
+                    </label>
+                    <select name="bulan" class="filter-input">
+                        <option value="">Semua Bulan</option>
+                        @foreach(range(1, 12) as $nomor)
+                            <option value="{{ $nomor }}" @selected(request('bulan') == $nomor)>
+                                {{ \Carbon\Carbon::create()->month($nomor)->translatedFormat('F') }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-extrabold text-slate-500 mb-1.5">
+                        Tahun
+                    </label>
+                    <select name="tahun" class="filter-input">
+                        <option value="">Semua Tahun</option>
+                        @foreach($tahunList ?? [] as $tahun)
+                            <option value="{{ $tahun }}" @selected(request('tahun') == $tahun)>
+                                {{ $tahun }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="md:col-span-4 flex justify-end gap-2 pt-1">
+                    <a href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}" class="secondary-button">
+                        <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                        Reset
+                    </a>
+                    <button type="submit" class="primary-button">
+                        <span class="material-symbols-outlined text-[18px]">search</span>
+                        Terapkan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="jurnal-card overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-800">Rekap Seluruh Aktivitas Jurnal</h2>
+                    <p class="text-xs text-slate-500 mt-1">Seluruh jurnal guru dari semua kelas dan status validasi.</p>
+                </div>
+                <div class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 text-xs font-extrabold">
+                    {{ $jurnals->count() }} Aktivitas
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="journal-table">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Tanggal</th>
+                            <th>Jam</th>
+                            <th>Guru</th>
+                            <th>Kelas</th>
+                            <th>Mapel</th>
+                            <th>Materi</th>
+                            <th>Hadir</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($jurnals as $index => $jurnal)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $jurnal->tanggal?->format('d M Y') ?? '-' }}</td>
+                                <td>{{ $jurnal->jamMulai?->jam_ke ?? $jurnal->jam_ke ?? '-' }}</td>
+                                <td><span class="teacher-name">{{ $jurnal->guru?->nama_guru ?? '-' }}</span></td>
+                                <td>{{ $jurnal->kelas?->nama_kelas ?? '-' }}</td>
+                                <td><span class="subject-badge">{{ $jurnal->jadwal?->mapel?->nama_mapel ?? '-' }}</span></td>
+                                <td>{{ $jurnal->materi ?? '-' }}</td>
+                                <td class="text-center"><span class="attendance-badge">{{ $jurnal->jml_hadir ?? 0 }}</span></td>
+                                <td>{{ $jurnal->status_validasi_guru ?? '-' }}</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9"><div class="empty-state">Belum ada aktivitas jurnal.</div></td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    @elseif(request('view', 'kelas') === 'kelas')
 
         {{-- PILIH KELAS --}}
 
@@ -718,7 +845,7 @@
                         <div class="flex flex-wrap items-center gap-2">
 
                             <h2 class="text-lg font-extrabold text-slate-800">
-                                {{ $selectedKelas->nama_kelas }}
+                                Jurnal Kelas {{ $selectedKelas->nama_kelas }}
                             </h2>
 
                             <span class="px-2.5 py-1 rounded-lg bg-white text-[#30366f] text-[10px] font-extrabold border border-blue-100">
@@ -1002,7 +1129,7 @@
 
 
                                     <td>
-                                        {{ $jurnal->jam_ke ?? '-' }}
+                                        {{ $jurnal->jamMulai?->jam_ke ?? $jurnal->jam_ke ?? '-' }}
                                     </td>
 
 
@@ -1018,7 +1145,7 @@
                                     <td>
 
                                         <span class="subject-badge">
-                                            {{ $jurnal->guru?->mapel ?? '-' }}
+                                            {{ $jurnal->jadwal?->mapel?->nama_mapel ?? '-' }}
                                         </span>
 
                                     </td>
@@ -1196,7 +1323,6 @@
         </div>
 
 
-<<<<<<< HEAD
         {{-- DETAIL GURU --}}
 
         @if($selectedGuru)
@@ -1231,7 +1357,7 @@
 
                         <p class="text-xs text-slate-500 mt-1">
 
-                            {{ $selectedGuru->mapel ?? 'Mata pelajaran belum ditentukan' }}
+                            {{ $jurnals->first()?->jadwal?->mapel?->nama_mapel ?? 'Mata pelajaran belum ditentukan' }}
 
                             · {{ $jurnals->count() }} jurnal
 
@@ -1239,18 +1365,6 @@
 
                     </div>
 
-=======
-    @if($kelasTerpilih || request()->filled('search') || request()->filled('bulan') || request()->filled('tahun'))
-        <div class="jurnal-card overflow-hidden fade-in">
-            <div class="px-6 py-5 border-b border-slate-200 flex items-center justify-between gap-4">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-800">
-                        {{ $kelasTerpilih ? 'Jurnal Kelas '.$kelasTerpilih->nama_kelas : 'Hasil Pencarian Jurnal' }}
-                    </h2>
-                    <p class="text-sm text-slate-500 mt-1">
-                        Menampilkan jurnal sesuai filter yang dipilih.
-                    </p>
->>>>>>> crud-guru
                 </div>
 
             </div>
@@ -1507,7 +1621,7 @@
 
 
                                     <td>
-                                        {{ $jurnal->jam_ke ?? '-' }}
+                                        {{ $jurnal->jamMulai?->jam_ke ?? $jurnal->jam_ke ?? '-' }}
                                     </td>
 
 
@@ -1523,7 +1637,7 @@
                                     <td>
 
                                         <span class="subject-badge">
-                                            {{ $selectedGuru->mapel ?? '-' }}
+                                            {{ $jurnal->jadwal?->mapel?->nama_mapel ?? '-' }}
                                         </span>
 
                                     </td>

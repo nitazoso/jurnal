@@ -110,6 +110,8 @@ class JurnalController extends Controller
             'mapel',
             'jamMulai',
             'jamSelesai',
+            'absensiSiswa.siswa',
+            'absensiSiswa.dispen',
         ]);
 
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)
@@ -125,6 +127,14 @@ class JurnalController extends Controller
             $jadwal->id_kelas,
             $today->toDateString()
         );
+
+        $activeSickReports = Dispen::with('siswa')
+            ->where('jenis', 'sakit')
+            ->where('status', 'disetujui')
+            ->whereDate('tanggal', $today)
+            ->whereHas('siswa', fn ($query) => $query->where('id_kelas', $jadwal->id_kelas))
+            ->get()
+            ->keyBy('id_siswa');
 
         $qrVerified = session()->get($this->qrSessionKey($jadwal)) === true
             || GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)
@@ -142,7 +152,8 @@ class JurnalController extends Controller
             'activeDispenSiswa',
             'activeDispenBerakhir',
             'qrVerified',
-            'siswaDispen'
+            'siswaDispen',
+            'activeSickReports'
         ));
     }
 
@@ -380,6 +391,18 @@ class JurnalController extends Controller
             $validated['absensi'][$idSiswa] = 'Dispen';
         });
 
+        $sickStudentIds = Dispen::where('jenis', 'sakit')
+            ->where('status', 'disetujui')
+            ->whereDate('tanggal', $tanggal)
+            ->whereIn('id_siswa', $idSiswaKelas)
+            ->pluck('id_siswa');
+
+        $sickStudentIds->each(function ($idSiswa) use (&$validated) {
+            if (($validated['absensi'][$idSiswa] ?? null) !== 'Dispen') {
+                $validated['absensi'][$idSiswa] = 'Sakit';
+            }
+        });
+
         $jmlHadir = 0;
         $jmlTidakHadir = 0;
 
@@ -428,9 +451,31 @@ class JurnalController extends Controller
                         continue;
                     }
 
+                    $sickReport = null;
+                    if ($status === 'Sakit') {
+                        $sickReport = Dispen::updateOrCreate(
+                            [
+                                'id_siswa' => $idSiswa,
+                                'jenis' => 'sakit',
+                                'tanggal' => $tanggal,
+                            ],
+                            [
+                                'id_kesiswaan' => null,
+                                'submitted_by' => $user->id_user,
+                                'id_jam_mulai' => $jadwal->id_jam_mulai,
+                                'id_jam_selesai' => $jadwal->id_jam_selesai,
+                                'alasan' => 'Ditandai sakit oleh guru',
+                                'status' => 'disetujui',
+                                'disetujui_oleh' => $user->id_user,
+                                'disetujui_pada' => now(),
+                            ]
+                        );
+                    }
+
                     DetailAbsensi::create([
                         'id_jurnal' => $jurnal->id_jurnal,
                         'id_siswa' => $idSiswa,
+                        'id_dispen' => $sickReport?->id_dispen,
                         'status' => $status,
                         'keterangan' => $status === 'Dispen'
                             ? 'Dispensasi otomatis'
@@ -548,6 +593,7 @@ class JurnalController extends Controller
         $waktuSekarang = now()->format('H:i:s');
 
         return Dispen::query()
+            ->where('jenis', 'dispen')
             ->whereDate('tanggal', $tanggal)
             ->where('status', 'disetujui')
             ->whereHas(

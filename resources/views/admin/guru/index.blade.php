@@ -280,6 +280,13 @@
         transition: color .2s;
     }
 
+    .guru-phone {
+        margin-top: 4px;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
     tbody tr:hover .guru-name {
         color: #1d2c67;
     }
@@ -702,6 +709,7 @@
                 <colgroup>
                     <col style="width: 50px;">
                     <col style="width: 38%;">
+                    <col style="width: 30%;">
                     <col style="width: 15%;">
                 </colgroup>
 
@@ -709,6 +717,7 @@
                     <tr>
                         <th class="no-column">NO</th>
                         <th>NAMA GURU</th>
+                        <th>NO HP</th>
                         <th>AKSI</th>
                     </tr>
                 </thead>
@@ -719,6 +728,9 @@
                             <td class="no-column">{{ $loop->iteration }}</td>
                             <td>
                                 <div class="guru-name">{{ $guru->nama_guru }}</div>
+                            </td>
+                            <td>
+                                <div class="guru-phone">{{ $guru->no_hp ?? '-' }}</div>
                             </td>
                             <td>
                                 <div class="guru-actions">

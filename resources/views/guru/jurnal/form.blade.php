@@ -854,6 +854,7 @@
                                 @forelse($siswa as $item)
                                     @php
                                         $isDispenAktif = $activeDispenSiswa->contains($item->id_siswa);
+                                      $suratSakit = $activeSickReports[$item->id_siswa] ?? null;
                                     @endphp
                                     <tr
                                         class="student-row"
@@ -877,7 +878,15 @@
                                         </td>
 
                                         <td class="attendance-cell">
-                                            @if($isDispenAktif)
+                                            @if($suratSakit)
+                                              <div class="attendance-locked">
+                                                Sakit · Surat diterima
+                                                @if($suratSakit->surat_path)
+                                                  <a href="{{ asset('storage/' . $suratSakit->surat_path) }}" target="_blank" rel="noopener" class="text-blue-600 underline">Lihat surat</a>
+                                                @endif
+                                              </div>
+                                              <input type="hidden" name="absensi[{{ $item->id_siswa }}]" value="Sakit" class="attendance-value">
+                                            @elseif($isDispenAktif)
                                                 <div class="attendance-locked">Dispen · Terkonfirmasi</div>
                                                 <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
                                                     value="Dispen"
