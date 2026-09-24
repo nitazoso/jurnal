@@ -2,329 +2,446 @@
 
 @section('title', 'Edit Jadwal Piket - Jurnify')
 @section('page-title', 'Edit Jadwal Piket')
-@section('page-subtitle', 'Perbarui penugasan jadwal piket guru')
 
-@section('content')
-
-<div class="form-page">
-
-    <div class="form-header">
-        <div>
-            <h2 class="form-title">Edit Jadwal Piket</h2>
-            <p class="form-subtitle">
-                Perbarui tanggal, guru, shift, jam, dan penugasan piket.
-            </p>
-        </div>
-    </div>
-
-    @if ($errors->any())
-        <div class="alert alert-error">
-            <div class="alert-icon">
-                <span class="material-symbols-outlined">error</span>
-            </div>
-
-            <div>
-                <strong>Data belum dapat disimpan</strong>
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    @endif
-
-    <div class="form-card">
-
-        <div class="form-card-header">
-            <div class="header-icon">
-                <span class="material-symbols-outlined">edit_calendar</span>
-            </div>
-
-            <div>
-                <h3>Informasi Jadwal Piket</h3>
-                <p>Perbarui data penugasan guru yang melakukan piket.</p>
-            </div>
-        </div>
-
-        <div class="form-divider"></div>
-
-        <form action="{{ route('admin.jadwal-piket.update', $jadwal) }}" method="POST">
-            @csrf
-            @method('PUT')
-
-            <div class="form-fields">
-                @include('admin.jadwal-piket.form')
-            </div>
-
-            <div class="form-actions">
-                <a href="{{ route('admin.jadwal-piket.index') }}" class="btn-cancel">
-                    Batal
-                </a>
-
-                <button type="submit" class="btn-submit">
-                    <span class="material-symbols-outlined">save</span>
-                    Simpan Perubahan
-                </button>
-            </div>
-        </form>
-
-    </div>
-
-</div>
-
+@push('styles')
 <style>
-    .form-page {
-        width: 100%;
-        max-width: 960px;
-        margin: 0 auto;
-        padding-bottom: 40px;
+    .edit-page {
+        max-width: 1000px;
+        margin: auto;
     }
 
-    .form-header {
+    .header {
         margin-bottom: 22px;
     }
 
-    .form-title {
+    .header h1 {
         margin: 0;
-        font-size: 26px;
-        font-weight: 700;
-        color: #2D336B;
+        color: #1b234a;
+        font-size: 25px;
+        font-weight: 800;
     }
 
-    .form-subtitle {
+    .header p {
         margin: 6px 0 0;
-        font-size: 14px;
-        color: #64748B;
-    }
-
-    .alert {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 15px 18px;
-        margin-bottom: 20px;
-        border-radius: 12px;
+        color: #64748b;
         font-size: 14px;
     }
 
-    .alert-error {
-        background: #FEF2F2;
-        border: 1px solid #FECACA;
-        color: #991B1B;
-    }
-
-    .alert-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-
-    .alert-icon .material-symbols-outlined {
-        font-size: 20px;
-    }
-
-    .alert strong {
-        display: block;
-        margin-bottom: 5px;
-    }
-
-    .alert ul {
-        margin: 0;
-        padding-left: 18px;
-    }
-
-    .form-card {
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
+    .card {
+        background: white;
+        border: 1px solid #e5e7eb;
         border-radius: 20px;
-        box-shadow: 0 4px 18px rgba(45, 51, 107, 0.06);
-        overflow: hidden;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 18px rgba(15,23,42,.04);
     }
 
-    .form-card-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 24px 28px;
+    .section {
+        padding-bottom: 25px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eef2f7;
     }
 
-    .header-icon {
-        width: 44px;
-        height: 44px;
-        border-radius: 12px;
-        background: #DCE4FF;
-        color: #2D336B;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+    .section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
     }
 
-    .header-icon .material-symbols-outlined {
-        font-size: 23px;
+    .section h2 {
+        margin: 0 0 5px;
+        color: #1e293b;
+        font-size: 16px;
+        font-weight: 800;
     }
 
-    .form-card-header h3 {
-        margin: 0;
-        font-size: 17px;
-        font-weight: 700;
-        color: #1E293B;
+    .section p {
+        margin: 0 0 15px;
+        color: #64748b;
+        font-size: 12px;
     }
 
-    .form-card-header p {
-        margin: 4px 0 0;
-        font-size: 13px;
-        color: #64748B;
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
     }
 
-    .form-divider {
-        height: 1px;
-        background: #EEF0F5;
-    }
-
-    .form-fields {
-        padding: 28px;
-    }
-
-    .form-fields > div {
-        min-width: 0;
-    }
-
-    .form-fields label {
+    label {
         display: block;
-        margin-bottom: 8px;
-        font-size: 13px;
-        font-weight: 600;
+        margin-bottom: 7px;
         color: #334155;
-    }
-
-    .form-fields input,
-    .form-fields select,
-    .form-fields textarea {
-        width: 100%;
-        box-sizing: border-box;
-        padding: 11px 13px;
-        border: 1px solid #D7DBE5;
-        border-radius: 10px;
-        background: #FFFFFF;
-        color: #1E293B;
-        font-family: 'Manrope', sans-serif;
         font-size: 13px;
+        font-weight: 700;
+    }
+
+    input,
+    select,
+    textarea {
+        width: 100%;
+        border: 1px solid #dbe1e8;
+        border-radius: 11px;
         outline: none;
-        transition: 0.2s ease;
+        font-size: 13px;
+        color: #334155;
+        background: white;
     }
 
-    .form-fields input,
-    .form-fields select {
-        min-height: 44px;
+    input,
+    select {
+        height: 44px;
+        padding: 0 12px;
     }
 
-    .form-fields textarea {
-        min-height: 110px;
+    textarea {
+        padding: 12px;
+        min-height: 100px;
         resize: vertical;
     }
 
-    .form-fields input:focus,
-    .form-fields select:focus,
-    .form-fields textarea:focus {
-        border-color: #7886C7;
-        box-shadow: 0 0 0 3px rgba(120, 134, 199, 0.12);
+    select[multiple] {
+        height: 130px;
+        padding: 8px;
     }
 
-    .form-fields input::placeholder,
-    .form-fields textarea::placeholder {
-        color: #94A3B8;
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99,102,241,.08);
     }
 
-    .form-fields .text-danger,
-    .form-fields .error,
-    .form-fields small.text-danger {
-        display: block;
-        margin-top: 6px;
+    .time {
+        display: inline-flex;
+        padding: 8px 11px;
+        background: #f8fafc;
+        border-radius: 9px;
+        color: #64748b;
         font-size: 12px;
-        color: #DC2626;
+        margin-bottom: 15px;
     }
 
-    .form-actions {
+    .help {
+        color: #94a3b8;
+        font-size: 11px;
+        margin-top: 5px;
+    }
+
+    .actions {
         display: flex;
         justify-content: flex-end;
-        align-items: center;
         gap: 10px;
-        padding: 20px 28px;
-        border-top: 1px solid #EEF0F5;
-        background: #FAFAFC;
     }
 
-    .btn-cancel,
-    .btn-submit {
-        min-height: 42px;
-        padding: 0 18px;
-        border-radius: 10px;
-        font-family: 'Manrope', sans-serif;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
+    .btn {
+        height: 43px;
+        padding: 0 17px;
+        border-radius: 11px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 7px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
         cursor: pointer;
-        transition: 0.2s ease;
-        box-sizing: border-box;
     }
 
-    .btn-cancel {
-        color: #475569;
-        background: #FFFFFF;
-        border: 1px solid #D7DBE5;
+    .btn-back {
+        border: 1px solid #dbe1e8;
+        color: #64748b;
+        background: white;
     }
 
-    .btn-cancel:hover {
-        background: #F8FAFC;
-        border-color: #CBD5E1;
+    .btn-save {
+        border: 1px solid #1b234a;
+        background: #1b234a;
+        color: white;
     }
 
-    .btn-submit {
-        color: #FFFFFF;
-        background: linear-gradient(135deg, #2D336B, #7886C7);
-        border: none;
-        box-shadow: 0 4px 10px rgba(45, 51, 107, 0.18);
+    .btn-delete {
+        margin-right: auto;
+        border: 1px solid #fecaca;
+        background: #fef2f2;
+        color: #dc2626;
     }
 
-    .btn-submit:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 14px rgba(45, 51, 107, 0.24);
+    .error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #b91c1c;
+        border-radius: 11px;
+        padding: 13px;
+        margin-bottom: 20px;
+        font-size: 13px;
     }
 
-    .btn-submit .material-symbols-outlined {
-        font-size: 18px;
-    }
-
-    @media (max-width: 700px) {
-        .form-page {
-            max-width: 100%;
+    @media(max-width:700px) {
+        .grid {
+            grid-template-columns: 1fr;
         }
 
-        .form-card-header {
-            padding: 20px;
+        .actions {
+            flex-wrap: wrap;
         }
 
-        .form-fields {
-            padding: 20px;
-        }
-
-        .form-actions {
-            padding: 18px 20px;
-            flex-direction: column-reverse;
-        }
-
-        .btn-cancel,
-        .btn-submit {
+        .btn-delete {
+            margin-right: 0;
             width: 100%;
         }
     }
 </style>
+@endpush
 
+@section('content')
+<div class="edit-page">
+
+    <div class="header">
+        <h1>Edit Jadwal Piket</h1>
+        <p>
+            {{ $tanggal->translatedFormat('l, d F Y') }}
+        </p>
+    </div>
+
+    @if($errors->any())
+        <div class="error">
+            <strong>Periksa kembali data:</strong>
+
+            <ul style="margin:7px 0 0 18px;">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form
+        action="{{ route('admin.jadwal-piket.update', $tanggal->format('Y-m-d')) }}"
+        method="POST"
+    >
+        @csrf
+        @method('PUT')
+
+        <div class="card">
+
+            <div class="section">
+
+                <h2>📅 Tanggal</h2>
+                <p>Tanggal pelaksanaan jadwal piket.</p>
+
+                <input
+                    type="date"
+                    name="tanggal"
+                    value="{{ old('tanggal', $tanggal->format('Y-m-d')) }}"
+                    required
+                >
+
+            </div>
+
+            <div class="section">
+
+                <h2>☀️ Piket KBM Pagi</h2>
+                <p>Shift pagi, 07:00 - 11:00.</p>
+
+                <div class="time">
+                    <i class="fas fa-clock" style="margin-right:6px;"></i>
+                    07:00 - 11:00
+                </div>
+
+                <div class="grid">
+
+                    <div>
+                        <label>Petugas Pagi</label>
+
+                        <select
+                            name="pagi_petugas[]"
+                            multiple
+                        >
+                            @foreach($gurus as $guru)
+                                <option
+                                    value="{{ $guru->id_guru }}"
+                                    @selected(
+                                        in_array(
+                                            $guru->id_guru,
+                                            old('pagi_petugas', $pagiPetugas)
+                                        )
+                                    )
+                                >
+                                    {{ $guru->nama_guru }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <div class="help">
+                            Gunakan Ctrl / Command untuk memilih beberapa guru.
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>Koordinator Pagi</label>
+
+                        <select name="pagi_koordinator">
+                            <option value="">-- Pilih Koordinator --</option>
+
+                            @foreach($gurus as $guru)
+                                <option
+                                    value="{{ $guru->id_guru }}"
+                                    @selected(
+                                        old(
+                                            'pagi_koordinator',
+                                            $pagiKoordinator
+                                        ) == $guru->id_guru
+                                    )
+                                >
+                                    {{ $guru->nama_guru }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+
+                <h2>🌤️ Piket KBM Siang</h2>
+                <p>Shift siang, 11:00 - 15:00.</p>
+
+                <div class="time">
+                    <i class="fas fa-clock" style="margin-right:6px;"></i>
+                    11:00 - 15:00
+                </div>
+
+                <div class="grid">
+
+                    <div>
+                        <label>Petugas Siang</label>
+
+                        <select
+                            name="siang_petugas[]"
+                            multiple
+                        >
+                            @foreach($gurus as $guru)
+                                <option
+                                    value="{{ $guru->id_guru }}"
+                                    @selected(
+                                        in_array(
+                                            $guru->id_guru,
+                                            old('siang_petugas', $siangPetugas)
+                                        )
+                                    )
+                                >
+                                    {{ $guru->nama_guru }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <div class="help">
+                            Gunakan Ctrl / Command untuk memilih beberapa guru.
+                        </div>
+                    </div>
+
+                    <div>
+                        <label>Koordinator Siang</label>
+
+                        <select name="siang_koordinator">
+                            <option value="">-- Pilih Koordinator --</option>
+
+                            @foreach($gurus as $guru)
+                                <option
+                                    value="{{ $guru->id_guru }}"
+                                    @selected(
+                                        old(
+                                            'siang_koordinator',
+                                            $siangKoordinator
+                                        ) == $guru->id_guru
+                                    )
+                                >
+                                    {{ $guru->nama_guru }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+
+                <h2>🏫 Piket Waka</h2>
+                <p>Satu petugas Waka untuk tanggal tersebut.</p>
+
+                <label>Petugas Waka</label>
+
+                <select name="waka">
+                    <option value="">-- Tidak ada / Pilih Waka --</option>
+
+                    @foreach($gurus as $guru)
+                        <option
+                            value="{{ $guru->id_guru }}"
+                            @selected(
+                                old('waka', $wakaGuru) == $guru->id_guru
+                            )
+                        >
+                            {{ $guru->nama_guru }}
+                        </option>
+                    @endforeach
+                </select>
+
+            </div>
+
+            <div class="section">
+
+                <h2>📝 Keterangan</h2>
+
+                <textarea
+                    name="keterangan"
+                    placeholder="Keterangan tambahan..."
+                >{{ old('keterangan', $keterangan) }}</textarea>
+
+            </div>
+
+            <div class="actions">
+
+                <button
+                    type="button"
+                    class="btn btn-delete"
+                    onclick="document.getElementById('delete-form').submit();"
+                >
+                    <i class="fas fa-trash"></i>
+                    Hapus Jadwal
+                </button>
+
+                <a
+                    href="{{ route('admin.jadwal-piket.index', ['month' => $tanggal->format('Y-m')]) }}"
+                    class="btn btn-back"
+                >
+                    Batal
+                </a>
+
+                <button
+                    type="submit"
+                    class="btn btn-save"
+                >
+                    <i class="fas fa-save"></i>
+                    Simpan Perubahan
+                </button>
+
+            </div>
+
+        </div>
+
+    </form>
+
+    <form
+        id="delete-form"
+        action="{{ route('admin.jadwal-piket.destroy', $tanggal->format('Y-m-d')) }}"
+        method="POST"
+        style="display:none;"
+        onsubmit="return confirm('Hapus seluruh jadwal piket pada tanggal ini?');"
+    >
+        @csrf
+        @method('DELETE')
+    </form>
+
+</div>
 @endsection
