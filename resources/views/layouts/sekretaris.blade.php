@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,26 +31,39 @@
 
         html {
             scroll-behavior: smooth;
+            scroll-padding-top: 88px;
         }
 
-        html, body {
+        html,
+        body {
             overflow-x: hidden;
+            margin: 0;
+            background: #f8fafc;
         }
 
         body {
             min-height: 100vh;
-            background: var(--background);
             color: var(--text);
             font-family: 'Manrope', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
 
-        img, svg, video, canvas, iframe, embed, object {
+        img,
+        svg,
+        video,
+        canvas,
+        iframe,
+        embed,
+        object {
             max-width: 100%;
             height: auto;
         }
 
-        a, button, input, select, textarea {
+        a,
+        button,
+        input,
+        select,
+        textarea {
             max-width: 100%;
         }
 
@@ -81,7 +95,7 @@
             overflow-y: auto;
             background: var(--primary);
             color: #fff;
-            transition: transform .28s cubic-bezier(.4,0,.2,1);
+            transition: transform .28s cubic-bezier(.4, 0, .2, 1);
         }
 
         .sidebar::-webkit-scrollbar {
@@ -89,7 +103,7 @@
         }
 
         .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,.15);
+            background: rgba(255, 255, 255, .15);
             border-radius: 999px;
         }
 
@@ -115,7 +129,7 @@
             color: var(--primary);
             font-size: 18px;
             font-weight: 800;
-            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, .12);
         }
 
         .brand-name {
@@ -128,7 +142,7 @@
 
         .brand-subtitle {
             margin-top: 3px;
-            color: rgba(255,255,255,.65);
+            color: rgba(255, 255, 255, .65);
             font-size: 11px;
             font-weight: 500;
         }
@@ -143,7 +157,7 @@
         .nav-label {
             padding: 0 16px;
             margin: 4px 0 6px;
-            color: rgba(255,255,255,.42);
+            color: rgba(255, 255, 255, .42);
             font-size: 10px;
             font-weight: 700;
             letter-spacing: .08em;
@@ -158,14 +172,14 @@
             gap: 12px;
             padding: 12px 16px;
             border-radius: 12px;
-            color: rgba(255,255,255,.72);
+            color: rgba(255, 255, 255, .72);
             font-size: 15px;
             font-weight: 600;
             transition: background .2s ease, color .2s ease, transform .2s ease;
         }
 
         .nav-link:hover {
-            background: rgba(255,255,255,.08);
+            background: rgba(255, 255, 255, .08);
             color: #fff;
             transform: translateX(2px);
         }
@@ -220,8 +234,8 @@
             justify-content: space-between;
             gap: 24px;
             padding: 0 32px;
-            background: rgba(251,251,251,.94);
-            border-bottom: 1px solid rgba(45,51,107,.08);
+            background: rgba(251, 251, 251, .94);
+            border-bottom: 1px solid rgba(45, 51, 107, .08);
             backdrop-filter: blur(12px);
         }
 
@@ -351,6 +365,7 @@
                 opacity: 0;
                 transform: translateY(5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -376,6 +391,7 @@
                 opacity: 0;
                 transform: translateY(-5px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -400,12 +416,12 @@
             border: 1px solid var(--border);
             border-radius: 18px;
             background: #fff;
-            box-shadow: 0 6px 20px rgba(45,51,107,.05);
+            box-shadow: 0 6px 20px rgba(45, 51, 107, .05);
             transition: box-shadow .25s ease, transform .25s ease;
         }
 
         .card:hover {
-            box-shadow: 0 10px 28px rgba(45,51,107,.08);
+            box-shadow: 0 10px 28px rgba(45, 51, 107, .08);
         }
 
         /* MOBILE */
@@ -423,7 +439,7 @@
                 width: 280px;
                 max-width: 82vw;
                 transform: translateX(-100%);
-                box-shadow: 12px 0 30px rgba(0,0,0,.15);
+                box-shadow: 12px 0 30px rgba(0, 0, 0, .15);
             }
 
             .sidebar.open {
@@ -435,7 +451,7 @@
                 inset: 0;
                 z-index: 999;
                 display: block;
-                background: rgba(17,24,39,.42);
+                background: rgba(17, 24, 39, .42);
                 opacity: 0;
                 visibility: hidden;
                 pointer-events: none;
@@ -467,7 +483,7 @@
                 padding: 0 18px;
                 background: var(--primary);
                 color: #fff;
-                box-shadow: 0 4px 14px rgba(45,51,107,.14);
+                box-shadow: 0 4px 14px rgba(45, 51, 107, .14);
             }
 
             .mobile-left {
@@ -485,14 +501,14 @@
                 justify-content: center;
                 border: 0;
                 border-radius: 10px;
-                background: rgba(255,255,255,.1);
+                background: rgba(255, 255, 255, .1);
                 color: #fff;
                 cursor: pointer;
                 transition: background .2s ease, transform .2s ease;
             }
 
             .mobile-menu:hover {
-                background: rgba(255,255,255,.17);
+                background: rgba(255, 255, 255, .17);
             }
 
             .mobile-menu:active {
@@ -512,7 +528,7 @@
             }
 
             .mobile-year {
-                color: rgba(255,255,255,.7);
+                color: rgba(255, 255, 255, .7);
                 font-size: 10px;
                 font-weight: 600;
                 white-space: nowrap;
@@ -543,6 +559,7 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
+
             *,
             *::before,
             *::after {
@@ -576,46 +593,46 @@
 
         <nav class="sidebar-nav">
             <a href="{{ route('sekretaris.dashboard') }}"
-               class="nav-link {{ request()->routeIs('sekretaris.dashboard') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('sekretaris.dashboard') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
-                        <path d="M3 10.5 12 3l9 7.5"/>
-                        <path d="M5.5 9.5V21h13V9.5"/>
-                        <path d="M9.5 21v-6h5v6"/>
+                        <path d="M3 10.5 12 3l9 7.5" />
+                        <path d="M5.5 9.5V21h13V9.5" />
+                        <path d="M9.5 21v-6h5v6" />
                     </svg>
                 </span>
                 <span>Dashboard</span>
             </a>
 
             <a href="{{ route('sekretaris.validasi-jurnal') }}"
-               class="nav-link {{ request()->routeIs('sekretaris.validasi-jurnal*') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('sekretaris.validasi-jurnal*') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
-                        <path d="M9 11l3 3L21 5"/>
-                        <path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11"/>
+                        <path d="M9 11l3 3L21 5" />
+                        <path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" />
                     </svg>
                 </span>
                 <span>Validasi Jurnal</span>
             </a>
 
             <a href="{{ route('sekretaris.isi-jurnal') }}"
-               class="nav-link {{ request()->routeIs('sekretaris.isi-jurnal*') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('sekretaris.isi-jurnal*') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
-                        <path d="M4 19.5V5a2 2 0 0 1 2-2h10.5L20 6.5V19.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>
-                        <path d="M16 3v4h4"/>
-                        <path d="M8 12h8M8 16h6"/>
+                        <path d="M4 19.5V5a2 2 0 0 1 2-2h10.5L20 6.5V19.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+                        <path d="M16 3v4h4" />
+                        <path d="M8 12h8M8 16h6" />
                     </svg>
                 </span>
                 <span>Isi Jurnal Guru</span>
             </a>
 
             <a href="{{ route('sekretaris.profil') }}"
-               class="nav-link {{ request()->routeIs('sekretaris.profil') ? 'active' : '' }}">
+                class="nav-link {{ request()->routeIs('sekretaris.profil') ? 'active' : '' }}">
                 <span class="nav-icon">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
-                        <circle cx="12" cy="8" r="3.5"/>
-                        <path d="M5 21a7 7 0 0 1 14 0"/>
+                        <circle cx="12" cy="8" r="3.5" />
+                        <path d="M5 21a7 7 0 0 1 14 0" />
                     </svg>
                 </span>
                 <span>Profil</span>
@@ -669,7 +686,7 @@
             <div class="mobile-left">
                 <button type="button" class="mobile-menu" id="sekretarisMenu" aria-label="Buka menu">
                     <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-                        <path d="M4 6h16M4 12h16M4 18h16"/>
+                        <path d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
 
@@ -684,27 +701,27 @@
         <div class="content">
 
             @if(session('success'))
-                <div class="alert alert-success">
-                    <span>✓</span>
-                    <span>{{ session('success') }}</span>
-                </div>
+            <div class="alert alert-success">
+                <span>✓</span>
+                <span>{{ session('success') }}</span>
+            </div>
             @endif
 
             @if(session('error'))
-                <div class="alert alert-error">
-                    <span>!</span>
-                    <span>{{ session('error') }}</span>
-                </div>
+            <div class="alert alert-error">
+                <span>!</span>
+                <span>{{ session('error') }}</span>
+            </div>
             @endif
 
             @if($errors->any())
-                <div class="alert alert-error">
-                    <div>
-                        @foreach($errors->all() as $error)
-                            <div>{{ $error }}</div>
-                        @endforeach
-                    </div>
+            <div class="alert alert-error">
+                <div>
+                    @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                    @endforeach
                 </div>
+            </div>
             @endif
 
             @yield('content')
@@ -788,4 +805,5 @@
     </script>
 
 </body>
+
 </html>

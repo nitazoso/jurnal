@@ -43,6 +43,7 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
+            'no_hp' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
         ]);
 
         Guru::create($validated);
@@ -65,6 +66,7 @@ class GuruController extends Controller
 
         $validated = $request->validate([
             'nama_guru' => 'required|string|max:255',
+            'no_hp' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
         ]);
 
         $guru->update($validated);

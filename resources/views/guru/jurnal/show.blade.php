@@ -131,6 +131,38 @@
 
     </div>
 
+    @if($jurnal->absensiSiswa->isNotEmpty())
+        <div class="jurnal-card section-card" style="animation-delay: 0.12s;">
+            <h2 class="card-heading">Detail Ketidakhadiran Siswa</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left border-b">
+                            <th class="py-3 pr-4">Siswa</th>
+                            <th class="py-3 pr-4">Status</th>
+                            <th class="py-3">Surat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($jurnal->absensiSiswa as $absensi)
+                            <tr class="border-b last:border-0">
+                                <td class="py-3 pr-4">{{ $absensi->siswa?->nama_siswa ?? '-' }}</td>
+                                <td class="py-3 pr-4">{{ $absensi->status }}</td>
+                                <td class="py-3">
+                                    @if($absensi->dispen?->surat_path)
+                                        <a href="{{ asset('storage/' . $absensi->dispen->surat_path) }}" target="_blank" rel="noopener" class="text-blue-600 underline">Lihat foto surat</a>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
     {{-- MATERI PEMBELAJARAN --}}
     <div class="jurnal-card section-card" style="animation-delay: 0.15s;">
         <h2 class="card-heading">

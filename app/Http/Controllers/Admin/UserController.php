@@ -92,15 +92,18 @@ class UserController extends Controller
     {
         $validated = $request->validate([
             'username' => 'required|string|max:100|unique:users,username',
-            'nama_user' => 'required|string|max:255',
+            'nama_user' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
-            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'id_guru' => 'nullable|required_if:role,Guru,Kesiswaan,Admin|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
         $plainPassword = $validated['password'];
+
+        $validated['nama_user'] = !empty($validated['id_guru'])
+            ? Guru::findOrFail($validated['id_guru'])->nama_guru
+            : ($validated['nama_user'] ?? $validated['username']);
 
         $validated['password'] = Hash::make($plainPassword);
 
@@ -163,11 +166,10 @@ class UserController extends Controller
 
         $validated = $request->validate([
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
-            'nama_user' => 'required|string|max:255',
+            'nama_user' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris,Staff Piket',
-            'no_wa' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
-            'id_guru' => 'nullable|required_if:role,Guru,Staff Piket|exists:gurus,id_guru',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'id_guru' => 'nullable|required_if:role,Guru,Kesiswaan,Admin|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
 
@@ -177,6 +179,12 @@ class UserController extends Controller
         } else {
             // Kalau kosong, password lama tetap digunakan
             unset($validated['password']);
+        }
+
+        if (!empty($validated['id_guru'])) {
+            $validated['nama_user'] = Guru::findOrFail($validated['id_guru'])->nama_guru;
+        } elseif (empty($validated['nama_user'])) {
+            unset($validated['nama_user']);
         }
 
         $user->update($validated);

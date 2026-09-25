@@ -14,6 +14,7 @@ class DetailAbsensi extends Model
     protected $fillable = [
         'id_jurnal',
         'id_siswa',
+        'id_dispen',
         'status',
         'keterangan',
     ];
@@ -28,5 +29,10 @@ class DetailAbsensi extends Model
     public function siswa()
     {
         return $this->belongsTo(Siswa::class, 'id_siswa', 'id_siswa');
+    }
+
+    public function dispen()
+    {
+        return $this->belongsTo(Dispen::class, 'id_dispen', 'id_dispen');
     }
 }

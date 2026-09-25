@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\PiketJadwal;
+use App\Models\User;
+
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+
 
 class JadwalPiketController extends Controller
 {
@@ -20,6 +23,7 @@ class JadwalPiketController extends Controller
      */
     public function index(Request $request)
     {
+
         /*
         |--------------------------------------------------------------------------
         | BULAN YANG DITAMPILKAN
@@ -447,7 +451,11 @@ class JadwalPiketController extends Controller
      */
     public function create()
     {
-        $gurus = Guru::orderBy('nama_guru')->get();
+        $gurus = User::with('guru')
+            ->where('role', 'Guru')
+            ->whereNotNull('id_guru')
+            ->orderBy('username')
+            ->get();
 
         $tanggal = request(
             'tanggal',
@@ -478,6 +486,7 @@ class JadwalPiketController extends Controller
                 'required',
                 'date',
             ],
+
 
             'pagi_petugas' => [
                 'nullable',
@@ -863,7 +872,6 @@ class JadwalPiketController extends Controller
                 'Jadwal piket berhasil ditambahkan.'
             );
     }
-
 
     /**
      * =========================================================

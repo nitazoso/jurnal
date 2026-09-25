@@ -89,6 +89,22 @@
                             <span class="form-hint">Nama lengkap beserta gelar akademik.</span>
                         </div>
 
+                        <div class="form-group">
+                            <label for="no_hp" class="form-label">
+                                Nomor HP
+                            </label>
+                            <input
+                                type="text"
+                                id="no_hp"
+                                name="no_hp"
+                                value="{{ old('no_hp', $guru->no_hp) }}"
+                                placeholder="Contoh: 081234567890"
+                                inputmode="tel"
+                                class="form-input @error('no_hp') is-invalid @enderror"
+                            >
+                            <span class="form-hint">Opsional, dapat diubah kapan saja.</span>
+                        </div>
+
                     </div>
                 </div>
 

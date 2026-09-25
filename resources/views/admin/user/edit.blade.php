@@ -130,31 +130,6 @@
                         </span>
                     </div>
 
-                    {{-- NAMA USER --}}
-                    <div class="field-group">
-                        <label class="field-label" for="nama_user">
-                            Nama Lengkap & Gelar <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="nama_user"
-                            name="nama_user"
-                            class="custom-input @error('nama_user') is-invalid @enderror"
-                            value="{{ old('nama_user', $user->nama_user) }}"
-                            autocomplete="off"
-                            required
-                        >
-
-                        @error('nama_user')
-                            <span class="err-text">{{ $message }}</span>
-                        @enderror
-
-                        <span class="field-hint">
-                            Nama lengkap pemilik akun.
-                        </span>
-                    </div>
-
                     {{-- PASSWORD --}}
                     <div class="field-group">
                         <label class="field-label" for="password">
@@ -240,9 +215,6 @@
                                 Sekretaris
                             </option>
 
-                            <option value="Staff Piket" {{ old('role', $user->role) == 'Staff Piket' ? 'selected' : '' }}>
-                                Staff Piket
-                            </option>
                         </select>
 
                         @error('role')
@@ -254,33 +226,8 @@
                         </span>
                     </div>
 
-                    {{-- WHATSAPP KESISWAAN --}}
-                    <div class="field-group" id="waContainer" style="display:none;">
-                        <label class="field-label" for="no_wa">
-                            Nomor WhatsApp Kesiswaan
-                        </label>
-
-                        <input
-                            type="text"
-                            name="no_wa"
-                            id="no_wa"
-                            value="{{ old('no_wa', $user->no_wa) }}"
-                            placeholder="Contoh: 628123456789"
-                            inputmode="tel"
-                            class="custom-input @error('no_wa') is-invalid @enderror"
-                        >
-
-                        @error('no_wa')
-                            <span class="err-text">{{ $message }}</span>
-                        @enderror
-
-                        <span class="field-hint">
-                            Digunakan untuk notifikasi dan tautan WhatsApp pengajuan dispen.
-                        </span>
-                    </div>
-
                     {{-- DATA GURU --}}
-                    <div class="field-group" id="guruContainer" style="display:none;">
+                    <div class="field-group" id="guruContainer" hidden>
                         <label class="field-label" for="id_guru">
                             Data Guru
                         </label>
@@ -311,7 +258,7 @@
                         @enderror
 
                         <span class="field-hint">
-                            Hubungkan akun Guru atau Staff Piket dengan data guru yang sudah terdaftar.
+                            Hubungkan akun Guru dengan data guru yang sudah terdaftar.
                         </span>
                     </div>
 
@@ -598,6 +545,10 @@
         min-width: 0 !important;
     }
 
+    #jurnify-user-edit .field-group[hidden] {
+        display: none !important;
+    }
+
     #jurnify-user-edit .field-group.full-width {
         grid-column: span 2 !important;
     }
@@ -842,9 +793,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const idGuru = document.getElementById('id_guru');
     const guruError = document.getElementById('guruError');
 
-    const waContainer = document.getElementById('waContainer');
-    const noWa = document.getElementById('no_wa');
-
     const form = document.getElementById('editUserForm');
 
     // Username
@@ -916,14 +864,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Guru field
     function updateGuruField() {
-        const needsGuru =
-            role.value === 'Guru' ||
-            role.value === 'Staff Piket';
+        const needsGuru = ['Guru', 'Kesiswaan', 'Admin'].includes(role.value);
 
         if (needsGuru) {
+            guruContainer.hidden = false;
             guruContainer.style.display = 'flex';
             idGuru.required = true;
         } else {
+            guruContainer.hidden = true;
             guruContainer.style.display = 'none';
             idGuru.required = false;
             idGuru.value = '';
@@ -931,27 +879,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // WhatsApp Kesiswaan
-    function updateWaField() {
-        const isKesiswaan = role.value === 'Kesiswaan';
-
-        waContainer.style.display =
-            isKesiswaan ? 'flex' : 'none';
-
-        noWa.required = isKesiswaan;
-
-        if (!isKesiswaan) {
-            noWa.value = '';
-        }
-    }
-
     role.addEventListener('change', function () {
         updateGuruField();
-        updateWaField();
     });
 
     updateGuruField();
-    updateWaField();
 
     // Submit validation
     form.addEventListener('submit', function (event) {
@@ -981,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            (role.value === 'Guru' || role.value === 'Staff Piket') &&
+            ['Guru', 'Kesiswaan', 'Admin'].includes(role.value) &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

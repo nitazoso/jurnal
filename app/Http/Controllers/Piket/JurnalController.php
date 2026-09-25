@@ -13,6 +13,12 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         $view = $request->get('view', 'kelas');
+        $statusJurnal = [
+            'Menunggu',
+            'Disetujui',
+            'Perlu Diperbaiki',
+            'Ditolak',
+        ];
 
         // =========================
         // DATA KELAS & GURU
@@ -23,11 +29,13 @@ class JurnalController extends Controller
         // =========================
         // QUERY JURNAL
         // =========================
-        $jurnalQuery = Jurnal::with(['guru', 'kelas'])
-            ->whereIn('status_validasi_guru', [
-                'Menunggu',
-                'Disetujui'
-            ]);
+        $jurnalQuery = Jurnal::with([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+        ])->whereIn('status_validasi_guru', $statusJurnal);
 
         // =========================
         // FILTER BERDASARKAN VIEW (KELAS / GURU)
@@ -97,8 +105,9 @@ class JurnalController extends Controller
         // AMBIL JURNAL
         // =========================
         // Hanya ambil data jurnal jika kelas/guru sudah dipilih
-        $hasSelection = ($view === 'kelas' && $request->filled('id_kelas')) ||
-                        ($view === 'guru' && $request->filled('id_guru'));
+        $hasSelection = $view === 'semua' ||
+            ($view === 'kelas' && $request->filled('id_kelas')) ||
+            ($view === 'guru' && $request->filled('id_guru'));
 
         $jurnals = $hasSelection
             ? $jurnalQuery->orderByDesc('tanggal')->get()
@@ -118,10 +127,7 @@ class JurnalController extends Controller
         // =========================
         // JUMLAH JURNAL PER KELAS
         // =========================
-        $jumlahJurnalPerKelas = Jurnal::whereIn(
-            'status_validasi_guru',
-            ['Menunggu', 'Disetujui']
-        )
+        $jumlahJurnalPerKelas = Jurnal::whereIn('status_validasi_guru', $statusJurnal)
         ->selectRaw('id_kelas, COUNT(*) as total')
         ->groupBy('id_kelas')
         ->pluck('total', 'id_kelas');
@@ -129,17 +135,11 @@ class JurnalController extends Controller
         // =========================
         // STATISTIK
         // =========================
-        $totalJurnal = Jurnal::whereIn(
-            'status_validasi_guru',
-            ['Menunggu', 'Disetujui']
-        )->count();
+        $totalJurnal = Jurnal::whereIn('status_validasi_guru', $statusJurnal)->count();
 
         $totalKelas = Kelas::count();
 
-        $jurnalHariIni = Jurnal::whereIn(
-            'status_validasi_guru',
-            ['Menunggu', 'Disetujui']
-        )
+        $jurnalHariIni = Jurnal::whereIn('status_validasi_guru', $statusJurnal)
         ->whereDate('tanggal', today())
         ->count();
 
@@ -147,10 +147,7 @@ class JurnalController extends Controller
         // TAHUN TERSEDIA
         // =========================
         // Dibuat di PHP agar kompatibel dengan MySQL dan SQLite
-        $tahunList = Jurnal::whereIn(
-            'status_validasi_guru',
-            ['Menunggu', 'Disetujui']
-        )
+        $tahunList = Jurnal::whereIn('status_validasi_guru', $statusJurnal)
         ->pluck('tanggal')
         ->map(fn ($tanggal) => (int) date('Y', strtotime($tanggal)))
         ->unique()

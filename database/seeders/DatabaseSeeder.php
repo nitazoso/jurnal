@@ -18,14 +18,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Data guru utama
-        $guruSendang = Guru::create([
-            'nama_guru' => 'Sendang',
-        ]);
+        // 1. Data semua guru
+         $this->call([
+         GuruSeeder::class,
+         ]);
 
-        $guruBudi = Guru::create([
-            'nama_guru' => 'Budi Santoso, S.Pd',
-        ]);
+              $guruSendang = Guru::where('nama_guru', 'Sendang')->first();
+              $guruBudi = Guru::where('nama_guru', 'Budi Santoso, S.Pd')->first();
 
         // 2. Data kelas
         $kelas12RPL1 = Kelas::create([
@@ -90,7 +89,7 @@ class DatabaseSeeder extends Seeder
             'username' => 'wildan_piket',
             'password' => Hash::make('password123'),
             'nama_user' => 'Wildan Piket',
-            'role' => 'Staff Piket',
+            'role' => 'Guru',
             'id_guru' => null,
             'id_kelas' => null,
         ]);

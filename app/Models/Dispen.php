@@ -12,11 +12,14 @@ class Dispen extends Model
 
     protected $fillable = [
         'id_siswa',
+        'jenis',
         'id_kesiswaan',
+        'submitted_by',
         'tanggal',
         'id_jam_mulai',
         'id_jam_selesai',
         'alasan',
+        'surat_path',
         'status',
         'disetujui_oleh',
         'disetujui_pada',
@@ -41,6 +44,11 @@ class Dispen extends Model
     public function petugasKesiswaan()
     {
         return $this->belongsTo(User::class, 'id_kesiswaan', 'id_user');
+    }
+
+    public function submitter()
+    {
+        return $this->belongsTo(User::class, 'submitted_by', 'id_user');
     }
 
 

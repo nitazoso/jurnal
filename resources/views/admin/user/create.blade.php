@@ -70,27 +70,6 @@
             <div class="card-body-box">
                 <div class="input-grid">
 
-                    {{-- NAMA LENGKAP --}}
-                    <div class="field-group">
-                        <label class="field-label" for="nama_user">
-                            Nama Lengkap & Gelar <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            id="nama_user"
-                            name="nama_user"
-                            class="custom-input @error('nama_user') is-invalid @enderror"
-                            placeholder="Contoh: Ahmad Fauzi, S.Pd., M.Pd."
-                            value="{{ old('nama_user') }}"
-                            required
-                        >
-
-                        <span class="field-hint">
-                            Masukkan nama lengkap pemilik akun.
-                        </span>
-                    </div>
-
                     {{-- USERNAME --}}
                     <div class="field-group">
                         <label class="field-label" for="username">
@@ -184,12 +163,8 @@
                                 Kesiswaan
                             </option>
 
-                            <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>
-                                Staff Piket
-                            </option>
-
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
-                                Sekretaris / Kurikulum
+                                Sekretaris
                             </option>
 
                             <option value="Admin" {{ old('role') === 'Admin' ? 'selected' : '' }}>
@@ -202,29 +177,8 @@
                         </span>
                     </div>
 
-                    {{-- NOMOR WHATSAPP KESISWAAN --}}
-                    <div class="field-group" id="waContainer" style="display: none;">
-                        <label class="field-label" for="no_wa">
-                            Nomor WhatsApp Kesiswaan <span class="req">*</span>
-                        </label>
-
-                        <input
-                            type="text"
-                            name="no_wa"
-                            id="no_wa"
-                            value="{{ old('no_wa') }}"
-                            placeholder="Contoh: 628123456789"
-                            inputmode="tel"
-                            class="custom-input @error('no_wa') is-invalid @enderror"
-                        >
-
-                        <span class="field-hint">
-                            Digunakan untuk notifikasi & pengajuan dispen via WA.
-                        </span>
-                    </div>
-
                     {{-- DATA GURU --}}
-                    <div class="field-group" id="guruContainer">
+                    <div class="field-group" id="guruContainer" hidden>
                         <label class="field-label" for="id_guru">
                             Data Guru <span class="req">*</span>
                         </label>
@@ -250,7 +204,7 @@
                         </select>
 
                         <span id="guruError" class="err-text" style="display: none;">
-                            Silakan pilih data Guru untuk akun dengan role Guru atau Staff Piket.
+                            Silakan pilih data Guru untuk akun Guru, Kesiswaan, atau Admin.
                         </span>
 
                         <span class="field-hint">
@@ -457,6 +411,10 @@
         gap: 6px !important;
         width: 100% !important;
         min-width: 0 !important;
+    }
+
+    #jurnify-user-create .field-group[hidden] {
+        display: none !important;
     }
 
     #jurnify-user-create .field-group.full-width {
@@ -704,9 +662,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const idGuru = document.getElementById('id_guru');
     const guruError = document.getElementById('guruError');
 
-    const waContainer = document.getElementById('waContainer');
-    const noWa = document.getElementById('no_wa');
-
     const form = document.getElementById('addUserForm');
 
     // Mencegah spasi pada username
@@ -775,12 +730,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Field Guru
     function updateGuruField() {
-        const needsGuru = role.value === 'Guru' || role.value === 'Staff Piket';
+        const needsGuru = ['Guru', 'Kesiswaan', 'Admin'].includes(role.value);
 
         if (needsGuru) {
+            guruContainer.hidden = false;
             guruContainer.style.display = 'flex';
             idGuru.required = true;
         } else {
+            guruContainer.hidden = true;
             guruContainer.style.display = 'none';
             idGuru.required = false;
             idGuru.value = '';
@@ -788,25 +745,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Field WhatsApp Kesiswaan
-    function updateWaField() {
-        const isKesiswaan = role.value === 'Kesiswaan';
-
-        waContainer.style.display = isKesiswaan ? 'flex' : 'none';
-        noWa.required = isKesiswaan;
-
-        if (!isKesiswaan) {
-            noWa.value = '';
-        }
-    }
-
     role.addEventListener('change', function () {
         updateGuruField();
-        updateWaField();
     });
 
     updateGuruField();
-    updateWaField();
 
     // Validasi sebelum submit
     form.addEventListener('submit', function (event) {
@@ -830,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            (role.value === 'Guru' || role.value === 'Staff Piket') &&
+            ['Guru', 'Kesiswaan', 'Admin'].includes(role.value) &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

@@ -45,7 +45,6 @@ class FortifyServiceProvider extends ServiceProvider
                 'Guru'        => redirect()->route('guru.dashboard'),
                 'Kesiswaan'   => redirect()->route('kesiswaan.dashboard'),
                 'Sekretaris'  => redirect()->route('sekretaris.dashboard'),
-                'Staff Piket' => redirect()->route('piket.dashboard'),
                 default       => redirect()->route('dashboard'),
             };
         }

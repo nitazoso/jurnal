@@ -19,11 +19,11 @@ class DashboardController extends Controller
 
         $user = auth()->user();
 
-        if (! in_array($user->role, ['Guru', 'Staff Piket'], true)) {
+        if ($user->role !== 'Guru') {
             abort(403, 'Akses ditolak.');
         }
 
-        if ($user->role === 'Guru' && ! $user->hasPiketToday()) {
+        if (! $user->hasPiketToday()) {
             return redirect()->route('guru.dashboard')->with('info', 'Anda tidak memiliki jadwal piket hari ini.');
         }
 
@@ -51,7 +51,14 @@ class DashboardController extends Controller
             ->get();
 
         $piketHariIni = PiketJadwal::with('guru')
-            ->where('id_guru', $user->id_guru)
+            ->where(function ($query) use ($user) {
+                $query->where('id_guru', $user->id_guru)
+                    ->orWhere('petugas_kbm_pagi_id', $user->id_guru)
+                    ->orWhere('koordinator_kbm_pagi_id', $user->id_guru)
+                    ->orWhere('petugas_kbm_siang_id', $user->id_guru)
+                    ->orWhere('koordinator_kbm_siang_id', $user->id_guru)
+                    ->orWhere('piket_waka_id', $user->id_guru);
+            })
             ->where('tanggal', $today)
             ->orderBy('jam_mulai')
             ->get();
