@@ -160,9 +160,58 @@
             </table>
         </div>
 
-        @if($mapels->hasPages())
-            <div class="pagination-wrapper">
-                {{ $mapels->links() }}
+        @if($mapels instanceof \Illuminate\Pagination\LengthAwarePaginator)
+            <div class="table-bottom">
+                <div class="entries">
+                    Showing {{ $mapels->firstItem() ?? 0 }}
+                    to {{ $mapels->lastItem() ?? 0 }}
+                    of {{ $mapels->total() }} results
+                </div>
+
+                @if($mapels->hasPages())
+                    <div class="pagination">
+                        @if($mapels->onFirstPage())
+                            <span class="page disabled">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </span>
+                        @else
+                            <a href="{{ $mapels->previousPageUrl() }}" class="page">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </a>
+                        @endif
+
+                        @php
+                            $current = $mapels->currentPage();
+                            $last = $mapels->lastPage();
+                        @endphp
+
+                        @for($page = 1; $page <= $last; $page++)
+                            @if($page === 1 || $page === $last || abs($page - $current) <= 1)
+                                @if($page === $current)
+                                    <span class="page active">{{ $page }}</span>
+                                @else
+                                    <a href="{{ $mapels->url($page) }}" class="page">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @elseif($page === 2 && $current > 3)
+                                <span class="dots">...</span>
+                            @elseif($page === $last - 1 && $current < $last - 2)
+                                <span class="dots">...</span>
+                            @endif
+                        @endfor
+
+                        @if($mapels->hasMorePages())
+                            <a href="{{ $mapels->nextPageUrl() }}" class="page">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </a>
+                        @else
+                            <span class="page disabled">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </span>
+                        @endif
+                    </div>
+                @endif
             </div>
         @endif
     </div>
@@ -587,10 +636,69 @@
     }
 
     /* PAGINATION */
-    .pagination-wrapper {
-        padding: 14px 20px;
+    .table-bottom {
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
         border-top: 1px solid #E2E8F0;
         background: #FFFFFF;
+    }
+
+    .entries {
+        color: #3f4148;
+        font-size: 13px;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .page {
+        min-width: 36px;
+        height: 36px;
+        border-radius: 4px;
+        background: #f0f1f4;
+        color: #3f4148;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 700;
+        transition: background .2s, color .2s, transform .2s;
+    }
+
+    .page:not(.active):not(.disabled):hover {
+        background: #dce4ff;
+        color: #182864;
+        transform: translateY(-1px);
+    }
+
+    .page.active {
+        background: #182864;
+        color: #fff;
+    }
+
+    .page.disabled {
+        opacity: .45;
+        pointer-events: none;
+    }
+
+    .page .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-size: 18px;
+        font-weight: normal;
+        line-height: 1;
+    }
+
+    .dots {
+        min-width: 24px;
+        text-align: center;
+        color: #555861;
     }
 
     /* DELETE MODAL */
