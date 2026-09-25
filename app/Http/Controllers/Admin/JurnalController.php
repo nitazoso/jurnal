@@ -18,7 +18,7 @@ class JurnalController extends Controller
             'guru',
             'kelas',
             'jadwal.mapel',
-        ]);
+        ])->whereHas('jadwal');
 
         // =========================
         // SEARCH

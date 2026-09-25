@@ -59,4 +59,5 @@ class Jadwal extends Model
     {
         return $this->hasMany(Jurnal::class, 'id_jadwal', 'id_jadwal');
     }
+
 }

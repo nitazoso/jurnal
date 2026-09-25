@@ -154,6 +154,8 @@ class JadwalPiketController extends Controller
             ->orderBy('posisi')
             ->get();
 
+        $piketHours = $this->piketHours();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -325,6 +327,14 @@ class JadwalPiketController extends Controller
             |--------------------------------------------------------------------------
             */
 
+            $pagiJadwal = $rows
+                ->where('shift', 'Pagi')
+                ->first();
+
+            $siangJadwal = $rows
+                ->where('shift', 'Siang')
+                ->first();
+
             $calendarData[$date] = [
 
                 'label' =>
@@ -335,6 +345,10 @@ class JadwalPiketController extends Controller
 
 
                 'pagi' => [
+
+                    'jam_mulai' => $pagiJadwal?->jam_mulai,
+
+                    'jam_selesai' => $pagiJadwal?->jam_selesai,
 
                     'petugas' =>
                         $pagiPetugas,
@@ -355,6 +369,10 @@ class JadwalPiketController extends Controller
 
 
                 'siang' => [
+
+                    'jam_mulai' => $siangJadwal?->jam_mulai,
+
+                    'jam_selesai' => $siangJadwal?->jam_selesai,
 
                     'petugas' =>
                         $siangPetugas,
@@ -437,7 +455,8 @@ class JadwalPiketController extends Controller
                 'month',
                 'prevMonth',
                 'nextMonth',
-                'gurus'
+                'gurus',
+                'piketHours'
             )
         );
     }
@@ -462,13 +481,55 @@ class JadwalPiketController extends Controller
             now()->format('Y-m-d')
         );
 
+        $piketHours = $this->piketHours();
+
         return view(
             'admin.jadwal-piket.create',
             compact(
                 'gurus',
-                'tanggal'
+                'tanggal',
+                'piketHours'
             )
         );
+    }
+
+    public function updateHours(Request $request)
+    {
+        $validated = $request->validate([
+            'jam_mulai_pagi' => ['required', 'date_format:H:i'],
+            'jam_selesai_pagi' => ['required', 'date_format:H:i', 'after:jam_mulai_pagi'],
+            'jam_mulai_siang' => ['required', 'date_format:H:i'],
+            'jam_selesai_siang' => ['required', 'date_format:H:i', 'after:jam_mulai_siang'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            $now = now();
+
+            foreach ($validated as $key => $value) {
+                DB::table('app_settings')->updateOrInsert(
+                    ['key' => 'piket.' . $key],
+                    ['value' => $value, 'updated_at' => $now, 'created_at' => $now]
+                );
+            }
+
+            PiketJadwal::whereIn('jenis_tugas', [
+                'Piket KBM Pagi',
+                'Koordinator Piket KBM Pagi',
+            ])->update([
+                'jam_mulai' => $validated['jam_mulai_pagi'],
+                'jam_selesai' => $validated['jam_selesai_pagi'],
+            ]);
+
+            PiketJadwal::whereIn('jenis_tugas', [
+                'Piket KBM Siang',
+                'Koordinator Piket KBM Siang',
+            ])->update([
+                'jam_mulai' => $validated['jam_mulai_siang'],
+                'jam_selesai' => $validated['jam_selesai_siang'],
+            ]);
+        });
+
+        return back()->with('success', 'Jam jadwal piket berhasil disimpan untuk setiap hari.');
     }
 
 
@@ -485,6 +546,28 @@ class JadwalPiketController extends Controller
             'tanggal' => [
                 'required',
                 'date',
+            ],
+
+            'jam_mulai_pagi' => [
+                'required',
+                'date_format:H:i',
+            ],
+
+            'jam_selesai_pagi' => [
+                'required',
+                'date_format:H:i',
+                'after:jam_mulai_pagi',
+            ],
+
+            'jam_mulai_siang' => [
+                'required',
+                'date_format:H:i',
+            ],
+
+            'jam_selesai_siang' => [
+                'required',
+                'date_format:H:i',
+                'after:jam_mulai_siang',
             ],
 
 
@@ -644,10 +727,10 @@ class JadwalPiketController extends Controller
                         'Pagi',
 
                     'jam_mulai' =>
-                        '07:00',
+                        $validated['jam_mulai_pagi'],
 
                     'jam_selesai' =>
-                        '11:00',
+                        $validated['jam_selesai_pagi'],
 
                     'jenis_tugas' =>
                         'Piket KBM Pagi',
@@ -690,10 +773,10 @@ class JadwalPiketController extends Controller
                         'Pagi',
 
                     'jam_mulai' =>
-                        '07:00',
+                        $validated['jam_mulai_pagi'],
 
                     'jam_selesai' =>
-                        '11:00',
+                        $validated['jam_selesai_pagi'],
 
                     'jenis_tugas' =>
                         'Koordinator Piket KBM Pagi',
@@ -735,10 +818,10 @@ class JadwalPiketController extends Controller
                         'Siang',
 
                     'jam_mulai' =>
-                        '11:00',
+                        $validated['jam_mulai_siang'],
 
                     'jam_selesai' =>
-                        '15:00',
+                        $validated['jam_selesai_siang'],
 
                     'jenis_tugas' =>
                         'Piket KBM Siang',
@@ -781,10 +864,10 @@ class JadwalPiketController extends Controller
                         'Siang',
 
                     'jam_mulai' =>
-                        '11:00',
+                        $validated['jam_mulai_siang'],
 
                     'jam_selesai' =>
-                        '15:00',
+                        $validated['jam_selesai_siang'],
 
                     'jenis_tugas' =>
                         'Koordinator Piket KBM Siang',
@@ -953,6 +1036,11 @@ class JadwalPiketController extends Controller
                     ->first()
             )->id_guru;
 
+        $pagiPertama = $pagi->first();
+        $piketHours = $this->piketHours();
+        $jamMulaiPagi = $pagiPertama?->jam_mulai ?? $piketHours['jam_mulai_pagi'];
+        $jamSelesaiPagi = $pagiPertama?->jam_selesai ?? $piketHours['jam_selesai_pagi'];
+
 
         /*
         |--------------------------------------------------------------------------
@@ -980,6 +1068,10 @@ class JadwalPiketController extends Controller
                     )
                     ->first()
             )->id_guru;
+
+        $siangPertama = $siang->first();
+        $jamMulaiSiang = $siangPertama?->jam_mulai ?? $piketHours['jam_mulai_siang'];
+        $jamSelesaiSiang = $siangPertama?->jam_selesai ?? $piketHours['jam_selesai_siang'];
 
 
         /*
@@ -1016,8 +1108,12 @@ class JadwalPiketController extends Controller
                 'gurus',
                 'pagiPetugas',
                 'pagiKoordinator',
+                'jamMulaiPagi',
+                'jamSelesaiPagi',
                 'siangPetugas',
                 'siangKoordinator',
+                'jamMulaiSiang',
+                'jamSelesaiSiang',
                 'wakaGuru',
                 'keterangan'
             )
@@ -1041,6 +1137,28 @@ class JadwalPiketController extends Controller
             'tanggal' => [
                 'required',
                 'date',
+            ],
+
+            'jam_mulai_pagi' => [
+                'required',
+                'date_format:H:i',
+            ],
+
+            'jam_selesai_pagi' => [
+                'required',
+                'date_format:H:i',
+                'after:jam_mulai_pagi',
+            ],
+
+            'jam_mulai_siang' => [
+                'required',
+                'date_format:H:i',
+            ],
+
+            'jam_selesai_siang' => [
+                'required',
+                'date_format:H:i',
+                'after:jam_mulai_siang',
             ],
 
             'pagi_petugas' => [
@@ -1189,10 +1307,10 @@ class JadwalPiketController extends Controller
                         'Pagi',
 
                     'jam_mulai' =>
-                        '07:00',
+                        $validated['jam_mulai_pagi'],
 
                     'jam_selesai' =>
-                        '11:00',
+                        $validated['jam_selesai_pagi'],
 
                     'jenis_tugas' =>
                         'Piket KBM Pagi',
@@ -1235,10 +1353,10 @@ class JadwalPiketController extends Controller
                         'Pagi',
 
                     'jam_mulai' =>
-                        '07:00',
+                        $validated['jam_mulai_pagi'],
 
                     'jam_selesai' =>
-                        '11:00',
+                        $validated['jam_selesai_pagi'],
 
                     'jenis_tugas' =>
                         'Koordinator Piket KBM Pagi',
@@ -1280,10 +1398,10 @@ class JadwalPiketController extends Controller
                         'Siang',
 
                     'jam_mulai' =>
-                        '11:00',
+                        $validated['jam_mulai_siang'],
 
                     'jam_selesai' =>
-                        '15:00',
+                        $validated['jam_selesai_siang'],
 
                     'jenis_tugas' =>
                         'Piket KBM Siang',
@@ -1326,10 +1444,10 @@ class JadwalPiketController extends Controller
                         'Siang',
 
                     'jam_mulai' =>
-                        '11:00',
+                        $validated['jam_mulai_siang'],
 
                     'jam_selesai' =>
-                        '15:00',
+                        $validated['jam_selesai_siang'],
 
                     'jenis_tugas' =>
                         'Koordinator Piket KBM Siang',
@@ -1454,6 +1572,24 @@ class JadwalPiketController extends Controller
      * 2. Koordinator tidak boleh menjadi petugas di shift yang sama.
      *
      */
+    private function piketHours(): array
+    {
+        $defaults = [
+            'jam_mulai_pagi' => '07:00',
+            'jam_selesai_pagi' => '11:00',
+            'jam_mulai_siang' => '11:00',
+            'jam_selesai_siang' => '15:00',
+        ];
+
+        foreach (array_keys($defaults) as $key) {
+            $defaults[$key] = DB::table('app_settings')
+                ->where('key', 'piket.' . $key)
+                ->value('value') ?? $defaults[$key];
+        }
+
+        return $defaults;
+    }
+
     private function validateAssignment(
         array $petugas,
         $koordinator,

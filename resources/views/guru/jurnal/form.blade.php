@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <style>
 .qr-verification-card { border: 1px solid #dbe4f0; border-radius: 16px; background: #fff; margin-bottom: 20px; padding: 20px; }
@@ -698,49 +699,6 @@
                 </div>
             </section>
 
-            {{-- KEHADIRAN GURU --}}
-            <section class="form-card">
-                <div class="teacher-status">
-                    <div class="teacher-status-info">
-                        <div class="section-icon"><span class="material-symbols-rounded">person_check</span></div>
-                        <div>
-                            <h3 class="section-title">Kehadiran Guru</h3>
-                            <p class="section-subtitle">Status kehadiran Anda pada jam pelajaran ini</p>
-                        </div>
-                    </div>
-
-                    <div class="status-buttons">
-                        <button
-                            type="button"
-                            class="status-btn active"
-                            data-teacher-status="Hadir"
-                            onclick="setTeacherStatus(this, 'Hadir')"
-                        >
-                            Hadir
-                        </button>
-
-                        <button
-                            type="button"
-                            class="status-btn"
-                            data-teacher-status="Izin"
-                            onclick="setTeacherStatus(this, 'Izin')"
-                        >
-                            Izin
-                        </button>
-
-                        <button
-                            type="button"
-                            class="status-btn"
-                            data-teacher-status="Sakit"
-                            onclick="setTeacherStatus(this, 'Sakit')"
-                        >
-                            Sakit
-                        </button>
-                    </div>
-                </div>
-                <input type="hidden" name="status_guru" id="statusGuru" value="{{ old('status_guru', 'Hadir') }}">
-            </section>
-
             {{-- MATERI --}}
             <section class="form-card">
                 <div class="section-header">
@@ -928,12 +886,12 @@
             </section>
 
             {{-- TUGAS & CATATAN --}}
-            <section class="form-card" id="taskNotesSection" style="display:none;">
+            <section class="form-card" id="taskNotesSection">
                 <div class="section-header">
                     <div class="section-icon"><span class="material-symbols-rounded">assignment</span></div>
                     <div>
                         <h3 class="section-title">Tugas & Catatan</h3>
-                        <p class="section-subtitle">Tambahkan tugas atau catatan jika Anda berhalangan hadir</p>
+                        <p class="section-subtitle">Tambahkan tugas atau catatan pembelajaran jika diperlukan</p>
                     </div>
                 </div>
 
@@ -1011,11 +969,6 @@
             </div>
 
             <div class="review-section">
-                <h3 class="review-section-title">Kehadiran Guru</h3>
-                <div class="review-text-box" id="reviewStatusGuru">Hadir</div>
-            </div>
-
-            <div class="review-section">
                 <h3 class="review-section-title">Materi Pembelajaran</h3>
                 <div class="review-text-box" id="reviewMateri">-</div>
             </div>
@@ -1056,26 +1009,6 @@
 
 
 <script>
-  /* =========================================================
-     TEACHER STATUS
-  ========================================================= */
-  function setTeacherStatus(button, status) {
-    const statusInput = document.getElementById('statusGuru');
-    if (!statusInput) return;
-
-    document.querySelectorAll('.status-btn').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
-    statusInput.value = status;
-    updateTaskNotesVisibility(status);
-  }
-
-  function updateTaskNotesVisibility(status) {
-    const section = document.getElementById('taskNotesSection');
-    if (!section) return;
-
-    section.style.display = (status === 'Izin' || status === 'Sakit') ? '' : 'none';
-  }
-
   /* =========================================================
      STUDENT ATTENDANCE
   ========================================================= */
@@ -1220,11 +1153,6 @@
   /* =========================================================
      REVIEW MODAL
   ========================================================= */
-  function getTeacherStatusText() {
-    const input = document.getElementById('statusGuru');
-    return input ? input.value || 'Hadir' : 'Hadir';
-  }
-
   function getStatusClass(status) {
     switch (status) {
       case 'Sakit': return 'sakit';
@@ -1286,12 +1214,9 @@
     const reviewTanggal = document.getElementById('reviewTanggal');
     const reviewMateri = document.getElementById('reviewMateri');
     const reviewKeterangan = document.getElementById('reviewKeterangan');
-    const reviewStatusGuru = document.getElementById('reviewStatusGuru');
-
     if (reviewTanggal) reviewTanggal.textContent = tanggal || '-';
     if (reviewMateri) reviewMateri.textContent = materi || '-';
     if (reviewKeterangan) reviewKeterangan.textContent = keterangan || '-';
-    if (reviewStatusGuru) reviewStatusGuru.textContent = getTeacherStatusText();
 
     const hadirCount = document.getElementById('hadirCount');
     const sakitCount = document.getElementById('sakitCount');
@@ -1305,7 +1230,6 @@
 
     buildReviewStudentList();
 
-    const teacherStatus = getTeacherStatusText();
     const taskSection = document.getElementById('reviewTaskSection');
     const taskSelect = document.getElementById('adaTugas');
     const taskTextarea = document.querySelector('textarea[name="deskripsi_tugas"]');
@@ -1315,15 +1239,11 @@
     const catatanReview = document.getElementById('reviewCatatan');
     const catatanInput = document.querySelector('textarea[name="catatan_umum"]');
 
-    if (teacherStatus === 'Izin' || teacherStatus === 'Sakit') {
-      if (taskSection) taskSection.style.display = '';
-      const adaTugas = taskSelect ? taskSelect.value : 'Tidak';
-      const deskripsi = taskTextarea ? taskTextarea.value.trim() : '';
-      if (taskReview) {
-        taskReview.textContent = adaTugas === 'Ya' ? (deskripsi || 'Tugas belum diisi.') : 'Tidak ada tugas.';
-      }
-    } else {
-      if (taskSection) taskSection.style.display = 'none';
+    if (taskSection) taskSection.style.display = '';
+    const adaTugas = taskSelect ? taskSelect.value : 'Tidak';
+    const deskripsi = taskTextarea ? taskTextarea.value.trim() : '';
+    if (taskReview) {
+      taskReview.textContent = adaTugas === 'Ya' ? (deskripsi || 'Tugas belum diisi.') : 'Tidak ada tugas.';
     }
 
     const catatan = catatanInput ? catatanInput.value.trim() : '';
@@ -1557,13 +1477,6 @@
         openReview();
       });
     }
-
-    // Set Initial Teacher Status UI
-    const currentTeacherStatus = document.getElementById('statusGuru')?.value || 'Hadir';
-    document.querySelectorAll('.status-btn').forEach(button => {
-      button.classList.toggle('active', button.dataset.teacherStatus === currentTeacherStatus);
-    });
-    updateTaskNotesVisibility(currentTeacherStatus);
 
     // Modal Overlay Events
     const overlay = document.getElementById('reviewOverlay');

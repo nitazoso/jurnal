@@ -72,11 +72,14 @@
                     <div class="field">
                         <label for="status_guru">Status Guru</label>
                         <select id="status_guru" name="status_guru" required>
-                            <option value="Hadir" @selected(old('status_guru') === 'Hadir')>Hadir</option>
                             <option value="Izin" @selected(old('status_guru') === 'Izin')>Izin</option>
                             <option value="Sakit" @selected(old('status_guru') === 'Sakit')>Sakit</option>
-                            <option value="Tanpa Keterangan" @selected(old('status_guru') === 'Tanpa Keterangan')>Tanpa Keterangan</option>
                         </select>
+                    </div>
+
+                    <div class="field full">
+                        <label for="catatan_umum">Catatan Ketidakhadiran Guru</label>
+                        <textarea id="catatan_umum" name="catatan_umum" rows="3" required>{{ old('catatan_umum') }}</textarea>
                     </div>
 
                     <div class="field full">

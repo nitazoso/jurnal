@@ -39,7 +39,7 @@
 
         <a href="#" class="nav-item {{ request()->routeIs('admin.jadwal.*') ? 'active' : '' }}">
             <span class="material-symbols-outlined">calendar_month</span>
-            <span>Jadwal</span>
+            <span>Jadwal Pelajaran</span>
         </a>
 
         <a href="#" class="nav-item {{ request()->routeIs('admin.profil.*') ? 'active' : '' }}">

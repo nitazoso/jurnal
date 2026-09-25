@@ -23,7 +23,6 @@ use App\Http\Controllers\Guru\PiketController as GuruPiketController;
 use App\Http\Controllers\Piket\DispenController as PiketDispenController;
 use App\Http\Controllers\Piket\DashboardController as PiketDashboardController;
 use App\Http\Controllers\Piket\JurnalController as PiketJurnalController;
-use App\Http\Controllers\Piket\JadwalPiketController;
 use App\Http\Controllers\Sekretaris\JurnalController as SekretarisJurnalController;
 
 use App\Http\Controllers\StaffPiket\DashboardController as StaffPiketDashboardController;
@@ -251,6 +250,9 @@ Route::get('/admin/jadwal-piket/create', [AdminJadwalPiketController::class, 'cr
 Route::post('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'store'])
     ->name('admin.jadwal-piket.store');
 
+Route::post('/admin/jadwal-piket/hours', [AdminJadwalPiketController::class, 'updateHours'])
+    ->name('admin.jadwal-piket.hours.update');
+
 Route::get('/admin/jadwal-piket/{tanggal}/edit', [AdminJadwalPiketController::class, 'edit'])
     ->name('admin.jadwal-piket.edit');
 
@@ -367,9 +369,6 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::get('/piket/profil', function () {
         return view('piket.profil');
     })->name('piket.profil');
-
-    Route::get('/piket/jadwal', [JadwalPiketController::class, 'index'])
-        ->name('piket.jadwal.index');
 
     Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
     Route::get('/piket/dispen/riwayat', [PiketDispenController::class, 'history'])->name('piket.dispen.history');

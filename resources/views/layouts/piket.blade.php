@@ -378,10 +378,6 @@
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
                 </a>
-                <a href="{{ route('piket.jadwal.index') }}" class="nav-item {{ request()->routeIs('piket.jadwal.*') ? 'active' : '' }}"> 
-                    <span class="material-symbols-outlined">calendar_today</span> 
-                    <span>Jadwal Piket</span>
-                </a>
                 <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>

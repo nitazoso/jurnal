@@ -51,8 +51,6 @@ class UserController extends Controller
 
         $totalGuru = User::where('role', 'Guru')->count();
 
-        $totalStaffPiket = User::where('role', 'Staff Piket')->count();
-
         $totalSekretaris = User::where('role', 'Sekretaris')->count();
 
         $totalSiswa = \App\Models\Siswa::count();
@@ -62,7 +60,6 @@ class UserController extends Controller
             'totalUser',
             'totalAdmin',
             'totalGuru',
-            'totalStaffPiket',
             'totalSekretaris',
             'totalSiswa'
         ));
@@ -91,7 +88,7 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username',
             'nama_user' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Guru,Staff Piket,Sekretaris',
+            'role' => 'required|in:Admin,Guru,Sekretaris',
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);
@@ -165,7 +162,7 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
             'nama_user' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:Admin,Guru,Staff Piket,Sekretaris',
+            'role' => 'required|in:Admin,Guru,Sekretaris',
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);

@@ -8,6 +8,8 @@ use App\Models\Guru;
 use App\Models\Mapel;
 use App\Models\Kelas;
 use App\Models\JamPel;
+use App\Models\Jurnal;
+use App\Models\GuruQrAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -99,6 +101,15 @@ return view('admin.jadwal.index', compact(
     {
         $jadwal = Jadwal::findOrFail($id);
 
+        $beforeUpdate = $jadwal->only([
+            'id_guru',
+            'id_mapel',
+            'id_kelas',
+            'id_jam_mulai',
+            'id_jam_selesai',
+            'hari',
+        ]);
+
         $validated = $request->validate([
             'id_guru' => 'required|exists:gurus,id_guru',
             'id_mapel' => 'required|exists:mapels,id_mapel',
@@ -112,12 +123,42 @@ return view('admin.jadwal.index', compact(
 
         $jadwal->update($validated);
 
+        $assignmentChanged = collect($beforeUpdate)->some(function ($value, $key) use ($validated) {
+            return ($validated[$key] ?? null) !== $value;
+        });
+
+        if ($assignmentChanged) {
+            Jurnal::where(function ($query) use ($beforeUpdate, $jadwal) {
+                $query->where('id_jadwal', $jadwal->id_jadwal)
+                    ->orWhere(function ($nested) use ($beforeUpdate) {
+                        $nested->where('id_guru', $beforeUpdate['id_guru'])
+                            ->where('id_kelas', $beforeUpdate['id_kelas'])
+                            ->where('id_jam_mulai', $beforeUpdate['id_jam_mulai'])
+                            ->where('id_jam_selesai', $beforeUpdate['id_jam_selesai']);
+                    });
+            })->delete();
+
+            GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)->delete();
+        }
+
         return redirect()->back()->with('success', 'Jadwal berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
         $jadwal = Jadwal::findOrFail($id);
+
+        Jurnal::where(function ($query) use ($jadwal) {
+            $query->where('id_jadwal', $jadwal->id_jadwal)
+                ->orWhere(function ($nested) use ($jadwal) {
+                    $nested->where('id_guru', $jadwal->id_guru)
+                        ->where('id_kelas', $jadwal->id_kelas)
+                        ->where('id_jam_mulai', $jadwal->id_jam_mulai)
+                        ->where('id_jam_selesai', $jadwal->id_jam_selesai);
+                });
+        })->delete();
+
+        GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)->delete();
         $jadwal->delete();
 
         return redirect()->back()->with('success', 'Jadwal berhasil dihapus.');

@@ -27,7 +27,9 @@ class JurnalController extends Controller
             'jamMulai',
             'jamSelesai',
         ])
-            ->where('id_guru', $user->id_guru)
+            ->whereHas('jadwal', function ($query) use ($user) {
+                $query->where('id_guru', $user->id_guru);
+            })
             ->latest('tanggal')
             ->get();
 
@@ -68,6 +70,10 @@ class JurnalController extends Controller
         ])
             ->where('id_guru', $user->id_guru)
             ->where('hari', $hariIni)
+            ->whereNotNull('id_jam_mulai')
+            ->whereNotNull('id_jam_selesai')
+            ->whereHas('jamMulai')
+            ->whereHas('jamSelesai')
             ->whereDoesntHave('jurnals', function ($query) use ($today) {
                 $query->whereDate('tanggal', $today);
             })
@@ -91,6 +97,12 @@ class JurnalController extends Controller
 
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
+        }
+
+        if (! $jadwal->jamMulai || ! $jadwal->jamSelesai) {
+            return redirect()
+                ->route('guru.jurnal.create')
+                ->with('error', 'Jadwal ini tidak memiliki jam pelajaran aktif.');
         }
 
         if ($jadwal->jurnals()->whereDate('tanggal', $today)->exists()) {
@@ -286,11 +298,6 @@ class JurnalController extends Controller
             'materi' => 'required|string|max:255',
             'keterangan' => 'required|string',
 
-            'status_guru' => [
-                'required',
-                'in:Hadir,Izin,Sakit',
-            ],
-
             'ada_tugas' => [
                 'required',
                 'in:Ya,Tidak',
@@ -299,7 +306,7 @@ class JurnalController extends Controller
             'deskripsi_tugas' => 'nullable|string',
             'catatan_umum' => 'nullable|string|max:255',
 
-            'absensi' => 'required|array',
+            'absensi' => 'nullable|array',
 
             'absensi.*' => [
                 'required',
@@ -356,6 +363,8 @@ class JurnalController extends Controller
             $jadwal->id_kelas
         )->pluck('id_siswa');
 
+        $validated['absensi'] = $validated['absensi'] ?? [];
+
         $idSiswaDikirim = collect(
             array_keys($validated['absensi'])
         )->map(
@@ -406,7 +415,7 @@ class JurnalController extends Controller
                     'materi' => $validated['materi'],
                     'keterangan' => $validated['keterangan'],
 
-                    'status_guru' => $validated['status_guru'],
+                    'status_guru' => 'Hadir',
 
                     'ada_tugas' => $validated['ada_tugas'],
                     'deskripsi_tugas' =>
@@ -458,7 +467,7 @@ class JurnalController extends Controller
     {
         $user = auth()->user();
 
-        if ($jurnal->id_guru != $user->id_guru) {
+        if (! $jurnal->jadwal || $jurnal->jadwal->id_guru != $user->id_guru) {
             abort(403);
         }
 

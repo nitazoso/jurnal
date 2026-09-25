@@ -23,7 +23,9 @@ class JurnalController extends Controller
 
     public function index(Request $request)
     {
-        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])->latest('tanggal');
+        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
+            ->whereHas('jadwal')
+            ->latest('tanggal');
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
@@ -41,6 +43,10 @@ class JurnalController extends Controller
 
     public function show(Jurnal $jurnal)
     {
+        if (! $jurnal->jadwal) {
+            abort(404);
+        }
+
         $jurnal->load([
             'guru',
             'kelas',
@@ -88,9 +94,9 @@ class JurnalController extends Controller
     {
         $validated = $request->validate([
             'id_jadwal' => 'required|exists:jadwals,id_jadwal', 'tanggal' => 'required|date', 'materi' => 'required|string|max:255',
-            'status_guru' => 'required|in:Hadir,Izin,Sakit,Tanpa Keterangan', 'ada_tugas' => 'required|in:Ya,Tidak',
+            'status_guru' => 'required|in:Izin,Sakit', 'ada_tugas' => 'required|in:Ya,Tidak',
             'deskripsi_tugas' => 'nullable|required_if:ada_tugas,Ya|string', 'jml_hadir' => 'required|integer|min:0',
-            'jml_tidak_hadir' => 'required|integer|min:0', 'catatan_umum' => 'nullable|string|max:255',
+            'jml_tidak_hadir' => 'required|integer|min:0', 'catatan_umum' => 'required|string|max:255',
         ]);
         $jadwal = Jadwal::findOrFail($validated['id_jadwal']);
         Jurnal::create([

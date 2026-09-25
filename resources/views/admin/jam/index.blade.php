@@ -198,9 +198,8 @@
                 </p>
 
                 <p class="text-xs text-amber-700 mt-0.5">
-                    Jadwal baru tidak dapat ditambahkan.
-                    Jika ingin membuat ulang salah satu kelompok,
-                    hapus jadwal lama terlebih dahulu.
+                    Jadwal sudah tersedia untuk semua kelompok hari.
+                    Gunakan tombol Edit untuk mengubah jam yang sudah ada.
                 </p>
 
             </div>

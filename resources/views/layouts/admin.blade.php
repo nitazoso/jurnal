@@ -884,7 +884,7 @@
                     calendar_month
                 </span>
 
-                <span>Jadwal</span>
+                <span>Jadwal Pelajaran</span>
 
             </a>
 

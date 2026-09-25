@@ -642,12 +642,115 @@
         margin-bottom: 15px;
     }
 
+    .alert-success {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        color: #047857;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .hours-card {
+        background: #fff;
+        border: 1px solid #e8ebf2;
+        border-radius: 18px;
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 20px rgba(27, 35, 74, .04);
+    }
+
+    .hours-heading {
+        color: #1b234a;
+        font-size: 14px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+
+    .hours-description {
+        color: #64748b;
+        font-size: 12px;
+        margin-bottom: 14px;
+    }
+
+    .hours-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .hours-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        padding: 13px;
+        border: 1px solid #edf0f5;
+        border-radius: 12px;
+        background: #fafbfe;
+    }
+
+    .hours-group-title {
+        grid-column: 1 / -1;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .hours-label {
+        display: block;
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .hours-input {
+        width: 100%;
+        height: 38px;
+        border: 1px solid #dce1eb;
+        border-radius: 9px;
+        padding: 0 10px;
+        color: #1e293b;
+        background: #fff;
+        font-size: 13px;
+    }
+
+    .hours-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 14px;
+    }
+
+    .hours-save {
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 16px;
+        background: #1b234a;
+        color: #fff;
+        font-size: 12px;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .hours-save:hover {
+        background: #30366f;
+    }
+
     /* =========================
        RESPONSIVE
     ========================= */
     @media (max-width: 900px) {
         .filter-form {
             grid-template-columns: 1fr 1fr;
+        }
+
+        .hours-grid {
+            grid-template-columns: 1fr;
         }
 
         .calendar-day {
@@ -658,6 +761,14 @@
     @media (max-width: 640px) {
         .filter-form {
             grid-template-columns: 1fr;
+        }
+
+        .hours-group {
+            grid-template-columns: 1fr;
+        }
+
+        .hours-group-title {
+            grid-column: auto;
         }
 
         .calendar-card {
@@ -681,6 +792,13 @@
 @section('content')
 
 <div class="piket-page">
+
+    @if (session('success'))
+        <div class="alert-success" role="status">
+            <i class="fas fa-check-circle"></i>
+            {{ session('success') }}
+        </div>
+    @endif
 
     {{-- =========================
          HEADER
@@ -753,6 +871,80 @@
 
         </form>
     </div>
+
+    <form
+        class="hours-card"
+        action="{{ route('admin.jadwal-piket.hours.update') }}"
+        method="POST"
+    >
+        @csrf
+
+        <div class="hours-heading">Atur Jam Jadwal Piket</div>
+        <div class="hours-description">
+            Jam ini berlaku setiap hari dan akan diterapkan ke jadwal yang sudah ada maupun jadwal baru.
+        </div>
+
+        <div class="hours-grid">
+            <div class="hours-group">
+                <div class="hours-group-title">KBM Pagi</div>
+                <div>
+                    <label class="hours-label" for="calendarJamMulaiPagi">Jam Mulai</label>
+                    <input
+                        id="calendarJamMulaiPagi"
+                        class="hours-input"
+                        type="time"
+                        name="jam_mulai_pagi"
+                        value="{{ substr($piketHours['jam_mulai_pagi'], 0, 5) }}"
+                        required
+                    >
+                </div>
+                <div>
+                    <label class="hours-label" for="calendarJamSelesaiPagi">Jam Selesai</label>
+                    <input
+                        id="calendarJamSelesaiPagi"
+                        class="hours-input"
+                        type="time"
+                        name="jam_selesai_pagi"
+                        value="{{ substr($piketHours['jam_selesai_pagi'], 0, 5) }}"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="hours-group">
+                <div class="hours-group-title">KBM Siang</div>
+                <div>
+                    <label class="hours-label" for="calendarJamMulaiSiang">Jam Mulai</label>
+                    <input
+                        id="calendarJamMulaiSiang"
+                        class="hours-input"
+                        type="time"
+                        name="jam_mulai_siang"
+                        value="{{ substr($piketHours['jam_mulai_siang'], 0, 5) }}"
+                        required
+                    >
+                </div>
+                <div>
+                    <label class="hours-label" for="calendarJamSelesaiSiang">Jam Selesai</label>
+                    <input
+                        id="calendarJamSelesaiSiang"
+                        class="hours-input"
+                        type="time"
+                        name="jam_selesai_siang"
+                        value="{{ substr($piketHours['jam_selesai_siang'], 0, 5) }}"
+                        required
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div class="hours-actions">
+            <button type="submit" class="hours-save">
+                <i class="fas fa-save"></i>
+                Simpan Jam
+            </button>
+        </div>
+    </form>
 
     {{-- =========================
          CALENDAR
@@ -1021,7 +1213,7 @@
                     </h3>
 
                     <span class="detail-time">
-                        07:00 - 11:00
+                        <span id="detailPagiTime">07:00 - 11:00</span>
                     </span>
 
                 </div>
@@ -1053,7 +1245,7 @@
                     </h3>
 
                     <span class="detail-time">
-                        11:00 - 15:00
+                        <span id="detailSiangTime">11:00 - 15:00</span>
                     </span>
 
                 </div>
@@ -1148,6 +1340,11 @@
                     id="createTanggal"
                 >
 
+                <input type="hidden" name="jam_mulai_pagi" id="createJamMulaiPagi">
+                <input type="hidden" name="jam_selesai_pagi" id="createJamSelesaiPagi">
+                <input type="hidden" name="jam_mulai_siang" id="createJamMulaiSiang">
+                <input type="hidden" name="jam_selesai_siang" id="createJamSelesaiSiang">
+
 
                 {{-- PAGI --}}
                 <div class="form-section">
@@ -1156,7 +1353,7 @@
                         Piket KBM Pagi
                     </h3>
 
-                    <div class="form-section-subtitle">
+                    <div id="createPagiTime" class="form-section-subtitle">
                         07:00 - 11:00
                     </div>
 
@@ -1217,7 +1414,7 @@
                         Piket KBM Siang
                     </h3>
 
-                    <div class="form-section-subtitle">
+                    <div id="createSiangTime" class="form-section-subtitle">
                         11:00 - 15:00
                     </div>
 
@@ -1353,6 +1550,11 @@
                     id="editTanggal"
                 >
 
+                <input type="hidden" name="jam_mulai_pagi" id="editJamMulaiPagi">
+                <input type="hidden" name="jam_selesai_pagi" id="editJamSelesaiPagi">
+                <input type="hidden" name="jam_mulai_siang" id="editJamMulaiSiang">
+                <input type="hidden" name="jam_selesai_siang" id="editJamSelesaiSiang">
+
 
                 {{-- PAGI --}}
                 <div class="form-section">
@@ -1361,7 +1563,7 @@
                         Piket KBM Pagi
                     </h3>
 
-                    <div class="form-section-subtitle">
+                    <div id="editPagiTime" class="form-section-subtitle">
                         07:00 - 11:00
                     </div>
 
@@ -1422,7 +1624,7 @@
                         Piket KBM Siang
                     </h3>
 
-                    <div class="form-section-subtitle">
+                    <div id="editSiangTime" class="form-section-subtitle">
                         11:00 - 15:00
                     </div>
 
@@ -1660,6 +1862,8 @@
         })->values()
     );
 
+    const defaultPiketHours = @json($piketHours);
+
 
     let currentDate = null;
 
@@ -1778,6 +1982,40 @@
     }
 
 
+    function shortTime(value, fallback) {
+
+        return value
+            ? String(value).substring(0, 5)
+            : fallback;
+    }
+
+
+    function syncScheduleHours(mode, data = null) {
+
+        const pagiMulaiInput = document.getElementById('calendarJamMulaiPagi');
+        const pagiSelesaiInput = document.getElementById('calendarJamSelesaiPagi');
+        const siangMulaiInput = document.getElementById('calendarJamMulaiSiang');
+        const siangSelesaiInput = document.getElementById('calendarJamSelesaiSiang');
+
+        if (data) {
+            pagiMulaiInput.value = shortTime(data?.pagi?.jam_mulai, '07:00');
+            pagiSelesaiInput.value = shortTime(data?.pagi?.jam_selesai, '11:00');
+            siangMulaiInput.value = shortTime(data?.siang?.jam_mulai, '11:00');
+            siangSelesaiInput.value = shortTime(data?.siang?.jam_selesai, '15:00');
+        }
+
+        document.getElementById(`${mode}JamMulaiPagi`).value = pagiMulaiInput.value;
+        document.getElementById(`${mode}JamSelesaiPagi`).value = pagiSelesaiInput.value;
+        document.getElementById(`${mode}JamMulaiSiang`).value = siangMulaiInput.value;
+        document.getElementById(`${mode}JamSelesaiSiang`).value = siangSelesaiInput.value;
+
+        document.getElementById(`${mode}PagiTime`).textContent =
+            `${pagiMulaiInput.value} - ${pagiSelesaiInput.value}`;
+        document.getElementById(`${mode}SiangTime`).textContent =
+            `${siangMulaiInput.value} - ${siangSelesaiInput.value}`;
+    }
+
+
     /*
     |--------------------------------------------------------------------------
     | OPEN / CLOSE DRAWER
@@ -1847,6 +2085,8 @@
 
         drawerDate.textContent = formatDateIndonesia(dateKey);
 
+        syncScheduleHours('edit', data);
+
         showMode('detail');
 
         renderDetail(data);
@@ -1862,6 +2102,12 @@
 
 
     function renderDetail(data) {
+
+        document.getElementById('detailPagiTime').textContent =
+            `${shortTime(data?.pagi?.jam_mulai, '07:00')} - ${shortTime(data?.pagi?.jam_selesai, '11:00')}`;
+
+        document.getElementById('detailSiangTime').textContent =
+            `${shortTime(data?.siang?.jam_mulai, '11:00')} - ${shortTime(data?.siang?.jam_selesai, '15:00')}`;
 
         /*
         |--------------------------------------------------------------------------
@@ -2155,6 +2401,13 @@
 
         form.reset();
 
+        document.getElementById('calendarJamMulaiPagi').value = defaultPiketHours.jam_mulai_pagi;
+        document.getElementById('calendarJamSelesaiPagi').value = defaultPiketHours.jam_selesai_pagi;
+        document.getElementById('calendarJamMulaiSiang').value = defaultPiketHours.jam_mulai_siang;
+        document.getElementById('calendarJamSelesaiSiang').value = defaultPiketHours.jam_selesai_siang;
+
+        syncScheduleHours('create');
+
         document.getElementById('createPagiPetugas').innerHTML = '';
         document.getElementById('createSiangPetugas').innerHTML = '';
 
@@ -2373,6 +2626,8 @@
 
         showMode('edit');
 
+        syncScheduleHours('edit', data);
+
         document.getElementById('editTanggal').value =
             currentDate;
 
@@ -2526,6 +2781,8 @@
         const form =
             document.getElementById('createScheduleForm');
 
+        syncScheduleHours('create');
+
         const tanggal =
             document.getElementById('createTanggal').value;
 
@@ -2585,6 +2842,8 @@
         const form =
             document.getElementById('editScheduleForm');
 
+        syncScheduleHours('edit');
+
         const pagiPetugas =
             document.querySelectorAll(
                 '#editPagiPetugas .petugas-select'
@@ -2616,6 +2875,58 @@
         }
 
         form.submit();
+    }
+
+
+    function saveCalendarHours() {
+
+        if (!currentDate) {
+            alert('Pilih tanggal jadwal terlebih dahulu.');
+            return;
+        }
+
+        const data = scheduleData[currentDate];
+
+        if (!data) {
+            openCreateDrawer(currentDate);
+            return;
+        }
+
+        const hours = {
+            pagiMulai: document.getElementById('calendarJamMulaiPagi').value,
+            pagiSelesai: document.getElementById('calendarJamSelesaiPagi').value,
+            siangMulai: document.getElementById('calendarJamMulaiSiang').value,
+            siangSelesai: document.getElementById('calendarJamSelesaiSiang').value,
+        };
+
+        if (
+            !hours.pagiMulai ||
+            !hours.pagiSelesai ||
+            !hours.siangMulai ||
+            !hours.siangSelesai
+        ) {
+            alert('Lengkapi seluruh jam KBM pagi dan siang.');
+            return;
+        }
+
+        if (hours.pagiSelesai <= hours.pagiMulai) {
+            alert('Jam selesai KBM pagi harus setelah jam mulai.');
+            return;
+        }
+
+        if (hours.siangSelesai <= hours.siangMulai) {
+            alert('Jam selesai KBM siang harus setelah jam mulai.');
+            return;
+        }
+
+        startEditSchedule();
+
+        document.getElementById('calendarJamMulaiPagi').value = hours.pagiMulai;
+        document.getElementById('calendarJamSelesaiPagi').value = hours.pagiSelesai;
+        document.getElementById('calendarJamMulaiSiang').value = hours.siangMulai;
+        document.getElementById('calendarJamSelesaiSiang').value = hours.siangSelesai;
+        syncScheduleHours('edit');
+        submitEditSchedule();
     }
 
 

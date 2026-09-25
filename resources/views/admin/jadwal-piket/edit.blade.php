@@ -240,11 +240,30 @@
             <div class="section">
 
                 <h2>☀️ Piket KBM Pagi</h2>
-                <p>Shift pagi, 07:00 - 11:00.</p>
+                <p>Atur jam pelaksanaan KBM pagi.</p>
 
-                <div class="time">
-                    <i class="fas fa-clock" style="margin-right:6px;"></i>
-                    07:00 - 11:00
+                <div class="grid">
+                    <div>
+                        <label for="jam_mulai_pagi">Jam Mulai KBM Pagi</label>
+                        <input
+                            id="jam_mulai_pagi"
+                            type="time"
+                            name="jam_mulai_pagi"
+                            value="{{ old('jam_mulai_pagi', $jamMulaiPagi) }}"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="jam_selesai_pagi">Jam Selesai KBM Pagi</label>
+                        <input
+                            id="jam_selesai_pagi"
+                            type="time"
+                            name="jam_selesai_pagi"
+                            value="{{ old('jam_selesai_pagi', $jamSelesaiPagi) }}"
+                            required
+                        >
+                    </div>
                 </div>
 
                 <div class="grid">
@@ -304,11 +323,30 @@
             <div class="section">
 
                 <h2>🌤️ Piket KBM Siang</h2>
-                <p>Shift siang, 11:00 - 15:00.</p>
+                <p>Atur jam pelaksanaan KBM siang.</p>
 
-                <div class="time">
-                    <i class="fas fa-clock" style="margin-right:6px;"></i>
-                    11:00 - 15:00
+                <div class="grid">
+                    <div>
+                        <label for="jam_mulai_siang">Jam Mulai KBM Siang</label>
+                        <input
+                            id="jam_mulai_siang"
+                            type="time"
+                            name="jam_mulai_siang"
+                            value="{{ old('jam_mulai_siang', $jamMulaiSiang) }}"
+                            required
+                        >
+                    </div>
+
+                    <div>
+                        <label for="jam_selesai_siang">Jam Selesai KBM Siang</label>
+                        <input
+                            id="jam_selesai_siang"
+                            type="time"
+                            name="jam_selesai_siang"
+                            value="{{ old('jam_selesai_siang', $jamSelesaiSiang) }}"
+                            required
+                        >
+                    </div>
                 </div>
 
                 <div class="grid">

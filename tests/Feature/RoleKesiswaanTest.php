@@ -37,7 +37,7 @@ class RoleKesiswaanTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_staff_piket_role_is_supported_for_user_creation(): void
+    public function test_staff_piket_role_is_rejected_for_user_creation(): void
     {
         $admin = User::create([
             'username' => 'admin_test',
@@ -56,12 +56,10 @@ class RoleKesiswaanTest extends TestCase
                 'id_kelas' => null,
             ]);
 
-        $response->assertRedirect();
+        $response->assertSessionHasErrors('role');
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseMissing('users', [
             'username' => 'kesiswaan_test',
-            'role' => 'Staff Piket',
-            'nama_user' => 'Kesiswaan Test',
         ]);
     }
 

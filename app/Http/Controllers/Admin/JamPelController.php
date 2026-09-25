@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Jadwal;
 use App\Models\JamPel;
+use App\Models\Jurnal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -494,6 +496,8 @@ class JamPelController extends Controller
             $klp_hari
         ) {
 
+            $jamLama = JamPel::where('klp_hari', $klp_hari)->get();
+
             /*
             |--------------------------------------------------------------------------
             | HAPUS KONFIGURASI LAMA
@@ -721,6 +725,31 @@ class JamPelController extends Controller
                 }
 
                 $jamKe++;
+            }
+
+            $jamBaru = JamPel::where('klp_hari', $klp_hari)
+                ->where('jenis', 'pelajaran')
+                ->get()
+                ->keyBy('jam_ke');
+
+            foreach ($jamLama->where('jenis', 'pelajaran') as $jam) {
+                $jamPengganti = $jamBaru->get($jam->jam_ke);
+
+                if (! $jamPengganti) {
+                    continue;
+                }
+
+                Jadwal::where('id_jam_mulai', $jam->id_jam)
+                    ->update(['id_jam_mulai' => $jamPengganti->id_jam]);
+
+                Jadwal::where('id_jam_selesai', $jam->id_jam)
+                    ->update(['id_jam_selesai' => $jamPengganti->id_jam]);
+
+                Jurnal::where('id_jam_mulai', $jam->id_jam)
+                    ->update(['id_jam_mulai' => $jamPengganti->id_jam]);
+
+                Jurnal::where('id_jam_selesai', $jam->id_jam)
+                    ->update(['id_jam_selesai' => $jamPengganti->id_jam]);
             }
         });
 

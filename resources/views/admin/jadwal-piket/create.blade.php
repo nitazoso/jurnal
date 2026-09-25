@@ -277,13 +277,34 @@
                     </h2>
 
                     <p class="section-description">
-                        Shift pagi pukul 07:00 - 11:00
+                        Atur jam pelaksanaan KBM pagi.
                     </p>
                 </div>
 
-                <div class="time-info">
-                    <i class="fas fa-clock"></i>
-                    07:00 - 11:00
+                <div class="two-column">
+                    <div class="form-group">
+                        <label class="form-label" for="jam_mulai_pagi">Jam Mulai KBM Pagi</label>
+                        <input
+                            id="jam_mulai_pagi"
+                            type="time"
+                            name="jam_mulai_pagi"
+                            value="{{ old('jam_mulai_pagi', $piketHours['jam_mulai_pagi']) }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="jam_selesai_pagi">Jam Selesai KBM Pagi</label>
+                        <input
+                            id="jam_selesai_pagi"
+                            type="time"
+                            name="jam_selesai_pagi"
+                            value="{{ old('jam_selesai_pagi', $piketHours['jam_selesai_pagi']) }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
                 </div>
 
                 <div class="two-column">
@@ -355,13 +376,34 @@
                     </h2>
 
                     <p class="section-description">
-                        Shift siang pukul 11:00 - 15:00
+                        Atur jam pelaksanaan KBM siang.
                     </p>
                 </div>
 
-                <div class="time-info">
-                    <i class="fas fa-clock"></i>
-                    11:00 - 15:00
+                <div class="two-column">
+                    <div class="form-group">
+                        <label class="form-label" for="jam_mulai_siang">Jam Mulai KBM Siang</label>
+                        <input
+                            id="jam_mulai_siang"
+                            type="time"
+                            name="jam_mulai_siang"
+                            value="{{ old('jam_mulai_siang', $piketHours['jam_mulai_siang']) }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="jam_selesai_siang">Jam Selesai KBM Siang</label>
+                        <input
+                            id="jam_selesai_siang"
+                            type="time"
+                            name="jam_selesai_siang"
+                            value="{{ old('jam_selesai_siang', $piketHours['jam_selesai_siang']) }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
                 </div>
 
                 <div class="two-column">

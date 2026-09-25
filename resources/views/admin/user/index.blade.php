@@ -896,15 +896,6 @@
                 <button
                     type="submit"
                     name="role"
-                    value="Staff Piket"
-                    class="role-filter {{ request('role') === 'Staff Piket' ? 'active' : '' }}"
-                >
-                    Staff Piket
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
                     value="Sekretaris"
                     class="role-filter {{ request('role') === 'Sekretaris' ? 'active' : '' }}"
                 >
@@ -944,8 +935,6 @@
                                 <span class="role-badge">
                                     @if($user->role === 'Guru')
                                         <span class="material-symbols-outlined">school</span>
-                                    @elseif($user->role === 'Staff Piket')
-                                        <span class="material-symbols-outlined">support_agent</span>
                                     @elseif($user->role === 'Sekretaris')
                                         <span class="material-symbols-outlined">edit_note</span>
                                     @elseif($user->role === 'Admin')

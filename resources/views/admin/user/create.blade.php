@@ -159,10 +159,6 @@
                                 Guru Mata Pelajaran
                             </option>
 
-                            <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>
-                                Staff Piket
-                            </option>
-
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
                                 Sekretaris
                             </option>
