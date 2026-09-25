@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 
 class JurnalController extends Controller
 {
+    /**
+     * Menampilkan daftar jurnal
+     */
     public function index(Request $request)
     {
         $query = Jurnal::with([
@@ -16,6 +19,9 @@ class JurnalController extends Controller
             'jadwal.mapel',
         ]);
 
+        // =========================
+        // SEARCH
+        // =========================
         if ($request->filled('search')) {
             $search = $request->search;
 
@@ -30,17 +36,23 @@ class JurnalController extends Controller
             });
         }
 
+        // =========================
+        // FILTER STATUS GURU
+        // =========================
         if ($request->filled('status_guru')) {
             $query->where('status_guru', $request->status_guru);
         }
 
+        // =========================
+        // FILTER VALIDASI
+        // =========================
         if ($request->filled('status_validasi_guru')) {
-            $query->where(
-                'status_validasi_guru',
-                $request->status_validasi_guru
-            );
+            $query->where('status_validasi_guru', $request->status_validasi_guru);
         }
 
+        // =========================
+        // DATA JURNAL
+        // =========================
         $jurnals = $query
             ->latest('tanggal')
             ->paginate(10)
@@ -49,14 +61,27 @@ class JurnalController extends Controller
         return view('admin.jurnal.index', compact('jurnals'));
     }
 
+    /**
+     * Menampilkan detail jurnal
+     */
     public function show(Jurnal $jurnal)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Load relasi jurnal
+        |--------------------------------------------------------------------------
+        |
+        | detailAbsensis.siswa dipakai untuk menampilkan nama siswa
+        | ketika kotak "Hadir" / "Tidak Hadir" diklik.
+        |
+        */
         $jurnal->load([
             'guru',
             'kelas',
             'jadwal.mapel',
             'jamMulai',
             'jamSelesai',
+            'detailAbsensis.siswa',
         ]);
 
         return view('admin.jurnal.show', compact('jurnal'));

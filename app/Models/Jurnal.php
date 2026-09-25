@@ -38,64 +38,40 @@ class Jurnal extends Model
 
     public function guru()
     {
-        return $this->belongsTo(
-            Guru::class,
-            'id_guru',
-            'id_guru'
-        );
+        return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');
     }
 
     public function kelas()
     {
-        return $this->belongsTo(
-            Kelas::class,
-            'id_kelas',
-            'id_kelas'
-        );
+        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
     }
 
     public function jadwal()
     {
-        return $this->belongsTo(
-            Jadwal::class,
-            'id_jadwal',
-            'id_jadwal'
-        );
+        return $this->belongsTo(Jadwal::class, 'id_jadwal', 'id_jadwal');
     }
 
     public function user()
     {
-        return $this->belongsTo(
-            User::class,
-            'id_user',
-            'id_user'
-        );
+        return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
     public function jamMulai()
     {
-        return $this->belongsTo(
-            JamPel::class,
-            'id_jam_mulai',
-            'id_jam'
-        );
+        return $this->belongsTo(JamPel::class, 'id_jam_mulai', 'id_jam');
     }
 
     public function jamSelesai()
     {
-        return $this->belongsTo(
-            JamPel::class,
-            'id_jam_selesai',
-            'id_jam'
-        );
+        return $this->belongsTo(JamPel::class, 'id_jam_selesai', 'id_jam');
     }
 
-    public function absensiSiswa()
-{
-    return $this->hasMany(
-        DetailAbsensi::class,
-        'id_jurnal',
-        'id_jurnal'
-    );
-}
+    // Relasi ke detail absensi siswa
+    // Nama method ini HARUS "detailAbsensis" karena dipanggil
+    // dari JurnalController@show dan view admin.jurnal.show
+    // lewat ->load(['detailAbsensis.siswa'])
+    public function detailAbsensis()
+    {
+        return $this->hasMany(DetailAbsensi::class, 'id_jurnal', 'id_jurnal');
+    }
 }
