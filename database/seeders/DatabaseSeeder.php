@@ -19,12 +19,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Data semua guru
-         $this->call([
-         GuruSeeder::class,
-         ]);
+        $this->call([
+            GuruSeeder::class,
+        ]);
 
-              $guruSendang = Guru::where('nama_guru', 'Sendang')->first();
-              $guruBudi = Guru::where('nama_guru', 'Budi Santoso, S.Pd')->first();
+        // Menggunakan firstOrCreate agar tidak error jika data tidak ditemukan di GuruSeeder
+        $guruSendang = Guru::where('nama_guru', 'Sendang')->first() 
+            ?? Guru::create(['nama_guru' => 'Sendang']);
+
+        $guruBudi = Guru::where('nama_guru', 'Budi Santoso, S.Pd')->first() 
+            ?? Guru::create(['nama_guru' => 'Budi Santoso, S.Pd']);
 
         // 2. Data kelas
         $kelas12RPL1 = Kelas::create([
@@ -49,8 +53,7 @@ class DatabaseSeeder extends Seeder
         $admin->deleted_at = null;
         $admin->save();
 
-        User::create([
-            'username' => 'sendang',
+        User::updateOrCreate(['username' => 'sendang'], [
             'password' => Hash::make('password123'),
             'nama_user' => 'Sendang',
             'role' => 'Guru',
@@ -58,8 +61,7 @@ class DatabaseSeeder extends Seeder
             'id_kelas' => null,
         ]);
 
-        User::create([
-            'username' => 'budi_guru',
+        User::updateOrCreate(['username' => 'budi_guru'], [
             'password' => Hash::make('password123'),
             'nama_user' => 'Budi Santoso, S.Pd',
             'role' => 'Guru',
@@ -67,8 +69,7 @@ class DatabaseSeeder extends Seeder
             'id_kelas' => null,
         ]);
 
-        User::create([
-            'username' => 'kesiswaan',
+        User::updateOrCreate(['username' => 'kesiswaan'], [
             'password' => Hash::make('password123'),
             'nama_user' => 'Kesiswaan SMK',
             'role' => 'Kesiswaan',
@@ -76,8 +77,7 @@ class DatabaseSeeder extends Seeder
             'id_kelas' => null,
         ]);
 
-        User::create([
-            'username' => 'sekre_12rpl1',
+        User::updateOrCreate(['username' => 'sekre_12rpl1'], [
             'password' => Hash::make('password123'),
             'nama_user' => 'Nazwa Sekretaris',
             'role' => 'Sekretaris',
@@ -85,8 +85,7 @@ class DatabaseSeeder extends Seeder
             'id_kelas' => $kelas12RPL1->id_kelas,
         ]);
 
-        User::create([
-            'username' => 'wildan_piket',
+        User::updateOrCreate(['username' => 'wildan_piket'], [
             'password' => Hash::make('password123'),
             'nama_user' => 'Wildan Piket',
             'role' => 'Guru',
@@ -176,7 +175,7 @@ class DatabaseSeeder extends Seeder
             'tahun_ajaran' => '2026/2027',
         ]);
 
-        // 8. Contoh jurnal guru Sendang agar dashboard guru terlihat ada data
+        // 8. Contoh jurnal guru Sendang
         \App\Models\Jurnal::create([
             'id_jadwal' => $jadwalSendang->id_jadwal,
             'id_kelas' => $kelas12RPL1->id_kelas,

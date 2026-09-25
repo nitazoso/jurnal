@@ -639,7 +639,7 @@
 
                                 {{-- AKSI --}}
                                 <td>
-                                    <a href="{{ route('guru.jurnal.form', $jadwal->id_jadwal) }}"
+                                    <a href="{{ route('guru.jurnal.form', ['jadwal' => $jadwal->id_jadwal]) }}"
                                        class="journal-action">
 
                                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
