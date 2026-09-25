@@ -43,7 +43,6 @@ class FortifyServiceProvider extends ServiceProvider
             return match ($role) {
                 'Admin'       => redirect()->route('admin.dashboard'),
                 'Guru'        => redirect()->route('guru.dashboard'),
-                'Kesiswaan'   => redirect()->route('kesiswaan.dashboard'),
                 'Sekretaris'  => redirect()->route('sekretaris.dashboard'),
                 default       => redirect()->route('dashboard'),
             };

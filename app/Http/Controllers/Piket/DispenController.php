@@ -8,6 +8,7 @@ use App\Models\JamPel;
 use App\Models\Kelas;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 
@@ -146,10 +147,7 @@ class DispenController extends Controller
                     fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
                 ),
             ],
-            'id_kesiswaan' => [
-                'nullable',
-                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
-            ],
+            'id_kesiswaan' => ['required', Rule::exists('users', 'id_user')],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
@@ -158,12 +156,14 @@ class DispenController extends Controller
 
         $dispen = Dispen::create([
             'id_siswa' => $validated['id_siswa'],
-            'id_kesiswaan' => $validated['id_kesiswaan'] ?? null,
+            'id_kesiswaan' => $validated['id_kesiswaan'],
+            'submitted_by' => auth()->id(),
             'tanggal' => $validated['tanggal'],
             'id_jam_mulai' => $validated['id_jam_mulai'],
             'id_jam_selesai' => $validated['id_jam_selesai'],
             'alasan' => $validated['alasan'],
             'status' => 'menunggu',
+            'token_verifikasi' => Str::random(64),
         ]);
 
         return redirect()->route('piket.dispen.whatsapp', $dispen);
@@ -178,15 +178,21 @@ class DispenController extends Controller
             'siswa.kelas',
             'jamMulai',
             'jamSelesai',
-            'petugasKesiswaan'
+            'petugasKesiswaan.guru',
         ]);
 
-        $linkVerifikasi = route('kesiswaan.dispen.show', $dispen);
-        $loginUrl = route('login') . '?redirect=' . urlencode($linkVerifikasi);
+        $petugas = $dispen->petugasKesiswaan;
+        $nomorWa = $petugas?->no_wa ?? $petugas?->guru?->no_hp ?? null;
 
+        if (! $nomorWa) {
+            return redirect()->route('piket.dispen.index')
+                ->with('error', 'Nomor WhatsApp petugas kesiswaan belum diisi.');
+        }
+
+        $linkVerifikasi = route('dispen.verifikasi', $dispen->token_verifikasi);
         $message =
             "Permohonan Dispensasi Siswa\n\n"
-            . "Nama Siswa: " . $dispen->siswa->nama_siswa . "\n"
+            . "Nama Siswa: " . ($dispen->siswa->nama_siswa ?? '-') . "\n"
             . "Kelas: " . ($dispen->siswa->kelas->nama_kelas ?? '-') . "\n"
             . "Tanggal: " . $dispen->tanggal->format('d-m-Y') . "\n"
             . "Jam: "
@@ -195,12 +201,15 @@ class DispenController extends Controller
             . ($dispen->jamSelesai->jam_selesai ?? '-')
             . "\n"
             . "Alasan: " . $dispen->alasan . "\n\n"
-            . "Silakan masuk ke akun Anda untuk meninjau dan mengonfirmasi pengajuan:\n"
-            . $loginUrl;
+            . "Silakan tinjau dan konfirmasi pengajuan dispen berikut:\n"
+            . $linkVerifikasi;
 
-        $whatsappUrl = 'https://wa.me/?text=' . rawurlencode($message);
+        $cleanPhone = preg_replace('/\D+/', '', $nomorWa);
+        $waUrl = $cleanPhone !== ''
+            ? 'https://wa.me/' . $cleanPhone . '?text=' . rawurlencode($message)
+            : 'https://wa.me/?text=' . rawurlencode($message);
 
-        return redirect()->away($whatsappUrl);
+        return redirect()->away($waUrl);
     }
 
     /**
@@ -231,10 +240,7 @@ class DispenController extends Controller
                     fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
                 ),
             ],
-            'id_kesiswaan' => [
-                'required',
-                Rule::exists('users', 'id_user')->where('role', 'Kesiswaan'),
-            ],
+            'id_kesiswaan' => ['required', Rule::exists('users', 'id_user')],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
@@ -270,9 +276,9 @@ class DispenController extends Controller
         ])->orderBy('nama_kelas')->get();
 
         $petugasKesiswaans = User::query()
-            ->where('role', 'Kesiswaan')
+            ->with('guru')
             ->orderBy('nama_user')
-            ->get(['id_user', 'nama_user']);
+            ->get();
 
         $siswaPerKelas = $kelases->mapWithKeys(fn ($kelas) => [
             $kelas->id_kelas => $kelas->siswas->map(fn ($siswa) => [

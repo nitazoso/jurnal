@@ -51,12 +51,9 @@ class DispenVerificationController extends Controller
 
     private function approvalData(string $status): array
     {
-        $userId = auth()->id();
-
         return [
             'status' => $status,
-            'disetujui_oleh' => $userId && JadwalKesiswaan::where('tanggal', now()->toDateString())
-                ->where('id_user', $userId)->exists() ? $userId : null,
+            'disetujui_oleh' => auth()->id(),
             'disetujui_pada' => now(),
         ];
     }

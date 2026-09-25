@@ -37,7 +37,7 @@ class RoleKesiswaanTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_kesiswaan_role_is_supported_for_user_creation(): void
+    public function test_staff_piket_role_is_supported_for_user_creation(): void
     {
         $admin = User::create([
             'username' => 'admin_test',
@@ -51,7 +51,7 @@ class RoleKesiswaanTest extends TestCase
                 'username' => 'kesiswaan_test',
                 'nama_user' => 'Kesiswaan Test',
                 'password' => 'password123',
-                'role' => 'Kesiswaan',
+                'role' => 'Staff Piket',
                 'id_guru' => null,
                 'id_kelas' => null,
             ]);
@@ -60,7 +60,7 @@ class RoleKesiswaanTest extends TestCase
 
         $this->assertDatabaseHas('users', [
             'username' => 'kesiswaan_test',
-            'role' => 'Kesiswaan',
+            'role' => 'Staff Piket',
             'nama_user' => 'Kesiswaan Test',
         ]);
     }
@@ -112,7 +112,54 @@ class RoleKesiswaanTest extends TestCase
         $this->assertTrue(password_verify('newpassword123', $guru->password));
     }
 
-    public function test_staff_piket_can_store_dispen_and_route_it_to_selected_kesiswaan(): void
+    public function test_public_dispen_verification_page_can_be_opened_without_login(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id_kelas' => 1,
+            'nis' => '2001',
+            'no_presensi' => 1,
+            'nama_siswa' => 'Candra',
+            'jenis_kelamin' => 'L',
+        ]);
+
+        $jamMulai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+            'durasi_menit' => 45,
+        ]);
+
+        $jamSelesai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 2,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:45:00',
+            'jam_selesai' => '08:30:00',
+            'durasi_menit' => 45,
+        ]);
+
+        $dispen = \App\Models\Dispen::create([
+            'id_siswa' => $siswa->id_siswa,
+            'jenis' => 'izin',
+            'id_kesiswaan' => null,
+            'submitted_by' => null,
+            'tanggal' => now()->toDateString(),
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'alasan' => 'Kepentingan keluarga',
+            'status' => 'menunggu',
+            'token_verifikasi' => 'token-public-123',
+        ]);
+
+        $response = $this->get(route('dispen.verifikasi', $dispen->token_verifikasi));
+
+        $response->assertOk();
+        $response->assertSee('Verifikasi Dispensasi');
+    }
+
+    public function test_staff_piket_can_store_dispen_and_route_it_to_selected_recipient(): void
     {
         $piket = User::create([
             'username' => 'piket_dispen',
@@ -140,10 +187,10 @@ class RoleKesiswaanTest extends TestCase
         ]);
 
         $petugas = User::create([
-            'username' => 'kesiswaan_target',
+            'username' => 'recipient_target',
             'password' => bcrypt('password123'),
-            'nama_user' => 'Petugas Kesiswaan',
-            'role' => 'Kesiswaan',
+            'nama_user' => 'Petugas Target',
+            'role' => 'Sekretaris',
         ]);
 
         $jamMulai = \App\Models\JamPel::create([

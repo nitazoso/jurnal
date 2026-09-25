@@ -207,8 +207,8 @@
                                 Guru
                             </option>
 
-                            <option value="Kesiswaan" {{ old('role', $user->role) == 'Kesiswaan' ? 'selected' : '' }}>
-                                Kesiswaan
+                            <option value="Staff Piket" {{ old('role', $user->role) == 'Staff Piket' ? 'selected' : '' }}>
+                                Staff Piket
                             </option>
 
                             <option value="Sekretaris" {{ old('role', $user->role) == 'Sekretaris' ? 'selected' : '' }}>
@@ -864,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Guru field
     function updateGuruField() {
-        const needsGuru = ['Guru', 'Kesiswaan', 'Admin'].includes(role.value);
+        const needsGuru = ['Guru', 'Admin', 'Staff Piket'].includes(role.value);
 
         if (needsGuru) {
             guruContainer.hidden = false;
@@ -913,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            ['Guru', 'Kesiswaan', 'Admin'].includes(role.value) &&
+            ['Guru', 'Admin', 'Staff Piket'].includes(role.value) &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

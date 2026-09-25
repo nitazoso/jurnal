@@ -159,8 +159,8 @@
                                 Guru Mata Pelajaran
                             </option>
 
-                            <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>
-                                Kesiswaan
+                            <option value="Staff Piket" {{ old('role') === 'Staff Piket' ? 'selected' : '' }}>
+                                Staff Piket
                             </option>
 
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
@@ -204,7 +204,7 @@
                         </select>
 
                         <span id="guruError" class="err-text" style="display: none;">
-                            Silakan pilih data Guru untuk akun Guru, Kesiswaan, atau Admin.
+                            Silakan pilih data Guru untuk akun Guru atau Admin.
                         </span>
 
                         <span class="field-hint">
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Field Guru
     function updateGuruField() {
-        const needsGuru = ['Guru', 'Kesiswaan', 'Admin'].includes(role.value);
+        const needsGuru = ['Guru', 'Admin', 'Staff Piket'].includes(role.value);
 
         if (needsGuru) {
             guruContainer.hidden = false;
@@ -773,7 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (
-            ['Guru', 'Kesiswaan', 'Admin'].includes(role.value) &&
+            ['Guru', 'Admin', 'Staff Piket'].includes(role.value) &&
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';

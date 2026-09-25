@@ -68,15 +68,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::create([
-            'username' => 'kesiswaan',
-            'password' => Hash::make('password123'),
-            'nama_user' => 'Kesiswaan SMK',
-            'role' => 'Kesiswaan',
-            'id_guru' => null,
-            'id_kelas' => null,
-        ]);
-
-        User::create([
             'username' => 'sekre_12rpl1',
             'password' => Hash::make('password123'),
             'nama_user' => 'Nazwa Sekretaris',

@@ -57,6 +57,30 @@
 
             <div class="mb-4">
                 <label class="block mb-2 font-medium text-gray-700">
+                    Tujuan Kesiswaan
+                </label>
+
+                <select name="id_kesiswaan"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                        required>
+                    <option value="">-- Pilih Kesiswaan --</option>
+                    @foreach ($petugasKesiswaans as $petugas)
+                        @php
+                            $nomorWa = $petugas->no_wa ?? $petugas->guru?->no_hp;
+                        @endphp
+                        <option value="{{ $petugas->id_user }}"
+                            {{ old('id_kesiswaan') == $petugas->id_user ? 'selected' : '' }}>
+                            {{ $petugas->nama_user }}
+                            @if(!empty($nomorWa))
+                                ({{ $nomorWa }})
+                            @endif
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="block mb-2 font-medium text-gray-700">
                     Tanggal
                 </label>
 
