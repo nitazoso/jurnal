@@ -21,6 +21,7 @@ class Dispen extends Model
         'alasan',
         'surat_path',
         'status',
+        'token_verifikasi',
         'disetujui_oleh',
         'disetujui_pada',
         'catatan_persetujuan',

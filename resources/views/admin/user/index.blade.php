@@ -896,10 +896,10 @@
                 <button
                     type="submit"
                     name="role"
-                    value="Kesiswaan"
-                    class="role-filter {{ request('role') === 'Kesiswaan' ? 'active' : '' }}"
+                    value="Staff Piket"
+                    class="role-filter {{ request('role') === 'Staff Piket' ? 'active' : '' }}"
                 >
-                    Kesiswaan
+                    Staff Piket
                 </button>
 
                 <button
@@ -944,12 +944,12 @@
                                 <span class="role-badge">
                                     @if($user->role === 'Guru')
                                         <span class="material-symbols-outlined">school</span>
+                                    @elseif($user->role === 'Staff Piket')
+                                        <span class="material-symbols-outlined">support_agent</span>
                                     @elseif($user->role === 'Sekretaris')
                                         <span class="material-symbols-outlined">edit_note</span>
                                     @elseif($user->role === 'Admin')
                                         <span class="material-symbols-outlined">admin_panel_settings</span>
-                                    @elseif($user->role === 'Kesiswaan')
-                                        <span class="material-symbols-outlined">groups</span>
                                     @else
                                         <span class="material-symbols-outlined">person</span>
                                     @endif

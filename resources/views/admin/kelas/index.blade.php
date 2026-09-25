@@ -183,7 +183,7 @@
                     <th style="padding: 12px 16px; text-align: left;">WALI KELAS</th>
                     <th style="padding: 12px 16px; text-align: center;">SISWA</th>
                     <th style="padding: 12px 16px; text-align: center;">QR KELAS</th>
-                    <th style="padding: 12px 16px; text-align: center; border-top-right-radius: 8px; border-bottom-right-radius: 8px;"></th>
+                    <th style="padding: 12px 16px; text-align: center; border-top-right-radius: 8px; border-bottom-right-radius: 8px;">AKSI</th>
                 </tr>
             </thead>
             
@@ -222,9 +222,23 @@
         <a href="{{ route('admin.kelas.qr.print', $item) }}" target="_blank" style="color: #2563eb; font-size: 11px; text-decoration: none;">Cetak QR</a>
     </td>
     <td style="padding: 16px; text-align: center; border-top-right-radius: 10px; border-bottom-right-radius: 10px;">
-       <a href="{{ route('admin.kelas.siswa', ['kelas_id' => $item->id_kelas ?? $item->id]) }}" class="action-btn" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f8fafc; border-radius: 50%;">
-        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
-       </a>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <a href="{{ route('admin.kelas.siswa', ['kelas_id' => $item->id_kelas ?? $item->id]) }}" class="action-btn" style="color: #64748b; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #f8fafc; border-radius: 50%;">
+                <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+            </a>
+
+            <form action="{{ route('admin.kelas.destroy', $item) }}" method="POST" style="display: inline-block; margin: 0;">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        onclick="return confirm('Apakah Anda yakin ingin menghapus kelas {{ addslashes($item->nama_kelas) }}?')"
+                        class="action-btn"
+                        title="Hapus Kelas"
+                        style="color: #ef4444; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #fff1f2; border: none; border-radius: 50%; cursor: pointer;">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                </button>
+            </form>
+        </div>
     </td>
 </tr>
 

@@ -4,233 +4,6 @@
 @section('page-title', 'Jadwal Piket')
 @section('page-subtitle', 'Kelola penugasan jadwal piket guru')
 
-@section('content')
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<div class="piket-page">
-
-    {{-- HEADER --}}
-    <div class="piket-header">
-        <div class="header-text">
-            <h1 class="header-title">Jadwal Piket</h1>
-            <p class="header-subtitle">
-                Kelola penugasan jadwal piket guru.
-            </p>
-        </div>
-
-        <a href="{{ route('admin.jadwal-piket.create') }}" class="btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M12 5v14M5 12h14" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>Tambah Jadwal</span>
-        </a>
-    </div>
-
-    {{-- SUCCESS ALERT --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-linecap="round" stroke-linejoin="round"/>
-                <polyline points="22 4 12 14.01 9 11.01" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    {{-- TABLE CARD --}}
-    <div class="table-card">
-
-        <div class="table-header">
-            <div>
-                <h2>Daftar Jadwal Piket</h2>
-                <p>Data penugasan guru yang telah dijadwalkan.</p>
-            </div>
-
-            <div class="total-badge">
-                {{ $jadwals->count() }} Jadwal
-            </div>
-        </div>
-
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th class="col-no">No</th>
-                        <th class="col-tanggal">Hari / Tanggal</th>
-                        <th>Petugas Piket<br>KBM Pagi</th>
-                        <th>Koordinator<br>KBM Pagi</th>
-                        <th>Petugas Piket<br>KBM Siang</th>
-                        <th>Koordinator<br>KBM Siang</th>
-                        <th>Piket Waka</th>
-                        <th class="col-aksi">Aksi</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($jadwals as $jadwal)
-                        <tr>
-
-                            {{-- NO --}}
-                            <td class="td-no">
-                                {{ $loop->iteration }}
-                            </td>
-
-                            {{-- TANGGAL --}}
-                            <td class="td-tanggal">
-                                <div class="date-wrapper">
-                                    <div class="date-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                            <line x1="16" y1="2" x2="16" y2="6"/>
-                                            <line x1="8" y1="2" x2="8" y2="6"/>
-                                            <line x1="3" y1="10" x2="21" y2="10"/>
-                                        </svg>
-                                    </div>
-                                    <span>{{ $jadwal->tanggal?->format('d M Y') ?? '-' }}</span>
-                                </div>
-                            </td>
-
-                            @foreach ([
-                                ['petugasKbmPagi', 'jam_mulai_kbm_pagi', 'jam_selesai_kbm_pagi'],
-                                ['koordinatorKbmPagi', 'jam_mulai_koordinator_pagi', 'jam_selesai_koordinator_pagi'],
-                                ['petugasKbmSiang', 'jam_mulai_kbm_siang', 'jam_selesai_kbm_siang'],
-                                ['koordinatorKbmSiang', 'jam_mulai_koordinator_siang', 'jam_selesai_koordinator_siang'],
-                            ] as [$relation, $start, $end])
-                                <td>
-                                    <strong>{{ $jadwal->{$relation}->nama_guru ?? '-' }}</strong>
-                                    <small class="schedule-time">{{ $jadwal->{$start} }} - {{ $jadwal->{$end} }}</small>
-                                </td>
-                            @endforeach
-                            <td>
-                                <strong>{{ $jadwal->piketWaka->nama_guru ?? '-' }}</strong>
-                            </td>
-
-                            {{-- AKSI --}}
-                            <td class="td-aksi">
-                                <div class="action-buttons">
-
-                                    <a href="{{ route('admin.jadwal-piket.edit', $jadwal) }}"
-                                       class="btn-action edit"
-                                       title="Edit Jadwal">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                                        </svg>
-                                        <span>Edit</span>
-                                    </a>
-
-                                    <form action="{{ route('admin.jadwal-piket.destroy', $jadwal) }}"
-                                          method="POST"
-                                          class="delete-form">
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button type="button"
-                                                class="btn-action delete"
-                                                title="Hapus Jadwal"
-                                                onclick='openDeleteModal(
-                                                    @json(route("admin.jadwal-piket.destroy", $jadwal)),
-                                                    @json($jadwal->tanggal?->format("d M Y") ?? "-")
-                                                )'>
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="3 6 5 6 21 6"/>
-                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                                                <line x1="10" y1="11" x2="10" y2="17"/>
-                                                <line x1="14" y1="11" x2="14" y2="17"/>
-                                            </svg>
-                                            <span>Hapus</span>
-                                        </button>
-                                    </form>
-
-                                </div>
-                            </td>
-
-                        </tr>
-
-                    @empty
-                        <tr>
-                            <td colspan="8" class="empty-state">
-                                <div class="empty-content">
-                                    <div class="empty-icon">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                            <rect x="3" y="4" width="18" height="18" rx="2"/>
-                                            <line x1="16" y1="2" x2="16" y2="6"/>
-                                            <line x1="8" y1="2" x2="8" y2="6"/>
-                                            <line x1="3" y1="10" x2="21" y2="10"/>
-                                        </svg>
-                                    </div>
-
-                                    <h3>Belum Ada Jadwal</h3>
-                                    <p>Belum ada jadwal piket guru yang ditambahkan.</p>
-
-                                    <a href="{{ route('admin.jadwal-piket.create') }}" class="empty-button">
-                                        + Tambah Jadwal
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-</div>
-
-{{-- DELETE MODAL --}}
-<div id="deleteModal" class="delete-modal">
-    <div class="delete-modal-content">
-
-        <div class="delete-modal-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                <line x1="10" y1="11" x2="10" y2="17"/>
-                <line x1="14" y1="11" x2="14" y2="17"/>
-            </svg>
-        </div>
-
-        <div class="delete-modal-text">
-            <h3>Hapus Jadwal Piket?</h3>
-
-            <p>
-                Apakah Anda yakin ingin menghapus jadwal piket tanggal
-                <strong id="deleteScheduleDate"></strong>?
-            </p>
-
-            <span>Data jadwal yang sudah dihapus tidak dapat dikembalikan.</span>
-        </div>
-
-        <div class="delete-modal-actions">
-            <button type="button"
-                    class="delete-modal-cancel"
-                    onclick="closeDeleteModal()">
-                Batal
-            </button>
-
-            <form id="deleteModalForm" method="POST">
-                @csrf
-                @method('DELETE')
-
-                <button type="submit" class="delete-modal-confirm">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        <line x1="10" y1="11" x2="10" y2="17"/>
-                        <line x1="14" y1="11" x2="14" y2="17"/>
-                    </svg>
-                    Hapus
-                </button>
-            </form>
-        </div>
-
-    </div>
-</div>
-
 <style>
     * {
         box-sizing: border-box;
@@ -2851,6 +2624,31 @@
     | DELETE
     |--------------------------------------------------------------------------
     */
+
+    function openDeleteModal(url, date) {
+        const modal = document.getElementById('deleteModal');
+        const form = document.getElementById('deleteModalForm');
+        const dateElement = document.getElementById('deleteScheduleDate');
+
+        form.action = url;
+        dateElement.textContent = date;
+
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+
+        modal.classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('deleteModal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeDeleteModal();
+        }
+    });
 
     function confirmDeleteSchedule() {
 
