@@ -317,8 +317,7 @@ class JadwalPiketController extends Controller
                     ];
 
                 })
-                ->values()
-                ->all();
+                ->first();
 
 
             /*
@@ -392,12 +391,7 @@ class JadwalPiketController extends Controller
                 ],
 
 
-                'waka' => [
-
-                    'petugas' =>
-                        $wakaPetugas,
-
-                ],
+                'waka' => $wakaPetugas,
 
             ];
         }

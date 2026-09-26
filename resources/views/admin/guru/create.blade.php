@@ -88,6 +88,9 @@
                                 autofocus
                                 class="form-input @error('nama_guru') is-invalid @enderror"
                             >
+                            @error('nama_guru')
+                                <span class="form-hint" style="color: #B91C1C;">{{ $message }}</span>
+                            @enderror
                             <span class="form-hint">Nama lengkap beserta gelar akademik.</span>
                         </div>
 

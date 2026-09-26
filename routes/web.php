@@ -306,12 +306,6 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
 
     Route::get('/guru/jurnal/form/{jadwal}', [GuruJurnalController::class, 'form'])
         ->name('guru.jurnal.form');
-    Route::post('/guru/jurnal/form/{jadwal}/scan-qr', [GuruJurnalController::class, 'verifyClassQr'])
-        ->name('guru.jurnal.verify-qr');
-    Route::get('/guru/jurnal/form/{jadwal}/konfirmasi-hadir', [GuruJurnalController::class, 'confirmAttendance'])
-        ->name('guru.jurnal.confirm-attendance');
-    Route::post('/guru/jurnal/form/{jadwal}/konfirmasi-hadir', [GuruJurnalController::class, 'storeAttendance'])
-        ->name('guru.jurnal.store-attendance');
 
     Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
         ->name('guru.jurnal.store');
@@ -396,4 +390,22 @@ Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekr
     Route::get('/isi-jurnal', [SekretarisJurnalController::class, 'create'])->name('isi-jurnal');
     Route::post('/isi-jurnal', [SekretarisJurnalController::class, 'store'])->name('isi-jurnal.store');
     Route::view('/profil', 'sekretaris.profil')->name('profil');
+    Route::put('/profil', function (Request $request) {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id_user.',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = bcrypt($validated['password']);
+        }
+
+        $user->save();
+
+        return redirect()->route('sekretaris.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('profil.update');
 });

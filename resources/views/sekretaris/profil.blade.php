@@ -185,6 +185,69 @@
         border-top: 1px solid #F1F5F9;
     }
 
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group label {
+        color: #334155;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .form-group input {
+        width: 100%;
+        min-height: 44px;
+        padding: 10px 12px;
+        border: 1px solid #CBD5E1;
+        border-radius: 8px;
+        color: #1E293B;
+        font: inherit;
+    }
+
+    .form-group input:focus {
+        outline: 2px solid rgba(8,145,178,.2);
+        border-color: #0891B2;
+    }
+
+    .error-text {
+        color: #B91C1C;
+        font-size: 12px;
+    }
+
+    .profile-alert {
+        padding: 12px 14px;
+        border: 1px solid #A7F3D0;
+        border-radius: 8px;
+        background: #ECFDF5;
+        color: #065F46;
+        font-size: 14px;
+    }
+
+    .submit-button {
+        min-height: 44px;
+        padding: 0 18px;
+        border: 0;
+        border-radius: 8px;
+        background: #0E7490;
+        color: white;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .submit-button:hover {
+        background: #155E75;
+    }
+
     /* LOGOUT */
     .logout-wrapper {
         padding-top: 4px;
@@ -335,6 +398,51 @@
 
         <hr class="personal-divider">
 
+        {{-- Kelas --}}
+        <div class="personal-field">
+            <p class="personal-label">Kelas</p>
+            <p class="personal-value">{{ $user->kelas->nama_kelas ?? 'Belum ditetapkan' }}</p>
+        </div>
+
+        <hr class="personal-divider">
+
+    </section>
+
+    {{-- EDIT PROFILE FORM --}}
+    <section class="personal-card">
+        <h3 class="profile-name" style="font-size: 18px; text-align: left;">Edit Profil</h3>
+
+        @if (session('success'))
+            <div class="profile-alert" role="status">{{ session('success') }}</div>
+        @endif
+
+        <form action="{{ route('sekretaris.profil.update') }}" method="POST" class="profile-form">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required autocomplete="username">
+                @error('username')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password Baru</label>
+                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password" autocomplete="new-password">
+                @error('password')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation">Konfirmasi Password</label>
+                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="submit-button">Simpan Perubahan</button>
+        </form>
     </section>
 
     {{-- LOGOUT --}}

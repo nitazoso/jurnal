@@ -13,9 +13,21 @@ class JurnalController extends Controller
     public function dashboard()
     {
         $today = now()->toDateString();
-        $jurnalsMenunggu = Jurnal::where('status_validasi_guru', 'Menunggu')->count();
-        $jurnalsTervalidasiHariIni = Jurnal::whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->count();
-        $jurnalTerbaru = Jurnal::with(['guru', 'kelas', 'jamMulai', 'jamSelesai'])
+        $user = auth()->user();
+        $kelasId = $user?->id_kelas;
+
+        $jurnalQuery = Jurnal::query()
+            ->where('id_kelas', $kelasId)
+            ->whereHas('guru')
+            ->whereHas('kelas')
+            ->whereHas('jadwal', function ($query) {
+                $query->whereColumn('jadwals.id_kelas', 'jurnals.id_kelas')
+                    ->whereColumn('jadwals.id_guru', 'jurnals.id_guru');
+            });
+
+        $jurnalsMenunggu = (clone $jurnalQuery)->where('status_validasi_guru', 'Menunggu')->count();
+        $jurnalsTervalidasiHariIni = (clone $jurnalQuery)->whereDate('tanggal', $today)->where('status_validasi_guru', 'Disetujui')->count();
+        $jurnalTerbaru = (clone $jurnalQuery)->with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
             ->where('status_validasi_guru', 'Menunggu')->latest()->take(5)->get();
 
         return view('sekretaris.dashboard', compact('jurnalsMenunggu', 'jurnalsTervalidasiHariIni', 'jurnalTerbaru'));
@@ -23,9 +35,14 @@ class JurnalController extends Controller
 
     public function index(Request $request)
     {
+        $user = auth()->user();
         $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
             ->whereHas('jadwal')
             ->latest('tanggal');
+
+        if ($user?->id_kelas) {
+            $query->where('id_kelas', $user->id_kelas);
+        }
 
         if ($request->filled('search')) {
             $search = $request->string('search')->toString();
@@ -62,7 +79,7 @@ class JurnalController extends Controller
     public function validateJurnal(Request $request, Jurnal $jurnal)
     {
         $validated = $request->validate([
-            'status_validasi_guru' => 'required|in:Disetujui,Ditolak,Perlu Diperbaiki',
+            'status_validasi_guru' => 'required|in:Menunggu,Disetujui,Ditolak,Perlu Diperbaiki,Terverifikasi,Tidak Terverifikasi',
             'catatan_revisi' => 'nullable|string|max:1000',
         ]);
 
@@ -72,16 +89,21 @@ class JurnalController extends Controller
             ]);
         }
 
-        if ($validated['status_validasi_guru'] !== 'Disetujui' && blank($validated['catatan_revisi'] ?? null)) {
-            return back()->withErrors(['catatan_revisi' => 'Catatan revisi wajib diisi saat jurnal tidak disetujui.']);
+        $status = $validated['status_validasi_guru'];
+        $isApproved = in_array($status, ['Disetujui', 'Terverifikasi'], true);
+
+        if (! $isApproved && blank($validated['catatan_revisi'] ?? null)) {
+            return back()->withErrors(['catatan_revisi' => 'Catatan revisi wajib diisi saat jurnal tidak terverifikasi.']);
         }
 
+        $normalizedStatus = $status === 'Terverifikasi' ? 'Disetujui' : ($status === 'Tidak Terverifikasi' ? 'Ditolak' : $status);
+
         $jurnal->update([
-            'status_validasi_guru' => $validated['status_validasi_guru'],
-            'catatan_revisi' => $validated['status_validasi_guru'] === 'Disetujui' ? null : $validated['catatan_revisi'],
+            'status_validasi_guru' => $normalizedStatus,
+            'catatan_revisi' => $isApproved ? null : $validated['catatan_revisi'],
         ]);
 
-        return back()->with('success', 'Status jurnal berhasil diperbarui. Jurnal yang disetujui langsung tersedia untuk staf piket.');
+        return back()->with('success', 'Status jurnal berhasil diperbarui dan sinkron ke sistem validasi guru, piket, dan sekretaris.');
     }
 
     public function create()

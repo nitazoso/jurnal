@@ -7,7 +7,6 @@ use App\Models\DetailAbsensi;
 use App\Models\Dispen;
 use App\Models\Jadwal;
 use App\Models\Jurnal;
-use App\Models\GuruQrAttendance;
 use App\Models\Siswa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -138,12 +137,6 @@ class JurnalController extends Controller
             $today->toDateString()
         );
 
-        $qrVerified = session()->get($this->qrSessionKey($jadwal)) === true
-            || GuruQrAttendance::where('id_jadwal', $jadwal->id_jadwal)
-                ->where('id_guru', $user->id_guru)
-                ->whereDate('tanggal', $today)
-                ->exists();
-
         // Daftar siswa dengan dispen aktif, dipakai untuk notice
         // "Siswa Dispensasi" di Blade.
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
@@ -153,141 +146,8 @@ class JurnalController extends Controller
             'siswa',
             'activeDispenSiswa',
             'activeDispenBerakhir',
-            'qrVerified',
             'siswaDispen'
         ));
-    }
-
-    public function verifyClassQr(Request $request, Jadwal $jadwal)
-    {
-        abort_unless(
-            $jadwal->id_guru === auth()->user()->id_guru,
-            403
-        );
-
-        $validated = $request->validate([
-            'qr_token' => ['required', 'string'],
-        ]);
-
-        $jadwal->loadMissing('kelas');
-
-        $qrToken = trim((string) ($validated['qr_token'] ?? ''));
-
-        if (!hash_equals(
-            (string) $jadwal->kelas?->qr_token,
-            $qrToken
-        )) {
-            return response()->json([
-                'message' => 'QR tidak valid untuk kelas ini. Pastikan Anda memindai QR kelas yang benar.',
-            ], 422);
-        }
-
-        GuruQrAttendance::updateOrCreate(
-            [
-                'id_jadwal' => $jadwal->id_jadwal,
-                'id_guru' => auth()->user()->id_guru,
-                'tanggal' => today()->toDateString(),
-            ],
-            [
-                'id_kelas' => $jadwal->id_kelas,
-                'discan_pada' => now(),
-            ]
-        );
-
-        session()->put(
-            $this->qrSessionKey($jadwal),
-            true
-        );
-
-        return response()->json([
-            'message' => 'Scan QR berhasil. Kehadiran guru sudah tersimpan.',
-            'kelas' => $jadwal->kelas?->nama_kelas,
-            'redirect' => route(
-                'guru.jurnal.form',
-                $jadwal
-            ) . '?scan=success',
-        ]);
-    }
-
-    public function confirmAttendance(Jadwal $jadwal)
-    {
-        abort_unless(
-            $jadwal->id_guru === auth()->user()->id_guru,
-            403
-        );
-
-        $pending = session('guru.jurnal.qr_pending');
-
-        abort_unless(
-            ($pending['jadwal_id'] ?? null) === $jadwal->id_jadwal,
-            419,
-            'Sesi scan QR sudah berakhir.'
-        );
-
-        $jadwal->load([
-            'kelas',
-            'mapel',
-            'jamMulai',
-            'jamSelesai',
-        ]);
-
-        return view(
-            'guru.jurnal.confirm-attendance',
-            compact('jadwal')
-        );
-    }
-
-    public function storeAttendance(Jadwal $jadwal)
-    {
-        abort_unless(
-            $jadwal->id_guru === auth()->user()->id_guru,
-            403
-        );
-
-        $pending = session('guru.jurnal.qr_pending');
-
-        abort_unless(
-            ($pending['jadwal_id'] ?? null) === $jadwal->id_jadwal,
-            419,
-            'Sesi scan QR sudah berakhir.'
-        );
-
-        $jadwal->load('kelas');
-
-        abort_unless(
-            hash_equals(
-                (string) $jadwal->kelas?->qr_token,
-                (string) ($pending['qr_token'] ?? '')
-            ),
-            422
-        );
-
-        GuruQrAttendance::updateOrCreate(
-            [
-                'id_jadwal' => $jadwal->id_jadwal,
-                'id_guru' => auth()->user()->id_guru,
-                'tanggal' => today()->toDateString(),
-            ],
-            [
-                'id_kelas' => $jadwal->id_kelas,
-                'discan_pada' => now(),
-            ]
-        );
-
-        session()->put(
-            $this->qrSessionKey($jadwal),
-            true
-        );
-
-        session()->forget('guru.jurnal.qr_pending');
-
-        return redirect()
-            ->route('guru.jurnal.form', $jadwal)
-            ->with(
-                'success',
-                'Kehadiran guru berhasil dikonfirmasi untuk kelas ' .
-                $jadwal->kelas->nama_kelas . '.'
-            );
     }
 
     public function store(Request $request)
@@ -341,19 +201,6 @@ class JurnalController extends Controller
                 ->withErrors([
                     'id_jadwal' =>
                         'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.',
-                ])
-                ->withInput();
-        }
-
-        if (
-            session()->get(
-                $this->qrSessionKey($jadwal)
-            ) !== true
-        ) {
-            return back()
-                ->withErrors([
-                    'qr_token' =>
-                        'Silakan scan QR kelas terlebih dahulu sebelum menyimpan jurnal.',
                 ])
                 ->withInput();
         }
@@ -483,12 +330,6 @@ class JurnalController extends Controller
             'guru.jurnal.show',
             compact('jurnal')
         );
-    }
-
-    private function qrSessionKey(Jadwal $jadwal): string
-    {
-        return 'guru.jurnal.qr_verified.' .
-            $jadwal->id_jadwal;
     }
 
     private function isScheduleWindowOpen(Jadwal $jadwal): bool

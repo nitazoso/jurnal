@@ -42,9 +42,25 @@ class GuruController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_guru' => 'required|string|max:255',
+            'nama_guru' => [
+                'required',
+                'string',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $normalizedName = mb_strtolower(trim($value));
+                    $alreadyExists = Guru::query()
+                        ->whereRaw('LOWER(TRIM(nama_guru)) = ?', [$normalizedName])
+                        ->exists();
+
+                    if ($alreadyExists) {
+                        $fail('Nama guru sudah terdaftar.');
+                    }
+                },
+            ],
             'no_hp' => 'nullable|string|max:20|regex:/^[0-9+ -]+$/',
         ]);
+
+        $validated['nama_guru'] = trim($validated['nama_guru']);
 
         Guru::create($validated);
 

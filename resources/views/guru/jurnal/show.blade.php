@@ -25,12 +25,16 @@
                         <span class="status-dot warning"></span>
                         Menunggu Validasi
                     </span>
-                @elseif(($jurnal->status_validasi_guru ?? '') === 'Valid')
+                @elseif(in_array($jurnal->status_validasi_guru ?? '', ['Disetujui', 'Terverifikasi'], true))
                     <span class="status-badge status-valid">
                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path d="m4.5 12.75 6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        Sudah Divalidasi
+                        Terverifikasi
+                    </span>
+                @elseif(in_array($jurnal->status_validasi_guru ?? '', ['Ditolak', 'Tidak Terverifikasi'], true))
+                    <span class="status-badge status-default">
+                        Tidak Terverifikasi
                     </span>
                 @else
                     <span class="status-badge status-default">

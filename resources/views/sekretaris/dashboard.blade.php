@@ -92,7 +92,7 @@
         <div class="section-header">
             <div>
                 <h3>Ringkasan Jurnal</h3>
-                <p>Daftar jurnal yang menunggu validasi Anda.</p>
+                <p>Daftar jurnal yang perlu Anda validasi.</p>
             </div>
 
             <a href="{{ route('sekretaris.validasi-jurnal') }}" class="view-all">
@@ -141,9 +141,20 @@
 
                     </div>
 
-                    <span class="status-badge">
-                        <span class="status-dot"></span>
-                        Menunggu
+                    @php
+                        $statusSekretaris = $jurnal->status_validasi_guru ?? 'Menunggu';
+                        $statusLabel = match ($statusSekretaris) {
+                            'Menunggu' => 'Menunggu Validasi',
+                            'Disetujui' => 'Sudah Tervalidasi',
+                            'Perlu Diperbaiki' => 'Perlu Diperbaiki',
+                            'Ditolak' => 'Tidak Tervalidasi',
+                            default => $statusSekretaris,
+                        };
+                    @endphp
+
+                    <span class="status-badge {{ $statusSekretaris === 'Disetujui' ? 'validated' : '' }}">
+                        <span class="status-dot {{ $statusSekretaris === 'Disetujui' ? 'success' : '' }}"></span>
+                        {{ $statusLabel }}
                     </span>
 
                 </div>

@@ -208,6 +208,42 @@
                         </span>
                     </div>
 
+                    {{-- KELAS SEKRETARIS --}}
+                    <div class="field-group" id="kelasContainer" hidden>
+                        <label class="field-label" for="id_kelas">
+                            Sekretaris untuk Kelas <span class="req">*</span>
+                        </label>
+
+                        <select
+                            id="id_kelas"
+                            name="id_kelas"
+                            class="custom-select @error('id_kelas') is-invalid @enderror"
+                        >
+                            <option value="">-- Pilih Kelas --</option>
+
+                            @foreach ($kelases as $kelas)
+                                <option
+                                    value="{{ $kelas->id_kelas }}"
+                                    {{ old('id_kelas') == $kelas->id_kelas ? 'selected' : '' }}
+                                >
+                                    {{ $kelas->nama_kelas }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        <span id="kelasError" class="err-text" style="display: none;">
+                            Silakan pilih kelas yang menjadi tanggung jawab sekretaris.
+                        </span>
+
+                        @error('id_kelas')
+                            <span class="err-text">{{ $message }}</span>
+                        @enderror
+
+                        <span class="field-hint">
+                            Jurnal yang perlu divalidasi akan mengikuti kelas ini.
+                        </span>
+                    </div>
+
                     {{-- NOTE FOOTER --}}
                     <div class="field-group full-width">
                         <div class="info-note-card">
@@ -658,6 +694,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const idGuru = document.getElementById('id_guru');
     const guruError = document.getElementById('guruError');
 
+    const kelasContainer = document.getElementById('kelasContainer');
+    const idKelas = document.getElementById('id_kelas');
+    const kelasError = document.getElementById('kelasError');
+
     const form = document.getElementById('addUserForm');
 
     // Mencegah spasi pada username
@@ -741,11 +781,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function updateKelasField() {
+        const needsKelas = role.value === 'Sekretaris';
+
+        kelasContainer.hidden = !needsKelas;
+        kelasContainer.style.display = needsKelas ? 'flex' : 'none';
+        idKelas.required = needsKelas;
+
+        if (!needsKelas) {
+            idKelas.value = '';
+            kelasError.style.display = 'none';
+        }
+    }
+
     role.addEventListener('change', function () {
         updateGuruField();
+        updateKelasField();
     });
 
     updateGuruField();
+    updateKelasField();
 
     // Validasi sebelum submit
     form.addEventListener('submit', function (event) {
@@ -773,6 +828,11 @@ document.addEventListener('DOMContentLoaded', function () {
             idGuru.value === ''
         ) {
             guruError.style.display = 'block';
+            valid = false;
+        }
+
+        if (role.value === 'Sekretaris' && idKelas.value === '') {
+            kelasError.style.display = 'block';
             valid = false;
         }
 

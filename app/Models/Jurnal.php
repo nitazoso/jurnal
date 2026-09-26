@@ -36,6 +36,17 @@ class Jurnal extends Model
         'tanggal' => 'date',
     ];
 
+    public function getStatusValidasiLabelAttribute(): string
+    {
+        return match ($this->status_validasi_guru) {
+            'Disetujui' => 'Terverifikasi',
+            'Ditolak' => 'Tidak Terverifikasi',
+            'Perlu Diperbaiki' => 'Perlu Diperbaiki',
+            'Menunggu' => 'Menunggu Validasi',
+            default => (string) ($this->status_validasi_guru ?? '-'),
+        };
+    }
+
     public function guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');

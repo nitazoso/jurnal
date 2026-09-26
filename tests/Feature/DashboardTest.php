@@ -9,7 +9,9 @@ use App\Models\Jurnal;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\PiketJadwal;
+use App\Models\Siswa;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -120,6 +122,221 @@ class DashboardTest extends TestCase
 
         $response->assertRedirect(route('guru.jurnal.create'));
         $response->assertSessionHas('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
+    }
+
+    public function test_guru_journal_form_does_not_require_qr_scan(): void
+    {
+        $guru = Guru::create([
+            'nama_guru' => 'Rina',
+        ]);
+
+        $mapel = Mapel::create([
+            'nama_mapel' => 'Bahasa Indonesia',
+        ]);
+
+        $kelas = Kelas::create([
+            'nama_kelas' => 'VIII-B',
+            'wali_kelas' => $guru->id_guru,
+        ]);
+
+        Siswa::create([
+            'id_kelas' => $kelas->id_kelas,
+            'nis' => '1001',
+            'no_presensi' => 1,
+            'nama_siswa' => 'Dewi',
+            'jenis_kelamin' => 'P',
+        ]);
+
+        $user = User::create([
+            'username' => 'rina.guru',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Rina Guru',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+        ]);
+
+        Carbon::setTestNow(Carbon::create(2026, 9, 28, 9, 0, 0));
+        $hari = 'Senin';
+        $now = now();
+
+        $jamMulai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 2,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => $now->copy()->subMinutes(15)->format('H:i:s'),
+            'jam_selesai' => $now->copy()->addMinutes(30)->format('H:i:s'),
+        ]);
+
+        $jamSelesai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 2,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => $now->copy()->subMinutes(15)->format('H:i:s'),
+            'jam_selesai' => $now->copy()->addMinutes(30)->format('H:i:s'),
+        ]);
+
+        $jadwal = Jadwal::create([
+            'id_guru' => $guru->id_guru,
+            'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'hari' => $hari,
+            'semester' => 'Ganjil',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('guru.jurnal.form', $jadwal));
+
+        $response->assertOk();
+        $response->assertDontSee('Scan QR Kelas');
+        $response->assertDontSee('Verifikasi Kelas');
+    }
+
+    public function test_guru_journal_index_uses_consistent_validation_labels(): void
+    {
+        $guru = Guru::create([
+            'nama_guru' => 'Sinta',
+        ]);
+
+        $mapel = Mapel::create([
+            'nama_mapel' => 'IPA',
+        ]);
+
+        $kelas = Kelas::create([
+            'nama_kelas' => 'IX-C',
+            'wali_kelas' => $guru->id_guru,
+        ]);
+
+        $user = User::create([
+            'username' => 'sinta.guru',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Sinta Guru',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+        ]);
+
+        $jamMulai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 3,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '08:00:00',
+            'jam_selesai' => '08:45:00',
+        ]);
+
+        $jamSelesai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 3,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '08:00:00',
+            'jam_selesai' => '08:45:00',
+        ]);
+
+        $jadwal = Jadwal::create([
+            'id_guru' => $guru->id_guru,
+            'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'hari' => 'Senin',
+            'semester' => 'Ganjil',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+
+        Jurnal::create([
+            'id_jadwal' => $jadwal->id_jadwal,
+            'id_kelas' => $kelas->id_kelas,
+            'id_guru' => $guru->id_guru,
+            'id_user' => $user->id_user,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'tanggal' => Carbon::create(2026, 9, 28),
+            'materi' => 'Eksperimen IPA',
+            'status_guru' => 'Hadir',
+            'ada_tugas' => 'Tidak',
+            'jml_hadir' => 30,
+            'jml_tidak_hadir' => 2,
+            'status_validasi_guru' => 'Disetujui',
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('guru.jurnal.index'));
+
+        $response->assertOk();
+        $response->assertSee('Terverifikasi');
+        $response->assertDontSee('Sudah Divalidasi');
+        $response->assertDontSee('Valid');
+    }
+
+    public function test_secretary_dashboard_excludes_journals_with_deleted_schedules(): void
+    {
+        $guru = Guru::create(['nama_guru' => 'Dina Guru']);
+        $kelas = Kelas::create(['nama_kelas' => 'VII-A', 'wali_kelas' => $guru->id_guru]);
+        $mapel = Mapel::create(['nama_mapel' => 'IPA']);
+        $sekretaris = User::create([
+            'username' => 'sekretaris.vii-a',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Sekretaris VII A',
+            'role' => 'Sekretaris',
+            'id_kelas' => $kelas->id_kelas,
+        ]);
+
+        $jamMulai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+        $jamSelesai = JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $makeSchedule = fn () => Jadwal::create([
+            'id_guru' => $guru->id_guru,
+            'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'hari' => 'Senin',
+            'semester' => 'Ganjil',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+        $makeJournal = function (Jadwal $jadwal, string $materi) use ($guru, $kelas, $sekretaris, $jamMulai, $jamSelesai) {
+            return Jurnal::create([
+                'id_jadwal' => $jadwal->id_jadwal,
+                'id_kelas' => $kelas->id_kelas,
+                'id_guru' => $guru->id_guru,
+                'id_user' => $sekretaris->id_user,
+                'id_jam_mulai' => $jamMulai->id_jam,
+                'id_jam_selesai' => $jamSelesai->id_jam,
+                'tanggal' => today()->toDateString(),
+                'materi' => $materi,
+                'status_guru' => 'Hadir',
+                'ada_tugas' => 'Tidak',
+                'jml_hadir' => 30,
+                'jml_tidak_hadir' => 0,
+                'status_validasi_guru' => 'Menunggu',
+            ]);
+        };
+
+        $makeJournal($makeSchedule(), 'Jurnal jadwal aktif');
+        $jadwalDihapus = $makeSchedule();
+        $makeJournal($jadwalDihapus, 'Jurnal jadwal terhapus');
+        $jadwalDihapus->delete();
+
+        $response = $this->actingAs($sekretaris)->get(route('sekretaris.dashboard'));
+
+        $response->assertOk();
+        $response->assertSee('Jurnal jadwal aktif');
+        $response->assertDontSee('Jurnal jadwal terhapus');
     }
 
     public function test_admin_jadwal_changes_remove_stale_journal_entries(): void

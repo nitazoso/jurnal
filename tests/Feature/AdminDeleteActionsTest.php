@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Guru;
 use App\Models\Kelas;
+use App\Models\PiketJadwal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -27,6 +28,36 @@ class AdminDeleteActionsTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('function openDeleteModal(url, date)');
+    }
+
+    public function test_admin_jadwal_piket_calendar_displays_selected_waka(): void
+    {
+        $admin = User::create([
+            'username' => 'admin_waka_test',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Admin Waka Test',
+            'role' => 'Admin',
+        ]);
+        $waka = Guru::create(['nama_guru' => 'Waka Kesiswaan Terpilih']);
+
+        PiketJadwal::create([
+            'id_guru' => $waka->id_guru,
+            'tanggal' => today()->toDateString(),
+            'shift' => 'Waka',
+            'jenis_tugas' => 'Piket Waka',
+            'posisi' => 'Petugas',
+            'created_by' => $admin->id_user,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.jadwal-piket.index', [
+            'month' => now()->format('Y-m'),
+        ]));
+
+        $response->assertOk();
+        $this->assertMatchesRegularExpression(
+            '/<div class="schedule-mini-name">\s*Waka Kesiswaan Terpilih\s*<\/div>/',
+            $response->getContent()
+        );
     }
 
     public function test_admin_kelas_page_renders_delete_action(): void

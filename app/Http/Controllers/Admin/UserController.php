@@ -90,7 +90,7 @@ class UserController extends Controller
             'password' => 'required|string|min:8',
             'role' => 'required|in:Admin,Guru,Sekretaris',
             'id_guru' => 'nullable|exists:gurus,id_guru',
-            'id_kelas' => 'nullable|exists:kelases,id_kelas',
+            'id_kelas' => 'nullable|required_if:role,Sekretaris|exists:kelases,id_kelas',
         ]);
 
         $plainPassword = $validated['password'];

@@ -63,6 +63,43 @@ class RoleKesiswaanTest extends TestCase
         ]);
     }
 
+    public function test_secretary_user_requires_and_saves_assigned_class(): void
+    {
+        $admin = User::create([
+            'username' => 'admin_secretary_test',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Admin Secretary Test',
+            'role' => 'Admin',
+        ]);
+        $kelas = Kelas::create(['nama_kelas' => 'VIII-B']);
+
+        $form = $this->actingAs($admin)->get(route('admin.user.create'));
+        $form->assertOk();
+        $form->assertSee('Sekretaris untuk Kelas');
+        $form->assertSee('VIII-B');
+
+        $missingClass = $this->post(route('admin.user.store'), [
+            'username' => 'sekretaris_tanpa_kelas',
+            'password' => 'password123',
+            'role' => 'Sekretaris',
+        ]);
+        $missingClass->assertSessionHasErrors('id_kelas');
+
+        $response = $this->post(route('admin.user.store'), [
+            'username' => 'sekretaris_viii_b',
+            'password' => 'password123',
+            'role' => 'Sekretaris',
+            'id_kelas' => $kelas->id_kelas,
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('users', [
+            'username' => 'sekretaris_viii_b',
+            'role' => 'Sekretaris',
+            'id_kelas' => $kelas->id_kelas,
+        ]);
+    }
+
     public function test_admin_can_store_guru_without_nip(): void
     {
         $admin = User::create([
@@ -82,6 +119,28 @@ class RoleKesiswaanTest extends TestCase
         $this->assertDatabaseHas('gurus', [
             'nama_guru' => 'Guru Tanpa NIP',
         ]);
+    }
+
+    public function test_admin_cannot_add_a_duplicate_teacher_name(): void
+    {
+        $admin = User::create([
+            'username' => 'admin_duplicate_guru',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Admin Duplicate Guru',
+            'role' => 'Admin',
+        ]);
+        Guru::create(['nama_guru' => 'Guru Contoh']);
+
+        $response = $this->actingAs($admin)
+            ->from(route('admin.guru.create'))
+            ->followingRedirects()
+            ->post(route('admin.guru.store'), [
+                'nama_guru' => '  guru contoh  ',
+            ]);
+
+        $response->assertOk();
+        $response->assertSee('Nama guru sudah terdaftar.');
+        $this->assertSame(1, Guru::count());
     }
 
     public function test_guru_can_update_username_and_password_from_profile(): void
@@ -108,6 +167,30 @@ class RoleKesiswaanTest extends TestCase
 
         $this->assertSame('guru_baru', $guru->username);
         $this->assertTrue(password_verify('newpassword123', $guru->password));
+    }
+
+    public function test_secretary_can_update_username_and_password_from_profile(): void
+    {
+        $sekretaris = User::create([
+            'username' => 'sekretaris_lama',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Sekretaris Kelas',
+            'role' => 'Sekretaris',
+        ]);
+
+        $response = $this->actingAs($sekretaris)
+            ->put(route('sekretaris.profil.update'), [
+                'username' => 'sekretaris_baru',
+                'password' => 'newpassword123',
+                'password_confirmation' => 'newpassword123',
+            ]);
+
+        $response->assertRedirect(route('sekretaris.profil'));
+
+        $sekretaris->refresh();
+
+        $this->assertSame('sekretaris_baru', $sekretaris->username);
+        $this->assertTrue(password_verify('newpassword123', $sekretaris->password));
     }
 
     public function test_public_dispen_verification_page_can_be_opened_without_login(): void

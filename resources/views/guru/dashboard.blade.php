@@ -102,12 +102,16 @@
                             @if($jurnal->status_validasi_guru === 'Menunggu')
                                 <span class="status status-menunggu">
                                     <span class="status-dot warning"></span>
-                                    Menunggu
+                                    Menunggu Validasi
                                 </span>
-                            @elseif($jurnal->status_validasi_guru === 'Valid')
+                            @elseif(in_array($jurnal->status_validasi_guru, ['Disetujui', 'Terverifikasi'], true))
                                 <span class="status status-valid">
                                     <span class="status-dot success"></span>
-                                    Valid
+                                    Terverifikasi
+                                </span>
+                            @elseif(in_array($jurnal->status_validasi_guru, ['Ditolak', 'Tidak Terverifikasi'], true))
+                                <span class="status status-default">
+                                    Tidak Terverifikasi
                                 </span>
                             @else
                                 <span class="status status-default">
