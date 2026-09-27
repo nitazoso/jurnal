@@ -68,7 +68,9 @@ class JurnalController extends Controller
             'jamSelesai',
         ])
             ->where('id_guru', $user->id_guru)
-            ->where('hari', $hariIni)
+            ->when(! config('app.jurnal_bebas_testing'), fn ($query) =>
+                $query->where('hari', $hariIni)
+            )
             ->whereNotNull('id_jam_mulai')
             ->whereNotNull('id_jam_selesai')
             ->whereHas('jamMulai')
@@ -110,7 +112,7 @@ class JurnalController extends Controller
                 ->with('info', 'Jurnal untuk jadwal ini hari ini sudah tersimpan di riwayat.');
         }
 
-        if (! $this->isScheduleWindowOpen($jadwal)) {
+        if (! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
             return redirect()
                 ->route('guru.jurnal.create')
                 ->with('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
@@ -131,6 +133,10 @@ class JurnalController extends Controller
             $jadwal->id_kelas,
             $today->toDateString()
         );
+        $activeSickReports = $this->activeSickReports(
+            $jadwal->id_kelas,
+            $today->toDateString()
+        );
 
         $activeDispenBerakhir = $this->activeDispenBerakhir(
             $jadwal->id_kelas,
@@ -145,6 +151,7 @@ class JurnalController extends Controller
             'jadwal',
             'siswa',
             'activeDispenSiswa',
+            'activeSickReports',
             'activeDispenBerakhir',
             'siswaDispen'
         ));
@@ -196,7 +203,7 @@ class JurnalController extends Controller
                 ->with('error', 'Jurnal untuk jadwal ini hari ini sudah dibuat.');
         }
 
-        if (! $this->isScheduleWindowOpen($jadwal)) {
+        if (! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
             return back()
                 ->withErrors([
                     'id_jadwal' =>
@@ -229,10 +236,16 @@ class JurnalController extends Controller
             ]);
         }
 
-        $this->activeDispenSiswa(
-            $jadwal->id_kelas,
-            $tanggal
-        )->each(function ($idSiswa) use (&$validated) {
+        $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $tanggal);
+        $activeDispenReports = $this->activeDispenQuery($jadwal->id_kelas, $tanggal)
+            ->get()
+            ->keyBy('id_siswa');
+
+        $activeSickReports->each(function ($report, $idSiswa) use (&$validated) {
+            $validated['absensi'][$idSiswa] = 'Sakit';
+        });
+
+        $activeDispenReports->each(function ($report, $idSiswa) use (&$validated) {
             $validated['absensi'][$idSiswa] = 'Dispen';
         });
 
@@ -248,7 +261,7 @@ class JurnalController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($validated, $jadwal, $user, $tanggal, $jmlHadir, $jmlTidakHadir) {
+            DB::transaction(function () use ($validated, $jadwal, $user, $tanggal, $jmlHadir, $jmlTidakHadir, $activeSickReports, $activeDispenReports) {
                 $jurnal = Jurnal::create([
                     'id_jadwal' => $jadwal->id_jadwal,
                     'id_kelas' => $jadwal->id_kelas,
@@ -287,10 +300,14 @@ class JurnalController extends Controller
                     DetailAbsensi::create([
                         'id_jurnal' => $jurnal->id_jurnal,
                         'id_siswa' => $idSiswa,
+                        'id_dispen' => $activeDispenReports->get($idSiswa)?->id_dispen
+                            ?? $activeSickReports->get($idSiswa)?->id_dispen,
                         'status' => $status,
                         'keterangan' => $status === 'Dispen'
                             ? 'Dispensasi otomatis'
-                            : null,
+                            : ($status === 'Sakit' && $activeSickReports->has($idSiswa)
+                                ? 'Surat sakit dari Piket'
+                                : null),
                     ]);
                 }
             });
@@ -324,6 +341,8 @@ class JurnalController extends Controller
             'jadwal.mapel',
             'jamMulai',
             'jamSelesai',
+            'detailAbsensis.siswa',
+            'validator',
         ]);
 
         return view(
@@ -366,6 +385,18 @@ class JurnalController extends Controller
         )->pluck('id_siswa');
     }
 
+    private function activeSickReports(int $idKelas, string $tanggal)
+    {
+        return Dispen::query()
+            ->where('jenis', 'sakit')
+            ->whereDate('tanggal', $tanggal)
+            ->where('status', 'disetujui')
+            ->whereHas('siswa', fn ($query) => $query->where('id_kelas', $idKelas))
+            ->latest('id_dispen')
+            ->get(['id_dispen', 'id_siswa', 'surat_path'])
+            ->keyBy('id_siswa');
+    }
+
     private function activeDispenBerakhir(
         int $idKelas,
         string $tanggal
@@ -398,6 +429,7 @@ class JurnalController extends Controller
         $waktuSekarang = now()->format('H:i:s');
 
         return Dispen::query()
+            ->where('jenis', 'dispen')
             ->whereDate('tanggal', $tanggal)
             ->where('status', 'disetujui')
             ->whereHas(

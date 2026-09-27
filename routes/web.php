@@ -138,10 +138,6 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::get('/admin/kelas/{kelas}/edit', [KelasController::class, 'edit'])
         ->name('admin.kelas.edit');
-    Route::get('/admin/kelas/{kelas}/qr', [KelasController::class, 'qr'])
-        ->name('admin.kelas.qr');
-    Route::get('/admin/kelas/{kelas}/qr/cetak', [KelasController::class, 'printQr'])
-        ->name('admin.kelas.qr.print');
 
     Route::put('/admin/kelas/{kelas}', [KelasController::class, 'update'])
         ->name('admin.kelas.update');
@@ -357,8 +353,11 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
         ->name('piket.dashboard');
 
-    Route::get('/piket/jurnal', [PiketJurnalController::class, 'index'])
-        ->name('piket.jurnal.index');
+    Route::get('/piket/jurnal/rekap', [PiketJurnalController::class, 'rekap'])
+        ->name('piket.jurnal.rekap');
+
+    Route::get('/piket/jurnal/{jurnal}', [PiketJurnalController::class, 'show'])
+        ->name('piket.jurnal.show');
 
     Route::get('/piket/profil', function () {
         return view('piket.profil');

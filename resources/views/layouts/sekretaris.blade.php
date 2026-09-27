@@ -612,7 +612,7 @@
                         <path d="M21 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11" />
                     </svg>
                 </span>
-                <span>Validasi Jurnal</span>
+                <span>Validasi Kehadiran Guru</span>
             </a>
 
             <a href="{{ route('sekretaris.isi-jurnal') }}"

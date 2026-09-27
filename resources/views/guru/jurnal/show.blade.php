@@ -98,10 +98,17 @@
                     <span class="info-label">Status Kehadiran Guru</span>
                     <div>
                         <span class="guru-pill">
-                            {{ $jurnal->status_guru ?? '-' }}
+                            {{ $jurnal->status_kehadiran_validasi ?? $jurnal->status_guru ?? '-' }}
                         </span>
                     </div>
                 </div>
+
+                @if(($jurnal->status_kehadiran_validasi ?? null) === 'Tidak Hadir')
+                    <div class="info-item">
+                        <span class="info-label">Alasan Tidak Hadir</span>
+                        <div class="info-val">{{ $jurnal->status_guru }}</div>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -135,7 +142,7 @@
 
     </div>
 
-    @if($jurnal->absensiSiswa->isNotEmpty())
+    @if($jurnal->detailAbsensis->isNotEmpty())
         <div class="jurnal-card section-card" style="animation-delay: 0.12s;">
             <h2 class="card-heading">Detail Ketidakhadiran Siswa</h2>
             <div class="overflow-x-auto">
@@ -148,7 +155,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($jurnal->absensiSiswa as $absensi)
+                        @foreach($jurnal->detailAbsensis as $absensi)
                             <tr class="border-b last:border-0">
                                 <td class="py-3 pr-4">{{ $absensi->siswa?->nama_siswa ?? '-' }}</td>
                                 <td class="py-3 pr-4">{{ $absensi->status }}</td>
@@ -236,6 +243,18 @@
                 {{ $jurnal->catatan_revisi }}
             </div>
         </div>
+    @endif
+
+    @if($jurnal->validated_at)
+        <section class="jurnal-card section-card" style="animation-delay: 0.32s;">
+            <h2 class="card-heading">VALIDASI OLEH</h2>
+            <div class="info-items-grid">
+                <div class="info-item"><span class="info-label">Validator</span><div class="info-val">Sekretaris<br>{{ $jurnal->validator?->nama_user ?? '-' }}</div></div>
+                <div class="info-item"><span class="info-label">Tanggal Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}</div></div>
+                <div class="info-item"><span class="info-label">Waktu Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->format('H:i') }}</div></div>
+                <div class="info-item"><span class="info-label">Status kehadiran guru</span><div class="info-val">{{ $jurnal->status_kehadiran_validasi }}</div></div>
+            </div>
+        </section>
     @endif
 
     {{-- BUTTON KEMBALI --}}

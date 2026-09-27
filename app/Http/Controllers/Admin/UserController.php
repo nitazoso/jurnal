@@ -88,7 +88,8 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username',
             'nama_user' => 'nullable|string|max:255',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:Admin,Guru,Sekretaris',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'no_wa' => ['required_if:role,Kesiswaan', 'nullable', 'string', 'max:20', 'regex:/^[0-9+ -]+$/'],
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|required_if:role,Sekretaris|exists:kelases,id_kelas',
         ]);
@@ -162,7 +163,8 @@ class UserController extends Controller
             'username' => 'required|string|max:100|unique:users,username,' . $user->id_user . ',id_user',
             'nama_user' => 'nullable|string|max:255',
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:Admin,Guru,Sekretaris',
+            'role' => 'required|in:Admin,Guru,Kesiswaan,Sekretaris',
+            'no_wa' => ['required_if:role,Kesiswaan', 'nullable', 'string', 'max:20', 'regex:/^[0-9+ -]+$/'],
             'id_guru' => 'nullable|exists:gurus,id_guru',
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ]);

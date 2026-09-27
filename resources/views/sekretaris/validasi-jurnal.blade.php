@@ -1,8 +1,8 @@
 @extends('layouts.sekretaris')
 
-@section('title', 'Validasi Jurnal')
-@section('page-title', 'Validasi Jurnal')
-@section('page-subtitle', 'Periksa dan kelola validasi jurnal guru')
+@section('title', 'Validasi Kehadiran Guru')
+@section('page-title', 'Validasi Kehadiran Guru')
+@section('page-subtitle', 'Periksa jurnal dan tetapkan status kehadiran guru')
 @section('content')
 
 {{-- Import Font Manrope jika belum dimuat di layout utama --}}
@@ -15,8 +15,8 @@
     {{-- PAGE HEADER --}}
     <div class="page-heading">
         <div>
-            <h2>Inbox Validasi Jurnal</h2>
-            <p>Daftar pengajuan jurnal pembelajaran dari guru untuk diverifikasi.</p>
+            <h2>Validasi Kehadiran Guru</h2>
+            <p>Daftar jurnal pembelajaran yang perlu diperiksa kehadiran gurunya.</p>
         </div>
     </div>
 
@@ -38,8 +38,8 @@
         </div>
 
         <div>
-            <h3>Validasi Jurnal Guru</h3>
-            <p>Periksa data jurnal sebelum menyetujui jurnal pembelajaran yang telah dikirim oleh guru.</p>
+            <h3>Validasi Kehadiran Guru</h3>
+            <p>Periksa isi jurnal, lalu tentukan apakah guru hadir atau tidak hadir pada sesi tersebut.</p>
         </div>
     </section>
 
@@ -74,7 +74,7 @@
             </div>
 
             <div class="filter-item">
-                <label for="status">Status</label>
+                <label for="status">Status Jurnal</label>
 
                 <select id="status" class="select" name="status">
                     <option value="">Semua status</option>
@@ -250,22 +250,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z" />
                             <circle cx="12" cy="12" r="3" />
                         </svg>
-                        Lihat Isi Jurnal
+                        Validasi Kehadiran Guru
                     </a>
-
-                    <form method="POST" action="{{ route('sekretaris.validasi-jurnal.update', $jurnal) }}" class="approve-form">
-                        @csrf
-                        @method('PATCH')
-
-                        <input type="hidden" name="status_validasi_guru" value="Disetujui">
-
-                        <button type="submit" class="approve-button">
-                            <svg fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m5 12 4 4L19 6" />
-                            </svg>
-                            Validasi Jurnal
-                        </button>
-                    </form>
                 </div>
 
                 @else

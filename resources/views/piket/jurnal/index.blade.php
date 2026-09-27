@@ -1,8 +1,8 @@
 @extends('layouts.piket')
 
-@section('title', 'Riwayat Jurnal - Jurnify')
+@section('title', 'Rekap Aktivitas Jurnal - Jurnify')
 
-@section('page-title', 'Riwayat Jurnal')
+@section('page-title', 'Rekap Aktivitas Jurnal')
 
 @push('styles')
 <style>
@@ -325,10 +325,10 @@
     }
 
     .journal-table th {
-        padding: 14px 18px;
+        padding: 16px 20px;
         text-align: left;
         color: #64748b;
-        font-size: 10px;
+        font-size: 12px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: .05em;
@@ -337,9 +337,10 @@
     }
 
     .journal-table td {
-        padding: 16px 18px;
+        padding: 18px 20px;
         color: #475569;
-        font-size: 12px;
+        font-size: 14px;
+        line-height: 1.5;
         border-bottom: 1px solid #f1f5f9;
         vertical-align: middle;
     }
@@ -348,8 +349,14 @@
         transition: background .15s ease;
     }
 
-    .journal-table tbody tr:hover {
+    .journal-table tbody tr.journal-row {
+        cursor: pointer;
+    }
+
+    .journal-table tbody tr.journal-row:hover,
+    .journal-table tbody tr.journal-row:focus {
         background: #f8fafc;
+        outline: none;
     }
 
     .journal-table tbody tr:last-child td {
@@ -457,7 +464,7 @@
                 </span>
 
                 <h1 class="text-2xl font-extrabold text-slate-800">
-                    Riwayat Jurnal
+                    Rekap Aktivitas Jurnal
                 </h1>
 
             </div>
@@ -473,7 +480,7 @@
         <div class="tab-wrapper">
 
             <a
-                href="{{ route('piket.jurnal.index', ['view' => 'kelas']) }}"
+                href="{{ route('piket.jurnal.rekap', ['view' => 'kelas']) }}"
                 class="tab-button {{ request('view', 'kelas') === 'kelas' ? 'active' : '' }}"
             >
                 <span class="material-symbols-outlined">
@@ -485,7 +492,7 @@
 
 
             <a
-                href="{{ route('piket.jurnal.index', ['view' => 'guru']) }}"
+                href="{{ route('piket.jurnal.rekap', ['view' => 'guru']) }}"
                 class="tab-button {{ request('view') === 'guru' ? 'active' : '' }}"
             >
                 <span class="material-symbols-outlined">
@@ -496,7 +503,7 @@
             </a>
 
             <a
-                href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}"
+                href="{{ route('piket.jurnal.rekap', ['view' => 'semua']) }}"
                 class="tab-button {{ request('view') === 'semua' ? 'active' : '' }}"
             >
                 <span class="material-symbols-outlined">
@@ -633,7 +640,7 @@
         <div class="jurnal-card p-5">
             <form
                 method="GET"
-                action="{{ route('piket.jurnal.index') }}"
+                action="{{ route('piket.jurnal.rekap') }}"
                 class="grid grid-cols-1 md:grid-cols-4 gap-3"
             >
                 <input type="hidden" name="view" value="semua">
@@ -683,7 +690,7 @@
                 </div>
 
                 <div class="md:col-span-4 flex justify-end gap-2 pt-1">
-                    <a href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}" class="secondary-button">
+                    <a href="{{ route('piket.jurnal.rekap', ['view' => 'semua']) }}" class="secondary-button">
                         <span class="material-symbols-outlined text-[18px]">restart_alt</span>
                         Reset
                     </a>
@@ -723,7 +730,7 @@
                     </thead>
                     <tbody>
                         @forelse($jurnals as $index => $jurnal)
-                            <tr>
+                            <tr class="journal-row" role="link" tabindex="0" onclick="window.location.href='{{ route('piket.jurnal.show', $jurnal) }}'" onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); window.location.href='{{ route('piket.jurnal.show', $jurnal) }}'; }">
                                 <td>{{ $index + 1 }}</td>
                                 <td>{{ $jurnal->tanggal?->format('d M Y') ?? '-' }}</td>
                                 <td>{{ $jurnal->jamMulai?->jam_ke ?? $jurnal->jam_ke ?? '-' }}</td>
@@ -760,7 +767,7 @@
                     Pilih kelas untuk melihat seluruh jurnal mengajar.
                 </p>
 
-        <form action="{{ route('piket.jurnal.index') }}"
+        <form action="{{ route('piket.jurnal.rekap') }}"
               method="GET"
               class="grid grid-cols-1 md:grid-cols-4 gap-4">
 
@@ -795,7 +802,7 @@
                 @forelse($kelases as $kls)
 
                     <a
-                        href="{{ route('piket.jurnal.index', [
+                        href="{{ route('piket.jurnal.rekap', [
                             'view' => 'kelas',
                             'id_kelas' => $kls->id_kelas
                         ]) }}"
@@ -884,7 +891,7 @@
 
                 <form
                     method="GET"
-                    action="{{ route('piket.jurnal.index') }}"
+                    action="{{ route('piket.jurnal.rekap') }}"
                     class="grid grid-cols-1 md:grid-cols-4 gap-3"
                 >
 
@@ -1012,7 +1019,7 @@
                     <div class="md:col-span-4 flex justify-end gap-2 pt-1">
 
                         <a
-                            href="{{ route('piket.jurnal.index', [
+                            href="{{ route('piket.jurnal.rekap', [
                                 'view' => 'kelas',
                                 'id_kelas' => $selectedKelas->id_kelas
                             ]) }}"
@@ -1267,7 +1274,7 @@
                 @forelse($gurus as $guru)
 
                     <a
-                        href="{{ route('piket.jurnal.index', [
+                        href="{{ route('piket.jurnal.rekap', [
                             'view' => 'guru',
                             'id_guru' => $guru->id_guru
                         ]) }}"
@@ -1376,7 +1383,7 @@
 
                 <form
                     method="GET"
-                    action="{{ route('piket.jurnal.index') }}"
+                    action="{{ route('piket.jurnal.rekap') }}"
                     class="grid grid-cols-1 md:grid-cols-4 gap-3"
                 >
 
@@ -1504,7 +1511,7 @@
                     <div class="md:col-span-4 flex justify-end gap-2 pt-1">
 
                         <a
-                            href="{{ route('piket.jurnal.index', [
+                            href="{{ route('piket.jurnal.rekap', [
                                 'view' => 'guru',
                                 'id_guru' => $selectedGuru->id_guru
                             ]) }}"

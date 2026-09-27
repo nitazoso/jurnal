@@ -73,31 +73,4 @@ class DashboardController extends Controller
         ));
     }
 
-    public function jurnalIndex(Request $request)
-    {
-        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
-            ->where('status_validasi_guru', 'Disetujui')
-            ->latest('tanggal');
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->orWhereHas('guru', fn ($g) => $g->where('nama_guru', 'like', "%{$search}%"))
-                    ->orWhereHas('kelas', fn ($k) => $k->where('nama_kelas', 'like', "%{$search}%"));
-            });
-        }
-
-        if ($request->filled('kelas_id')) {
-            $query->where('id_kelas', $request->kelas_id);
-        }
-
-        if ($request->filled('tanggal')) {
-            $query->whereDate('tanggal', $request->tanggal);
-        }
-
-        $jurnals = $query->get();
-        $kelases = \App\Models\Kelas::orderBy('nama_kelas')->get();
-
-        return view('piket.jurnal.index', compact('jurnals', 'kelases'));
-    }
 }

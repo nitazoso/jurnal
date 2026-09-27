@@ -63,6 +63,38 @@ class RoleKesiswaanTest extends TestCase
         ]);
     }
 
+    public function test_kesiswaan_user_requires_a_whatsapp_number(): void
+    {
+        $admin = User::create([
+            'username' => 'admin_kesiswaan_test',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Admin Kesiswaan Test',
+            'role' => 'Admin',
+        ]);
+
+        $missingPhone = $this->actingAs($admin)->post(route('admin.user.store'), [
+            'username' => 'kesiswaan_tanpa_nomor',
+            'nama_user' => 'Kesiswaan Tanpa Nomor',
+            'password' => 'password123',
+            'role' => 'Kesiswaan',
+        ]);
+        $missingPhone->assertSessionHasErrors('no_wa');
+
+        $this->post(route('admin.user.store'), [
+            'username' => 'kesiswaan_dengan_nomor',
+            'nama_user' => 'Kesiswaan Dengan Nomor',
+            'password' => 'password123',
+            'role' => 'Kesiswaan',
+            'no_wa' => '081234567890',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'username' => 'kesiswaan_dengan_nomor',
+            'role' => 'Kesiswaan',
+            'no_wa' => '081234567890',
+        ]);
+    }
+
     public function test_secretary_user_requires_and_saves_assigned_class(): void
     {
         $admin = User::create([
@@ -271,6 +303,14 @@ class RoleKesiswaanTest extends TestCase
             'username' => 'recipient_target',
             'password' => bcrypt('password123'),
             'nama_user' => 'Petugas Target',
+            'role' => 'Kesiswaan',
+            'no_wa' => '0812 3456 7890',
+        ]);
+
+        $bukanKesiswaan = User::create([
+            'username' => 'recipient_not_kesiswaan',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Bukan Kesiswaan',
             'role' => 'Sekretaris',
         ]);
 
@@ -292,8 +332,23 @@ class RoleKesiswaanTest extends TestCase
             'durasi_menit' => 45,
         ]);
 
-        $response = $this->actingAs($piket)
-            ->post(route('piket.dispen.store'), [
+        $form = $this->actingAs($piket)->get(route('piket.dispen.create'));
+        $form->assertOk();
+        $form->assertSee('Petugas Target (0812 3456 7890)');
+        $form->assertDontSee('Bukan Kesiswaan');
+
+        $invalidRecipient = $this->post(route('piket.dispen.store'), [
+            'id_kelas' => $kelas->id_kelas,
+            'id_siswa' => $siswa->id_siswa,
+            'id_kesiswaan' => $bukanKesiswaan->id_user,
+            'tanggal' => now()->toDateString(),
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'alasan' => 'Pengajuan ke role lain',
+        ]);
+        $invalidRecipient->assertSessionHasErrors('id_kesiswaan');
+
+        $response = $this->post(route('piket.dispen.store'), [
                 'id_kelas' => $kelas->id_kelas,
                 'id_siswa' => $siswa->id_siswa,
                 'id_kesiswaan' => $petugas->id_user,
@@ -311,6 +366,17 @@ class RoleKesiswaanTest extends TestCase
             'status' => 'menunggu',
             'alasan' => 'Mengikuti lomba',
         ]);
+
+        $dispen = \App\Models\Dispen::firstOrFail();
+        $whatsappResponse = $this->get(route('piket.dispen.whatsapp', $dispen));
+        $whatsappResponse->assertRedirect();
+        parse_str(parse_url($whatsappResponse->headers->get('Location'), PHP_URL_QUERY), $whatsappQuery);
+
+        $this->assertSame('https://wa.me/6281234567890', strtok($whatsappResponse->headers->get('Location'), '?'));
+        $this->assertStringContainsString(
+            route('dispen.verifikasi', $dispen->token_verifikasi),
+            $whatsappQuery['text']
+        );
     }
 
     public function test_staff_piket_can_see_newly_submitted_journal(): void
@@ -367,7 +433,7 @@ class RoleKesiswaanTest extends TestCase
             'tahun_ajaran' => '2026/2027',
         ]);
 
-        Jurnal::create([
+        $jurnal = Jurnal::create([
             'id_jadwal' => $jadwal->id_jadwal,
             'id_kelas' => $kelas->id_kelas,
             'id_guru' => $guru->id_guru,
@@ -395,10 +461,19 @@ class RoleKesiswaanTest extends TestCase
         ]);
 
         $response = $this->actingAs($piket)
-            ->get(route('piket.jurnal.index', ['id_kelas' => $kelas->id_kelas]));
+            ->get(route('piket.jurnal.rekap'));
 
         $response->assertOk();
-        $response->assertSee('Jurnal Kelas X IPA 1');
+        $response->assertSee('Rekap Aktivitas Jurnal');
         $response->assertSee('Ekosistem');
+        $response->assertSee(route('piket.jurnal.show', $jurnal), false);
+
+        $this->get(route('piket.jurnal.show', $jurnal))
+            ->assertOk()
+            ->assertSee('Detail Jurnal')
+            ->assertSee('Ekosistem')
+            ->assertSee('Membuat ringkasan');
+
+        $this->get('/piket/jurnal')->assertNotFound();
     }
 }

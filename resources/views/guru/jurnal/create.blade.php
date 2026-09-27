@@ -558,14 +558,15 @@
                 <div>
                     <h2>JADWAL & KELAS</h2>
                     <span class="schedule-today">
-                        {{ $hariIni }} · {{ $today->translatedFormat('d F Y') }}
+                        {{ config('app.jurnal_bebas_testing') ? 'Mode testing · Semua jadwal' : $hariIni }}
+                        · {{ $today->translatedFormat('d F Y') }}
                     </span>
                 </div>
 
             </div>
 
             <span class="schedule-card-note">
-                Jadwal Hari Ini
+                {{ config('app.jurnal_bebas_testing') ? 'Bebas hari & jam' : 'Jadwal Hari Ini' }}
             </span>
 
         </div>
@@ -673,7 +674,9 @@
                                         </p>
 
                                         <p class="empty-text">
-                                            Tidak ada jadwal mengajar yang perlu diisi untuk hari ini.
+                                            {{ config('app.jurnal_bebas_testing')
+                                                ? 'Belum ada jadwal mengajar yang terdaftar untuk akun ini.'
+                                                : 'Tidak ada jadwal mengajar yang perlu diisi untuk hari ini.' }}
                                         </p>
 
                                     </div>

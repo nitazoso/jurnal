@@ -10,24 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0,0" rel="stylesheet">
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
 <style>
-.qr-verification-card { border: 1px solid #dbe4f0; border-radius: 16px; background: #fff; margin-bottom: 20px; padding: 20px; }
-    .qr-verification-head { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
-    .qr-verification-status { align-items: center; border-radius: 999px; display: inline-flex; font-size: 12px; font-weight: 800; gap: 6px; padding: 8px 12px; }
-    .qr-verification-status.pending { background: #fff7ed; color: #9a3412; }
-    .qr-verification-status.success { background: #dcfce7; color: #166534; }
-    .qr-verification-success { background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; color: #166534; font-size: 13px; font-weight: 700; margin-top: 14px; padding: 12px 14px; }
-    .qr-scan-button { background: #1d4ed8; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font-weight: 700; padding: 10px 14px; }
-    .qr-scan-button:disabled { cursor: not-allowed; opacity: .65; }
-    .qr-scanner { background: #0f172a; border-radius: 12px; display: none; margin-top: 16px; max-width: 420px; min-height: 280px; overflow: hidden; width: 100%; }
-    .qr-scanner.open { display: block; }
-    .qr-scanner video { display: block; min-height: 280px; object-fit: cover; width: 100% !important; }
-    .qr-scanner-status { color: #e2e8f0; font-size: 13px; padding: 16px; text-align: center; }
-    .qr-scan-message { color: #b45309; font-size: 13px; font-weight: 700; margin-top: 8px; }
-    .qr-close-button { background: #e2e8f0; border: 0; border-radius: 8px; cursor: pointer; margin-top: 10px; padding: 8px 12px; }
-
     :root {
         --j-primary: #2D336B;
         --j-secondary: #7886C7;
@@ -327,6 +311,18 @@
         color: #17633F;
         font-size: 11px;
         font-weight: 700;
+    }
+    .attendance-locked.sick {
+        border-color: #f2d38a;
+        background: #fff8e8;
+        color: #8b5a12;
+    }
+    .sick-letter-link {
+        color: #2563eb;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: underline;
+        white-space: nowrap;
     }
     .student-table .attendance-btn[data-status="Hadir"].active {
         border-color: #245C49;
@@ -783,12 +779,14 @@
                                     <th class="student-nis">NIS</th>
                                     <th>Nama Siswa</th>
                                     <th>Status Kehadiran</th>
+                                    <th>Foto Surat</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($siswa as $item)
                                     @php
                                         $isDispenAktif = $activeDispenSiswa->contains($item->id_siswa);
+                                        $laporanSakit = $activeSickReports->get($item->id_siswa);
                                     @endphp
                                     <tr
                                         class="student-row"
@@ -818,6 +816,12 @@
                                                     value="Dispen"
                                                     class="attendance-value"
                                                 >
+                                            @elseif($laporanSakit)
+                                                <div class="attendance-locked sick">Sakit · Terkonfirmasi</div>
+                                                <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
+                                                    value="Sakit"
+                                                    class="attendance-value"
+                                                >
                                             @else
                                                 <div class="attendance-options">
                                                     <button type="button" class="attendance-btn active" data-status="Hadir" onclick="setStudentStatus(this)">
@@ -839,10 +843,19 @@
                                                 </div>
                                             @endif
                                         </td>
+                                        <td>
+                                            @if($laporanSakit?->surat_path)
+                                                <a class="sick-letter-link" href="{{ asset('storage/' . $laporanSakit->surat_path) }}" target="_blank" rel="noopener">Lihat foto surat</a>
+                                            @elseif($laporanSakit)
+                                                <span class="text-muted">Tidak ada foto</span>
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4">
+                                        <td colspan="5">
                                             <div class="empty-students">
                                                 Belum ada siswa di kelas ini.
                                             </div>
@@ -883,13 +896,6 @@
                     <div class="field-group">
                         <label class="field-label">Deskripsi Tugas</label>
                         <textarea name="deskripsi_tugas" class="field-textarea" placeholder="Tuliskan deskripsi tugas jika ada...">{{ old('deskripsi_tugas') }}</textarea>
-                    </div>
-                </div>
-
-                <div style="margin-top:16px;">
-                    <div class="field-group">
-                        <label class="field-label">Catatan Umum</label>
-                        <textarea name="catatan_umum" class="field-textarea" placeholder="Tambahkan catatan jika diperlukan...">{{ old('catatan_umum') }}</textarea>
                     </div>
                 </div>
 
@@ -1212,10 +1218,6 @@
     const taskTextarea = document.querySelector('textarea[name="deskripsi_tugas"]');
     const taskReview = document.getElementById('reviewTugas');
 
-    const catatanSection = document.getElementById('reviewCatatanSection');
-    const catatanReview = document.getElementById('reviewCatatan');
-    const catatanInput = document.querySelector('textarea[name="catatan_umum"]');
-
     if (taskSection) taskSection.style.display = '';
     const adaTugas = taskSelect ? taskSelect.value : 'Tidak';
     const deskripsi = taskTextarea ? taskTextarea.value.trim() : '';
@@ -1223,13 +1225,6 @@
       taskReview.textContent = adaTugas === 'Ya' ? (deskripsi || 'Tugas belum diisi.') : 'Tidak ada tugas.';
     }
 
-    const catatan = catatanInput ? catatanInput.value.trim() : '';
-    if (catatan) {
-      if (catatanSection) catatanSection.style.display = '';
-      if (catatanReview) catatanReview.textContent = catatan;
-    } else {
-      if (catatanSection) catatanSection.style.display = 'none';
-    }
   }
 
   function openReview() {

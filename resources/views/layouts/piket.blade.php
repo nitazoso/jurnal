@@ -370,15 +370,11 @@
                     <span class="material-symbols-outlined">home</span> 
                     <span>Dashboard</span>
                 </a>
-                <a href="{{ route('piket.jurnal.index') }}" class="nav-item {{ request()->routeIs('piket.jurnal.index') ? 'active' : '' }}"> 
-                    <span class="material-symbols-outlined">menu_book</span> 
-                    <span>Riwayat Jurnal</span>
-                </a>
-                <a href="{{ route('piket.jurnal.index', ['view' => 'semua']) }}" class="nav-item {{ request()->routeIs('piket.jurnal.index') && request('view') === 'semua' ? 'active' : '' }}">
+                <a href="{{ route('piket.jurnal.rekap') }}" class="nav-item {{ request()->routeIs('piket.jurnal.rekap') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
                 </a>
-                <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') ? 'active' : '' }}"> 
+                <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') && !request()->routeIs('piket.dispen.sakit.*', 'piket.dispen.history') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
                 </a>

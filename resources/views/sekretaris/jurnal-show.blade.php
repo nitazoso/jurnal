@@ -88,9 +88,16 @@
                 <div class="info-item">
                     <span class="info-label">Status Kehadiran Guru</span>
                     <span class="badge badge-guru">
-                        {{ $jurnal->status_guru ?? '-' }}
+                        {{ $jurnal->status_kehadiran_validasi ?? $jurnal->status_guru ?? '-' }}
                     </span>
                 </div>
+
+                @if(($jurnal->status_kehadiran_validasi ?? null) === 'Tidak Hadir')
+                    <div class="info-item">
+                        <span class="info-label">Alasan Tidak Hadir</span>
+                        <span class="info-value">{{ $jurnal->status_guru }}</span>
+                    </div>
+                @endif
 
                 <div class="info-item">
                     <span class="info-label">Presensi Siswa</span>
@@ -129,20 +136,30 @@
             </div>
 
             <div class="field-box">
-                <label>Catatan Umum</label>
-
-                <div class="content-body {{ !$jurnal->catatan_umum ? 'text-muted' : '' }}">
-                    {{ $jurnal->catatan_umum ?: 'Tidak ada catatan umum.' }}
+                <label>Keterangan Pembelajaran</label>
+                <div class="content-body {{ !$jurnal->keterangan ? 'text-muted' : '' }}">
+                    {{ $jurnal->keterangan ?: 'Tidak ada keterangan pembelajaran.' }}
                 </div>
             </div>
 
             <div class="field-box">
-                <label>Deskripsi Tugas</label>
+                <label>Ada Tugas?</label>
+                <div class="content-body">{{ $jurnal->ada_tugas ?: 'Tidak' }}</div>
+            </div>
 
+            <div class="field-box">
+                <label>Deskripsi Tugas</label>
                 <div class="content-body {{ !$jurnal->deskripsi_tugas ? 'text-muted' : '' }}">
-                    {{ $jurnal->deskripsi_tugas ?: 'Tidak ada tugas yang dicatat.' }}
+                    {{ $jurnal->deskripsi_tugas ?: 'Tidak ada deskripsi tugas.' }}
                 </div>
             </div>
+
+            @if($jurnal->catatan_umum)
+                <div class="field-box">
+                    <label>Catatan</label>
+                    <div class="content-body">{{ $jurnal->catatan_umum }}</div>
+                </div>
+            @endif
         </div>
 
     </div>
@@ -153,20 +170,20 @@
         <div class="review-actions-card">
 
             <div class="actions-header">
-                <h3>Aksi Validasi Jurnal</h3>
+                <h3>Validasi Kehadiran Guru</h3>
                 <p>
-                    Silakan pilih untuk menyetujui jurnal ini atau meminta perbaikan kepada guru bersangkutan.
+                    Tentukan status kehadiran guru berdasarkan jurnal pembelajaran ini.
                 </p>
             </div>
 
             <div class="action-grid">
 
-                {{-- Approve --}}
+                {{-- Guru hadir --}}
                 <div class="action-box approve-box">
                     <div>
-                        <h4>Setujui Langsung</h4>
+                        <h4>Guru Hadir</h4>
                         <p>
-                            Jurnal sudah sesuai dan tidak memerlukan revisi.
+                            Catat guru hadir pada sesi pembelajaran ini.
                         </p>
                     </div>
 
@@ -174,48 +191,36 @@
                         @csrf
                         @method('PATCH')
 
-                        <input type="hidden" name="status_validasi_guru" value="Disetujui">
+                        <input type="hidden" name="status_kehadiran_validasi" value="Hadir">
 
                         <button type="submit" class="btn btn-approve">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                                 <polyline points="20 6 9 17 4 12"/>
                             </svg>
-                            Setujui Jurnal
+                            Validasi Guru Hadir
                         </button>
                     </form>
                 </div>
 
-                {{-- Revision --}}
-                <div class="action-box revise-box">
+                {{-- Guru tidak hadir --}}
+                <div class="action-box absent-box">
                     <div>
-                        <h4>Minta Perbaikan (Revisi)</h4>
+                        <h4>Guru Tidak Hadir</h4>
                         <p>
-                            Berikan catatan perbaikan agar guru dapat memperbaruinya.
+                            Catat guru tidak hadir pada sesi pembelajaran ini.
                         </p>
                     </div>
 
                     <form method="POST" action="{{ route('sekretaris.validasi-jurnal.update', $jurnal) }}">
                         @csrf
                         @method('PATCH')
+                        <input type="hidden" name="status_kehadiran_validasi" value="Tidak Hadir">
 
-                        <input type="hidden" name="status_validasi_guru" value="Perlu Diperbaiki">
-
-                        <div class="revisi-wrap">
-                            <textarea
-                                name="catatan_revisi"
-                                id="catatan_revisi"
-                                rows="3"
-                                placeholder="Tuliskan catatan revisi/alasan perbaikan secara jelas..."
-                                required
-                            ></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-revise">
+                        <button type="submit" class="btn btn-absent">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                <path d="M21.5 2v6h-6"/>
-                                <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+                                <path d="M18 6 6 18M6 6l12 12"/>
                             </svg>
-                            Kirim Permintaan Perbaikan
+                            Validasi Guru Tidak Hadir
                         </button>
                     </form>
                 </div>
@@ -223,6 +228,25 @@
             </div>
         </div>
 
+    @endif
+
+    @if($jurnal->validated_at)
+        <section class="review-card validation-meta-card">
+            <div class="card-header">
+                <div class="icon-avatar emerald">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m5 12 4 4L19 6"/>
+                    </svg>
+                </div>
+                <h3>VALIDASI OLEH</h3>
+            </div>
+            <div class="info-list">
+                <div class="info-item"><span class="info-label">Validator</span><span class="info-value">Sekretaris<br>{{ $jurnal->validator?->nama_user ?? '-' }}</span></div>
+                <div class="info-item"><span class="info-label">Tanggal Validasi</span><span class="info-value">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}</span></div>
+                <div class="info-item"><span class="info-label">Waktu Validasi</span><span class="info-value">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->format('H:i') }}</span></div>
+                <div class="info-item"><span class="info-label">Status kehadiran guru</span><span class="info-value">{{ $jurnal->status_kehadiran_validasi }}</span></div>
+            </div>
+        </section>
     @endif
 
 </div>
@@ -562,6 +586,28 @@
 
     .revise-box h4 {
         color: #92400e;
+    }
+
+    .absent-box {
+        border: 1px solid #fecaca;
+        background: #fff1f2;
+    }
+
+    .absent-box h4 {
+        color: #b91c1c;
+    }
+
+    .btn-absent {
+        background: #dc2626;
+    }
+
+    .btn-absent:hover {
+        background: #b91c1c;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, .2);
+    }
+
+    .validation-meta-card {
+        margin-top: 20px;
     }
 
     /* Form */

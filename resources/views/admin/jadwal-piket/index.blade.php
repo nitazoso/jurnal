@@ -1006,7 +1006,7 @@
 
                     $isCurrentMonth = $day->format('Y-m') === $month;
 
-                    $isToday = $dateKey === now()->format('Y-m-d');
+                    $isToday = $dateKey === $today;
                 @endphp
 
                 <div

@@ -24,6 +24,7 @@ class User extends Authenticatable implements PasskeyUser
         'password',
         'nama_user',
         'role',
+        'no_wa',
         'id_guru',
         'id_kelas',
     ];
@@ -61,7 +62,7 @@ class User extends Authenticatable implements PasskeyUser
                 ->orWhere('koordinator_kbm_siang_id', $this->id_guru)
                 ->orWhere('piket_waka_id', $this->id_guru);
         })
-            ->whereDate('tanggal', now()->toDateString())
+            ->whereDate('tanggal', now('Asia/Jakarta')->toDateString())
             ->exists();
     }
 

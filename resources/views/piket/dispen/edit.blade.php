@@ -60,10 +60,14 @@
                     @foreach ($petugasKesiswaans as $petugas)
                         <option value="{{ $petugas->id_user }}"
                             {{ old('id_kesiswaan', $dispen->id_kesiswaan) == $petugas->id_user ? 'selected' : '' }}>
-                            {{ $petugas->nama_user }}
+                            {{ $petugas->nama_user }} ({{ $petugas->no_wa }})
                         </option>
                     @endforeach
+                    @if ($petugasKesiswaans->isEmpty())
+                        <option value="" disabled>Belum ada akun Kesiswaan dengan nomor WhatsApp</option>
+                    @endif
                 </select>
+                <p class="mt-1 text-sm text-gray-500">Hanya petugas Kesiswaan dengan nomor WhatsApp yang terdaftar.</p>
             </div>
 
             <div class="mb-4">

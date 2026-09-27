@@ -50,7 +50,7 @@ class DashboardTest extends TestCase
 
         PiketJadwal::create([
             'id_guru' => $guru->id_guru,
-            'tanggal' => now()->toDateString(),
+            'tanggal' => now('Asia/Jakarta')->toDateString(),
             'shift' => 'Pagi',
             'jam_mulai' => '07:00',
             'jam_selesai' => '08:00',
@@ -66,8 +66,46 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('piket.dashboard'));
     }
 
+    public function test_guru_with_picket_on_jakarta_tomorrow_is_redirected_to_piket_dashboard(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-26 23:30:00', 'UTC'));
+
+        try {
+            $guru = Guru::create([
+                'nama_guru' => 'Badrus',
+            ]);
+
+            $user = User::create([
+                'username' => 'badrus.guru',
+                'password' => bcrypt('password'),
+                'nama_user' => 'Badrus Guru',
+                'role' => 'Guru',
+                'id_guru' => $guru->id_guru,
+            ]);
+
+            PiketJadwal::create([
+                'id_guru' => $guru->id_guru,
+                'tanggal' => '2026-09-27',
+                'shift' => 'Pagi',
+                'jam_mulai' => '07:00',
+                'jam_selesai' => '08:00',
+                'jenis_tugas' => 'Piket KBM Pagi',
+                'created_by' => $user->id_user,
+            ]);
+
+            $this->post(route('login'), [
+                'username' => 'badrus.guru',
+                'password' => 'password',
+            ])->assertRedirect(route('piket.dashboard'));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_guru_cannot_access_journal_form_outside_their_schedule_window(): void
     {
+        config(['app.jurnal_bebas_testing' => false]);
+
         $guru = Guru::create([
             'nama_guru' => 'Siti',
         ]);
@@ -122,6 +160,78 @@ class DashboardTest extends TestCase
 
         $response->assertRedirect(route('guru.jurnal.create'));
         $response->assertSessionHas('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
+    }
+
+    public function test_guru_can_submit_journal_outside_schedule_in_testing_mode(): void
+    {
+        config(['app.jurnal_bebas_testing' => true]);
+        Carbon::setTestNow(Carbon::parse('2026-09-27 23:00:00'));
+
+        try {
+            $guru = Guru::create(['nama_guru' => 'Guru Testing']);
+            $mapel = Mapel::create(['nama_mapel' => 'Matematika']);
+            $kelas = Kelas::create([
+                'nama_kelas' => 'VII-Testing',
+                'wali_kelas' => $guru->id_guru,
+            ]);
+            $user = User::create([
+                'username' => 'guru.testing.jurnal',
+                'password' => bcrypt('password'),
+                'nama_user' => 'Guru Testing',
+                'role' => 'Guru',
+                'id_guru' => $guru->id_guru,
+            ]);
+            $jamMulai = JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => 1,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '07:00:00',
+                'jam_selesai' => '07:45:00',
+            ]);
+            $jamSelesai = JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => 2,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '07:45:00',
+                'jam_selesai' => '08:30:00',
+            ]);
+            $jadwal = Jadwal::create([
+                'id_guru' => $guru->id_guru,
+                'id_mapel' => $mapel->id_mapel,
+                'id_kelas' => $kelas->id_kelas,
+                'id_jam_mulai' => $jamMulai->id_jam,
+                'id_jam_selesai' => $jamSelesai->id_jam,
+                'hari' => 'Senin',
+                'semester' => 'Ganjil',
+                'tahun_ajaran' => '2026/2027',
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('guru.jurnal.create'))
+                ->assertOk()
+                ->assertSee('Mode testing · Semua jadwal')
+                ->assertSee('VII-Testing');
+
+            $this->get(route('guru.jurnal.form', $jadwal))
+                ->assertOk();
+
+            $this->post(route('guru.jurnal.store'), [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'tanggal' => '2026-09-27',
+                'materi' => 'Materi testing di luar jam',
+                'keterangan' => 'Pengujian bebas jam dan hari',
+                'ada_tugas' => 'Tidak',
+                'absensi' => [],
+            ])->assertRedirect(route('guru.jurnal.index'));
+
+            $this->assertDatabaseHas('jurnals', [
+                'id_jadwal' => $jadwal->id_jadwal,
+                'materi' => 'Materi testing di luar jam',
+                'tanggal' => '2026-09-27 00:00:00',
+            ]);
+        } finally {
+            Carbon::setTestNow();
+        }
     }
 
     public function test_guru_journal_form_does_not_require_qr_scan(): void
@@ -758,6 +868,13 @@ class DashboardTest extends TestCase
             'role' => 'Sekretaris',
         ]);
         $guru = Guru::create(['nama_guru' => 'Guru Absensi']);
+        $guruUser = User::create([
+            'username' => 'guru_absensi_detail_test',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Guru Absensi',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+        ]);
         $mapel = Mapel::create(['nama_mapel' => 'Mapel Absensi']);
         $kelas = Kelas::create(['nama_kelas' => 'Kelas Absensi']);
         $jamMulai = JamPel::create([
@@ -789,7 +906,9 @@ class DashboardTest extends TestCase
             'id_jadwal' => $jadwal->id_jadwal,
             'tanggal' => now()->toDateString(),
             'materi' => 'Materi Absensi',
-            'status_guru' => 'Hadir',
+            'keterangan' => 'Catatan materi pembelajaran',
+            'status_kehadiran_validasi' => 'Hadir',
+            'catatan_umum' => 'Guru hadir dan jurnal dikonfirmasi.',
             'ada_tugas' => 'Tidak',
             'jml_hadir' => 0,
             'jml_tidak_hadir' => 0,
@@ -797,22 +916,66 @@ class DashboardTest extends TestCase
 
         $this->actingAs($sekretaris);
 
-        $this->post(route('sekretaris.isi-jurnal.store'), $payload)
-            ->assertSessionHasErrors('status_guru');
+        $this->get(route('sekretaris.isi-jurnal'))
+            ->assertOk()
+            ->assertSee('Kehadiran Guru')
+            ->assertSee('absenceReasonField')
+            ->assertSee('Keterangan Pembelajaran');
 
-        $payload['status_guru'] = 'Izin';
         $this->post(route('sekretaris.isi-jurnal.store'), $payload)
-            ->assertSessionHasErrors('catatan_umum');
+            ->assertRedirect(route('sekretaris.validasi-jurnal'));
+        $this->assertDatabaseHas('jurnals', [
+            'id_jadwal' => $jadwal->id_jadwal,
+            'status_guru' => 'Hadir',
+            'status_kehadiran_validasi' => 'Hadir',
+            'validated_by' => $sekretaris->id_user,
+            'catatan_umum' => 'Guru hadir dan jurnal dikonfirmasi.',
+        ]);
 
-        $payload['catatan_umum'] = 'Guru sedang izin.';
+        $payload['status_kehadiran_validasi'] = 'Tidak Hadir';
+        $this->post(route('sekretaris.isi-jurnal.store'), $payload)
+            ->assertSessionHasErrors('alasan_tidak_hadir');
+
+        $payload['alasan_tidak_hadir'] = 'Izin';
+        $payload['catatan_umum'] = 'Guru izin karena keperluan keluarga.';
         $this->post(route('sekretaris.isi-jurnal.store'), $payload)
             ->assertRedirect(route('sekretaris.validasi-jurnal'));
 
+        $jurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)
+            ->where('status_kehadiran_validasi', 'Tidak Hadir')
+            ->firstOrFail();
+
         $this->assertDatabaseHas('jurnals', [
+            'id_jurnal' => $jurnal->id_jurnal,
             'id_jadwal' => $jadwal->id_jadwal,
             'status_guru' => 'Izin',
-            'catatan_umum' => 'Guru sedang izin.',
+            'status_kehadiran_validasi' => 'Tidak Hadir',
+            'validated_by' => $sekretaris->id_user,
+            'catatan_umum' => 'Guru izin karena keperluan keluarga.',
         ]);
+        $this->assertNotNull($jurnal->validated_at);
+
+        $this->actingAs($sekretaris)
+            ->get(route('sekretaris.validasi-jurnal.show', $jurnal))
+            ->assertOk()
+            ->assertSee('Tidak Hadir')
+            ->assertSee('Izin')
+            ->assertSee('Guru izin karena keperluan keluarga.')
+            ->assertSee('Sekretaris Absensi');
+
+        $this->actingAs($guruUser)
+            ->get(route('guru.jurnal.show', $jurnal))
+            ->assertOk()
+            ->assertSee('Tidak Hadir')
+            ->assertSee('Izin')
+            ->assertSee('Sekretaris Absensi');
+
+        $this->actingAs($guruUser)
+            ->get(route('piket.jurnal.show', $jurnal))
+            ->assertOk()
+            ->assertSee('Tidak Hadir')
+            ->assertSee('Izin')
+            ->assertSee('Sekretaris Absensi');
     }
 
 }

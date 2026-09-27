@@ -452,13 +452,13 @@
             <h3 class="section-title">Jurnal Masuk (Terbaru)</h3>
             <p class="section-subtitle">Daftar presensi dan catatan kelas yang baru diserahkan oleh guru.</p>
         </div>
-        <a href="{{ route('piket.jurnal.index') }}" class="view-all-link">Lihat Semua &rarr;</a>
+        <a href="{{ route('piket.jurnal.rekap') }}" class="view-all-link">Lihat Semua &rarr;</a>
     </div>
 
     <!-- List Dynamic Data -->
     <div class="jurnal-list">
         @forelse($jurnals as $jurnal)
-            <a href="#" class="jurnal-item">
+            <a href="{{ route('piket.jurnal.show', $jurnal) }}" class="jurnal-item" aria-label="Lihat detail jurnal {{ $jurnal->materi ?? '' }}">
                 <div class="teacher-info">
                     <div class="icon-box">
                         <i class="bi bi-book"></i>
@@ -481,7 +481,7 @@
 
                 <div class="info-col">
                     <span class="col-label">STATUS</span>
-                    <span class="status-badge hadir">Tercatat</span>
+                    <span class="status-badge hadir">{{ $jurnal->status_validasi_guru ?? '-' }}</span>
                 </div>
 
                 <div style="text-align: right;">

@@ -147,7 +147,12 @@ class DispenController extends Controller
                     fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
                 ),
             ],
-            'id_kesiswaan' => ['required', Rule::exists('users', 'id_user')],
+            'id_kesiswaan' => [
+                'required',
+                Rule::exists('users', 'id_user')->where(fn ($query) =>
+                    $query->where('role', 'Kesiswaan')->whereNotNull('no_wa')->where('no_wa', '!=', '')
+                ),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
@@ -174,19 +179,14 @@ class DispenController extends Controller
      */
     public function whatsapp(Dispen $dispen)
     {
-        $dispen->load([
-            'siswa.kelas',
-            'jamMulai',
-            'jamSelesai',
-            'petugasKesiswaan.guru',
-        ]);
+        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai', 'petugasKesiswaan']);
 
         $petugas = $dispen->petugasKesiswaan;
-        $nomorWa = $petugas?->no_wa ?? $petugas?->guru?->no_hp ?? null;
+        $nomorWa = $petugas?->no_wa;
 
-        if (! $nomorWa) {
+        if ($petugas?->role !== 'Kesiswaan' || ! $nomorWa) {
             return redirect()->route('piket.dispen.index')
-                ->with('error', 'Nomor WhatsApp petugas kesiswaan belum diisi.');
+                ->with('error', 'Penerima harus merupakan petugas Kesiswaan dengan nomor WhatsApp yang sudah diisi.');
         }
 
         $linkVerifikasi = route('dispen.verifikasi', $dispen->token_verifikasi);
@@ -205,6 +205,9 @@ class DispenController extends Controller
             . $linkVerifikasi;
 
         $cleanPhone = preg_replace('/\D+/', '', $nomorWa);
+        if (str_starts_with($cleanPhone, '0')) {
+            $cleanPhone = '62' . substr($cleanPhone, 1);
+        }
         $waUrl = $cleanPhone !== ''
             ? 'https://wa.me/' . $cleanPhone . '?text=' . rawurlencode($message)
             : 'https://wa.me/?text=' . rawurlencode($message);
@@ -240,7 +243,12 @@ class DispenController extends Controller
                     fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
                 ),
             ],
-            'id_kesiswaan' => ['required', Rule::exists('users', 'id_user')],
+            'id_kesiswaan' => [
+                'required',
+                Rule::exists('users', 'id_user')->where(fn ($query) =>
+                    $query->where('role', 'Kesiswaan')->whereNotNull('no_wa')->where('no_wa', '!=', '')
+                ),
+            ],
             'tanggal' => 'required|date',
             'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
             'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
@@ -276,7 +284,9 @@ class DispenController extends Controller
         ])->orderBy('nama_kelas')->get();
 
         $petugasKesiswaans = User::query()
-            ->with('guru')
+            ->where('role', 'Kesiswaan')
+            ->whereNotNull('no_wa')
+            ->where('no_wa', '!=', '')
             ->orderBy('nama_user')
             ->get();
 

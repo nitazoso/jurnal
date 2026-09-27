@@ -159,6 +159,10 @@
                                 Guru Mata Pelajaran
                             </option>
 
+                            <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>
+                                Kesiswaan
+                            </option>
+
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
                                 Sekretaris
                             </option>
@@ -206,6 +210,25 @@
                         <span class="field-hint">
                             Hubungkan akun ini dengan data guru yang sudah terdaftar.
                         </span>
+                    </div>
+
+                    <div class="field-group" id="noWaContainer" hidden>
+                        <label class="field-label" for="no_wa">
+                            Nomor WhatsApp Kesiswaan <span class="req">*</span>
+                        </label>
+                        <input
+                            type="tel"
+                            id="no_wa"
+                            name="no_wa"
+                            class="custom-input @error('no_wa') is-invalid @enderror"
+                            value="{{ old('no_wa') }}"
+                            maxlength="20"
+                            placeholder="Contoh: 081234567890"
+                        >
+                        @error('no_wa')
+                            <span class="err-text">{{ $message }}</span>
+                        @enderror
+                        <span class="field-hint">Nomor ini digunakan untuk mengirim permohonan dispen melalui WhatsApp.</span>
                     </div>
 
                     {{-- KELAS SEKRETARIS --}}
@@ -689,6 +712,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const eyeIcon = document.getElementById('eyeIcon');
 
     const role = document.getElementById('role');
+    const noWaContainer = document.getElementById('noWaContainer');
+    const noWa = document.getElementById('no_wa');
 
     const guruContainer = document.getElementById('guruContainer');
     const idGuru = document.getElementById('id_guru');
@@ -794,13 +819,22 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function updateNoWaField() {
+        const needsNoWa = role.value === 'Kesiswaan';
+        noWaContainer.hidden = !needsNoWa;
+        noWaContainer.style.display = needsNoWa ? 'flex' : 'none';
+        noWa.required = needsNoWa;
+    }
+
     role.addEventListener('change', function () {
         updateGuruField();
         updateKelasField();
+        updateNoWaField();
     });
 
     updateGuruField();
     updateKelasField();
+    updateNoWaField();
 
     // Validasi sebelum submit
     form.addEventListener('submit', function (event) {
@@ -834,6 +868,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (role.value === 'Sekretaris' && idKelas.value === '') {
             kelasError.style.display = 'block';
             valid = false;
+        }
+
+        if (role.value === 'Kesiswaan' && noWa.value.trim() === '') {
+            noWa.setCustomValidity('Nomor WhatsApp wajib diisi untuk akun Kesiswaan.');
+            noWa.reportValidity();
+            valid = false;
+        } else {
+            noWa.setCustomValidity('');
         }
 
         if (!valid) {

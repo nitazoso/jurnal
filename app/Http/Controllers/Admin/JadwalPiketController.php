@@ -30,9 +30,11 @@ class JadwalPiketController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $jakartaNow = now('Asia/Jakarta');
+        $today = $jakartaNow->toDateString();
         $month = $request->input(
             'month',
-            now()->format('Y-m')
+            $jakartaNow->format('Y-m')
         );
 
         try {
@@ -49,9 +51,9 @@ class JadwalPiketController extends Controller
 
         } catch (\Exception $e) {
 
-            $tanggalAwal = now()->startOfMonth();
-            $tanggalAkhir = now()->endOfMonth();
-            $month = now()->format('Y-m');
+            $tanggalAwal = $jakartaNow->copy()->startOfMonth();
+            $tanggalAkhir = $jakartaNow->copy()->endOfMonth();
+            $month = $jakartaNow->format('Y-m');
 
         }
 
@@ -446,6 +448,7 @@ class JadwalPiketController extends Controller
                 'calendarDays',
                 'tanggalAwal',
                 'tanggalAkhir',
+                'today',
                 'month',
                 'prevMonth',
                 'nextMonth',

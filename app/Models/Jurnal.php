@@ -22,18 +22,23 @@ class Jurnal extends Model
         'id_jam_selesai',
         'tanggal',
         'materi',
+        'keterangan',
         'status_guru',
         'ada_tugas',
         'deskripsi_tugas',
         'jml_hadir',
         'jml_tidak_hadir',
         'status_validasi_guru',
+        'status_kehadiran_validasi',
+        'validated_by',
+        'validated_at',
         'catatan_revisi',
         'catatan_umum',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'validated_at' => 'datetime',
     ];
 
     public function getStatusValidasiLabelAttribute(): string
@@ -65,6 +70,11 @@ class Jurnal extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user', 'id_user');
+    }
+
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'validated_by', 'id_user');
     }
 
     public function jamMulai()

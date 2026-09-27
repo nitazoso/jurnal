@@ -37,6 +37,19 @@
             </div>
         </div>
 
+        @if ($errors->any())
+            <div class="notice notice-error" role="alert">
+                <div>
+                    <strong>Jurnal belum dapat disimpan</strong>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        @endif
+
         <form method="POST" action="{{ route('sekretaris.isi-jurnal.store') }}">
             @csrf
 
@@ -70,21 +83,30 @@
                     </div>
 
                     <div class="field">
-                        <label for="status_guru">Status Guru</label>
-                        <select id="status_guru" name="status_guru" required>
-                            <option value="Izin" @selected(old('status_guru') === 'Izin')>Izin</option>
-                            <option value="Sakit" @selected(old('status_guru') === 'Sakit')>Sakit</option>
+                        <label for="status_kehadiran_validasi">Kehadiran Guru</label>
+                        <select id="status_kehadiran_validasi" name="status_kehadiran_validasi" required>
+                            <option value="Hadir" @selected(old('status_kehadiran_validasi', 'Hadir') === 'Hadir')>Hadir</option>
+                            <option value="Tidak Hadir" @selected(old('status_kehadiran_validasi') === 'Tidak Hadir')>Tidak Hadir</option>
                         </select>
                     </div>
 
-                    <div class="field full">
-                        <label for="catatan_umum">Catatan Ketidakhadiran Guru</label>
-                        <textarea id="catatan_umum" name="catatan_umum" rows="3" required>{{ old('catatan_umum') }}</textarea>
+                    <div class="field" id="absenceReasonField" hidden>
+                        <label for="alasan_tidak_hadir">Alasan Tidak Hadir</label>
+                        <select id="alasan_tidak_hadir" name="alasan_tidak_hadir">
+                            <option value="">Pilih alasan</option>
+                            <option value="Sakit" @selected(old('alasan_tidak_hadir') === 'Sakit')>Sakit</option>
+                            <option value="Izin" @selected(old('alasan_tidak_hadir') === 'Izin')>Izin</option>
+                        </select>
                     </div>
 
                     <div class="field full">
                         <label for="materi">Materi Pembelajaran</label>
                         <input id="materi" name="materi" value="{{ old('materi') }}" placeholder="Contoh: Persamaan kuadrat dan penerapannya" required>
+                    </div>
+
+                    <div class="field full">
+                        <label for="keterangan">Keterangan Pembelajaran</label>
+                        <textarea id="keterangan" name="keterangan" rows="3" required>{{ old('keterangan') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -155,8 +177,8 @@
                     </div>
 
                     <div class="field full">
-                        <label for="catatan_umum">Catatan Pembelajaran <span>(opsional)</span></label>
-                        <textarea id="catatan_umum" name="catatan_umum" placeholder="Ringkasan suasana kelas, kendala, atau pesan tambahan dari guru.">{{ old('catatan_umum') }}</textarea>
+                        <label for="catatan_umum">Catatan <span>(opsional, untuk status kehadiran atau pembelajaran)</span></label>
+                        <textarea id="catatan_umum" name="catatan_umum" placeholder="Contoh: guru izin karena keperluan keluarga, atau catatan suasana pembelajaran.">{{ old('catatan_umum') }}</textarea>
                     </div>
                 </div>
             </div>
@@ -557,4 +579,24 @@
     }
 }
 </style>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const attendanceSelect = document.getElementById('status_kehadiran_validasi');
+    const reasonField = document.getElementById('absenceReasonField');
+    const reasonSelect = document.getElementById('alasan_tidak_hadir');
+
+    function updateAbsenceReason() {
+        const absent = attendanceSelect.value === 'Tidak Hadir';
+        reasonField.hidden = !absent;
+        reasonSelect.required = absent;
+        if (!absent) reasonSelect.value = '';
+    }
+
+    attendanceSelect.addEventListener('change', updateAbsenceReason);
+    updateAbsenceReason();
+});
+</script>
 @endsection

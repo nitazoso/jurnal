@@ -10,6 +10,30 @@ use Illuminate\Http\Request;
 
 class JurnalController extends Controller
 {
+    public function show(Jurnal $jurnal)
+    {
+        $jurnal->load([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+            'detailAbsensis.siswa',
+            'validator',
+        ]);
+
+        return view('piket.jurnal.show', compact('jurnal'));
+    }
+
+    public function rekap(Request $request)
+    {
+        if (! $request->filled('view')) {
+            $request->merge(['view' => 'semua']);
+        }
+
+        return $this->index($request);
+    }
+
     public function index(Request $request)
     {
         $view = $request->get('view', 'kelas');
