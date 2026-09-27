@@ -343,6 +343,11 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::get('/piket/jurnal/rekap', [PiketJurnalController::class, 'rekap'])
         ->name('piket.jurnal.rekap');
 
+    Route::get('/piket/jurnal/rekap/docx/preview', [PiketJurnalController::class, 'docxPreview'])
+        ->name('piket.jurnal.rekap.preview');
+    Route::get('/piket/jurnal/rekap/docx', [PiketJurnalController::class, 'docxDownload'])
+        ->name('piket.jurnal.rekap.docx');
+
     Route::get('/piket/jurnal/{jurnal}', [PiketJurnalController::class, 'show'])
         ->name('piket.jurnal.show');
 
@@ -350,12 +355,20 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
         return view('piket.profil');
     })->name('piket.profil');
 
+    Route::get('/piket/izin-sakit', [PiketDispenController::class, 'izinSakitIndex'])->name('piket.izin-sakit.index');
+    Route::get('/piket/izin-sakit/create', [PiketDispenController::class, 'izinSakitCreate'])->name('piket.izin-sakit.create');
+    Route::post('/piket/izin-sakit', [PiketDispenController::class, 'izinSakitStore'])->name('piket.izin-sakit.store');
+    Route::get('/piket/izin-sakit/{dispen}/edit', [PiketDispenController::class, 'izinSakitEdit'])->name('piket.izin-sakit.edit');
+    Route::put('/piket/izin-sakit/{dispen}', [PiketDispenController::class, 'izinSakitUpdate'])->name('piket.izin-sakit.update');
+    Route::get('/piket/izin-sakit/{dispen}/edit-sakit', [PiketDispenController::class, 'sickEdit'])->name('piket.izin-sakit.sakit.edit');
+    Route::put('/piket/izin-sakit/{dispen}/sakit', [PiketDispenController::class, 'sickUpdate'])->name('piket.izin-sakit.sakit.update');
     Route::get('/piket/dispen', [PiketDispenController::class, 'index'])->name('piket.dispen.index');
     Route::get('/piket/dispen/riwayat', [PiketDispenController::class, 'history'])->name('piket.dispen.history');
     Route::get('/piket/dispen/create', [PiketDispenController::class, 'create'])->name('piket.dispen.create');
     Route::get('/piket/dispen/sakit/create', [PiketDispenController::class, 'sickCreate'])->name('piket.dispen.sakit.create');
     Route::post('/piket/dispen/sakit', [PiketDispenController::class, 'sickStore'])->name('piket.dispen.sakit.store');
     Route::post('/piket/dispen', [PiketDispenController::class, 'store'])->name('piket.dispen.store');
+    Route::get('/piket/dispen/{dispen}/ringkasan', [PiketDispenController::class, 'summary'])->name('piket.dispen.summary');
     Route::get('/piket/dispen/{dispen}/whatsapp', [PiketDispenController::class, 'whatsapp'])->name('piket.dispen.whatsapp');
     Route::get('/piket/dispen/{dispen}/edit', [PiketDispenController::class, 'edit'])->name('piket.dispen.edit');
     Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');

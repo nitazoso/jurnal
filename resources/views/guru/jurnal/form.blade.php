@@ -787,6 +787,7 @@
                                     @php
                                         $isDispenAktif = $activeDispenSiswa->contains($item->id_siswa);
                                         $laporanSakit = $activeSickReports->get($item->id_siswa);
+                                        $statusSurat = $laporanSakit?->jenis === 'izin' ? 'Izin' : 'Sakit';
                                     @endphp
                                     <tr
                                         class="student-row"
@@ -817,9 +818,9 @@
                                                     class="attendance-value"
                                                 >
                                             @elseif($laporanSakit)
-                                                <div class="attendance-locked sick">Sakit · Terkonfirmasi</div>
+                                                <div class="attendance-locked sick">{{ $statusSurat }} · Surat dari Piket</div>
                                                 <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
-                                                    value="Sakit"
+                                                    value="{{ $statusSurat }}"
                                                     class="attendance-value"
                                                 >
                                             @else

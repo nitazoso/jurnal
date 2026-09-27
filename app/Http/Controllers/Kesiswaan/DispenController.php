@@ -11,6 +11,7 @@ class DispenController extends Controller
     public function index()
     {
         $dispens = Dispen::with(['siswa', 'jamMulai', 'jamSelesai'])
+            ->where('jenis', 'dispen')
             ->where('status', 'menunggu')
             ->latest()
             ->paginate(15);
@@ -21,6 +22,7 @@ class DispenController extends Controller
     public function history()
     {
         $dispens = Dispen::with(['siswa', 'approver', 'jamMulai', 'jamSelesai'])
+            ->where('jenis', 'dispen')
             ->whereIn('status', ['disetujui', 'ditolak'])
             ->latest('disetujui_pada')
             ->paginate(15);

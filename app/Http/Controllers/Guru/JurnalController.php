@@ -242,7 +242,7 @@ class JurnalController extends Controller
             ->keyBy('id_siswa');
 
         $activeSickReports->each(function ($report, $idSiswa) use (&$validated) {
-            $validated['absensi'][$idSiswa] = 'Sakit';
+            $validated['absensi'][$idSiswa] = $report->jenis === 'izin' ? 'Izin' : 'Sakit';
         });
 
         $activeDispenReports->each(function ($report, $idSiswa) use (&$validated) {
@@ -305,8 +305,8 @@ class JurnalController extends Controller
                         'status' => $status,
                         'keterangan' => $status === 'Dispen'
                             ? 'Dispensasi otomatis'
-                            : ($status === 'Sakit' && $activeSickReports->has($idSiswa)
-                                ? 'Surat sakit dari Piket'
+                            : ($activeSickReports->has($idSiswa)
+                                ? ($activeSickReports->get($idSiswa)->jenis === 'izin' ? 'Surat izin dari Piket' : 'Surat sakit dari Piket')
                                 : null),
                     ]);
                 }
@@ -388,12 +388,12 @@ class JurnalController extends Controller
     private function activeSickReports(int $idKelas, string $tanggal)
     {
         return Dispen::query()
-            ->where('jenis', 'sakit')
+            ->whereIn('jenis', ['sakit', 'izin'])
             ->whereDate('tanggal', $tanggal)
-            ->where('status', 'disetujui')
             ->whereHas('siswa', fn ($query) => $query->where('id_kelas', $idKelas))
             ->latest('id_dispen')
-            ->get(['id_dispen', 'id_siswa', 'surat_path'])
+            ->get(['id_dispen', 'id_siswa', 'jenis', 'surat_path'])
+            ->unique('id_siswa')
             ->keyBy('id_siswa');
     }
 

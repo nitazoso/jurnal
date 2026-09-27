@@ -232,6 +232,9 @@
         flex-shrink: 0;
     }
 
+    .icon-box .material-symbols-outlined { font-size: 22px; }
+    .avatar-circle .material-symbols-outlined { font-size: 26px; }
+
     .jurnal-item:hover .icon-box {
         background: #4f46e5;
         color: #ffffff;
@@ -407,7 +410,7 @@
     <div class="welcome-card">
         <div class="user-info">
             <div class="avatar-circle">
-                <i class="bi bi-person"></i>
+                <span class="material-symbols-outlined" aria-hidden="true">person</span>
             </div>
             <div class="welcome-text">
                 <h2>Selamat datang, {{ auth()->user()->nama_user ?? 'Staff Piket' }} </h2>
@@ -461,7 +464,7 @@
             <a href="{{ route('piket.jurnal.show', $jurnal) }}" class="jurnal-item" aria-label="Lihat detail jurnal {{ $jurnal->materi ?? '' }}">
                 <div class="teacher-info">
                     <div class="icon-box">
-                        <i class="bi bi-book"></i>
+                        <span class="material-symbols-outlined" aria-hidden="true">menu_book</span>
                     </div>
                     <div>
                         <h4 class="teacher-name">{{ $jurnal->guru->nama_guru ?? '-' }}</h4>
@@ -485,12 +488,12 @@
                 </div>
 
                 <div style="text-align: right;">
-                    <i class="bi bi-chevron-right chevron-icon"></i>
+                    <span class="material-symbols-outlined chevron-icon" aria-hidden="true">chevron_right</span>
                 </div>
             </a>
         @empty
             <div class="empty-card">
-                <i class="bi bi-inbox" style="font-size: 32px; display: block; margin-bottom: 8px;"></i>
+                <span class="material-symbols-outlined" style="font-size: 32px; display: block; margin-bottom: 8px;" aria-hidden="true">inbox</span>
                 Belum ada jurnal yang tercatat hari ini.
             </div>
         @endforelse

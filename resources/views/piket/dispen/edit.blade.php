@@ -207,9 +207,9 @@
 
             const schedule = jadwalWakaMap[dateVal];
             if (schedule) {
-                if (schedule.no_wa) {
+                if (schedule.no_hp) {
                     wakaBox.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
-                    wakaText.textContent = `Petugas: ${schedule.nama} (WA: ${schedule.no_wa})`;
+                    wakaText.textContent = `Petugas: ${schedule.nama} (WA: ${schedule.no_hp})`;
                 } else {
                     wakaBox.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-700');
                     wakaText.textContent = `Petugas: ${schedule.nama} (Nomor WhatsApp belum tersedia)`;

@@ -7,9 +7,49 @@ use App\Models\Guru;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use ZipArchive;
 
 class JurnalController extends Controller
 {
+    public function docxPreview(Request $request)
+    {
+        return view('piket.jurnal.docx-preview', $this->docxReportData($request));
+    }
+
+    public function docxDownload(Request $request)
+    {
+        $data = $this->docxReportData($request);
+        if ($data['jurnals']->isEmpty()) {
+            return view('piket.jurnal.docx-preview', $data);
+        }
+
+        $parts = app(\App\Services\PiketJurnalDocx::class)->make($data);
+        $path = tempnam(sys_get_temp_dir(), 'jurnify-');
+        $zip = new ZipArchive();
+        if ($zip->open($path, ZipArchive::OVERWRITE) !== true) {
+            @unlink($path);
+            return back()->with('error', 'Dokumen rekap tidak dapat dibuat.');
+        }
+        foreach ($parts as $name => $contents) $zip->addFromString($name, $contents);
+        $zip->close();
+        $filename = 'rekap-' . Str::slug($data['judul']) . '-' . $data['mulai']->format('Ymd') . '-' . $data['sampai']->format('Ymd') . '.docx';
+        return response()->download($path, $filename, ['Content-Type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'])->deleteFileAfterSend(true);
+    }
+
+    private function docxReportData(Request $request): array
+    {
+        $validated = $request->validate(['jenis' => 'required|in:kelas,guru', 'objek' => 'required|integer', 'mulai' => 'required|date', 'sampai' => 'required|date|after_or_equal:mulai']);
+        $objek = $validated['jenis'] === 'kelas' ? Kelas::where('id_kelas', $validated['objek'])->firstOrFail() : Guru::where('id_guru', $validated['objek'])->firstOrFail();
+        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai', 'detailAbsensis.siswa'])
+            ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui', 'Perlu Diperbaiki', 'Ditolak'])
+            ->whereBetween('tanggal', [$validated['mulai'], $validated['sampai']]);
+        $query->where($validated['jenis'] === 'kelas' ? 'id_kelas' : 'id_guru', $validated['objek']);
+        $jurnals = $query->orderBy('tanggal')->orderBy('id_jam_mulai')->get();
+        $totalHadir = $jurnals->sum(fn ($jurnal) => $jurnal->detailAbsensis->filter(fn ($item) => mb_strtolower((string) $item->status) === 'hadir')->count());
+        $totalTidakHadir = $jurnals->sum(fn ($jurnal) => $jurnal->detailAbsensis->filter(fn ($item) => mb_strtolower((string) $item->status) !== 'hadir')->count());
+        return ['jenis' => $validated['jenis'], 'objekId' => $validated['objek'], 'objek' => $objek, 'judul' => $validated['jenis'] === 'kelas' ? 'Kelas ' . $objek->nama_kelas : $objek->nama_guru, 'mulai' => \Illuminate\Support\Carbon::parse($validated['mulai']), 'sampai' => \Illuminate\Support\Carbon::parse($validated['sampai']), 'jurnals' => $jurnals, 'totalHadir' => $totalHadir, 'totalTidakHadir' => $totalTidakHadir];
+    }
     public function show(Jurnal $jurnal)
     {
         $jurnal->load([
@@ -19,6 +59,7 @@ class JurnalController extends Controller
             'jamMulai',
             'jamSelesai',
             'detailAbsensis.siswa',
+            'detailAbsensis.dispen',
             'validator',
         ]);
 
@@ -103,6 +144,14 @@ class JurnalController extends Controller
                     );
                 });
             });
+        }
+
+        // Gabungkan pilihan bulan dan tahun dari filter rekap.
+        $periode = (string) $request->input('periode', '');
+        if ($periode === 'all') {
+            $request->merge(['bulan' => null, 'tahun' => null]);
+        } elseif (preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $periode, $matches)) {
+            $request->merge(['tahun' => (int) $matches[1], 'bulan' => (int) $matches[2]]);
         }
 
         // =========================

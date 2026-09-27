@@ -10,9 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0,0"
           rel="stylesheet">
 
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
@@ -153,7 +150,12 @@
 
         .nav-item.active {
             background: #1e2945;
+            color: #93c5fd;
             position: relative;
+        }
+
+        .nav-item.active .material-symbols-outlined {
+            color: #93c5fd;
         }
 
         .nav-item.active::before {
@@ -198,7 +200,7 @@
             outline: none;
         }
 
-        .logout-wrap button i {
+        .logout-wrap button .material-symbols-outlined {
             font-size: 20px;
             transition: transform 0.25s ease;
         }
@@ -211,7 +213,7 @@
             box-shadow: 0 6px 18px rgba(239, 68, 68, 0.4);
         }
 
-        .logout-wrap button:hover i {
+        .logout-wrap button:hover .material-symbols-outlined {
             transform: translateX(4px);
         }
 
@@ -310,41 +312,54 @@
            RESPONSIVE (HP & TABLET)
         ========================= */
         @media (max-width: 800px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-
-            .sidebar.active {
-                transform: translateX(0);
-            }
-
-            .main {
-                margin-left: 0;
-            }
-
-            .menu-toggle {
-                display: flex;
-            }
-
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main { margin-left: 0; }
+            .menu-toggle { display: flex; flex: 0 0 36px; }
             .topbar {
-                flex-wrap: wrap;
-                height: auto;
-                min-height: 72px;
-                padding: 12px 16px;
+                display: flex;
+                flex-wrap: nowrap;
+                height: 64px;
+                min-height: 64px;
+                padding: 0 12px;
+                gap: 8px;
             }
-
             .topbar h2 {
-                flex: 1 1 100%;
+                flex: 1 1 auto;
+                min-width: 0;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 15px;
             }
-
             .topbar-meta {
-                width: 100%;
+                width: auto;
+                flex: 0 0 auto;
+                margin-left: auto;
                 justify-content: flex-end;
             }
-
-            .content {
-                padding: 20px 12px 24px;
+            .topbar-clock {
+                min-width: 0;
+                gap: 6px;
+                padding: 6px 8px;
             }
+            .topbar-clock > div {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                white-space: nowrap;
+            }
+            .topbar-clock small {
+                font-size: 8px;
+                letter-spacing: 0;
+            }
+            .topbar-clock strong { font-size: 11px; }
+            .content { padding: 20px 12px 24px; }
+        }
+
+        @media (max-width: 380px) {
+            .topbar-clock small { display: none; }
+            .topbar h2 { font-size: 14px; }
         }
     </style>
 </head>
@@ -374,17 +389,13 @@
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
                 </a>
-                <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') && !request()->routeIs('piket.dispen.sakit.*', 'piket.dispen.history') ? 'active' : '' }}">
+                <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
                 </a>
-                <a href="{{ route('piket.dispen.sakit.create') }}" class="nav-item {{ request()->routeIs('piket.dispen.sakit.*') ? 'active' : '' }}">
+                <a href="{{ route('piket.izin-sakit.index') }}" class="nav-item {{ request()->routeIs('piket.izin-sakit.*') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">medical_services</span>
-                    <span>Surat Sakit</span>
-                </a>
-                <a href="{{ route('piket.dispen.history') }}" class="nav-item {{ request()->routeIs('piket.dispen.history') ? 'active' : '' }}">
-                    <span class="material-symbols-outlined">history</span>
-                    <span>Riwayat Dispen</span>
+                    <span>Izin &amp; Sakit</span>
                 </a>
                 <a href="{{ route('piket.profil') }}" class="nav-item {{ request()->routeIs('piket.profil') ? 'active' : '' }}"> 
                     <span class="material-symbols-outlined">person</span> 
@@ -396,7 +407,7 @@
                 <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
                     @csrf
                     <button type="submit">
-                        <i class="bi bi-box-arrow-right"></i>
+                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
                         <span>Logout</span>
                     </button>
                 </form>
