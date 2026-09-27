@@ -386,6 +386,9 @@
         color: #475569;
         cursor: pointer;
         font-size: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .drawer-close:hover {

@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Manajemen User - Jurnify')
+
 @section('page-title', 'Manajemen User')
 
 @section('content')
@@ -32,10 +33,21 @@
         animation: fadeUp .45s ease both;
     }
 
-    .user-page .stat-card:nth-child(1) { animation-delay: .05s; }
-    .user-page .stat-card:nth-child(2) { animation-delay: .1s; }
-    .user-page .stat-card:nth-child(3) { animation-delay: .15s; }
-    .user-page .stat-card:nth-child(4) { animation-delay: .2s; }
+    .user-page .stat-card:nth-child(1) {
+        animation-delay: .05s;
+    }
+
+    .user-page .stat-card:nth-child(2) {
+        animation-delay: .10s;
+    }
+
+    .user-page .stat-card:nth-child(3) {
+        animation-delay: .15s;
+    }
+
+    .user-page .stat-card:nth-child(4) {
+        animation-delay: .20s;
+    }
 
     .user-page .stat-card:hover {
         transform: translateY(-2px);
@@ -212,7 +224,12 @@
         padding: 0 20px;
         cursor: pointer;
         white-space: nowrap;
-        transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+        transition:
+            background .2s ease,
+            border-color .2s ease,
+            color .2s ease,
+            transform .2s ease,
+            box-shadow .2s ease;
     }
 
     .user-page .role-filter:hover {
@@ -492,6 +509,10 @@
         color: #777b86;
     }
 
+    /* =========================
+       DELETE MODAL
+    ========================= */
+
     .user-page .delete-modal {
         display: flex;
         visibility: hidden;
@@ -736,6 +757,13 @@
 
         .user-page .role-filters {
             margin-left: 0;
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+
+        .user-page .role-filter {
+            flex-shrink: 0;
         }
 
         .user-page .add-user-btn {
@@ -814,84 +842,85 @@
 
 <div class="user-page">
 
-    @if(session('success'))
-        <div class="success-message">{{ session('success') }}</div>
-    @endif
 
-    @if(session('error'))
-        <div class="error-message" role="alert">{{ session('error') }}</div>
-    @endif
+{{-- SUCCESS --}}
+@if(session('success'))
+    <div class="success-message">
+        {{ session('success') }}
+    </div>
+@endif
 
-    <section class="stats">
-        <div class="stat-card">
-            <div class="stat-title">TOTAL USERS</div>
-            <div class="stat-value">
-                <strong>{{ $totalUser }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">groups</span>
-            </div>
+{{-- ERROR --}}
+@if(session('error'))
+    <div class="error-message" role="alert">
+        {{ session('error') }}
+    </div>
+@endif
+
+{{-- =========================
+     STATISTIK
+========================== --}}
+<section class="stats">
+
+    {{-- TOTAL USER --}}
+    <div class="stat-card">
+        <div class="stat-title">TOTAL USERS</div>
+
+        <div class="stat-value">
+            <strong>{{ $totalUser }}</strong>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-title">GURU AKTIF</div>
-            <div class="stat-value">
-                <strong>{{ $totalGuru }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">school</span>
-            </div>
+        <div class="stat-icon">
+            <span class="material-symbols-outlined">
+                groups
+            </span>
+        </div>
+    </div>
+
+    {{-- ADMIN --}}
+    <div class="stat-card">
+        <div class="stat-title">ADMIN</div>
+
+        <div class="stat-value">
+            <strong>{{ $totalAdmin }}</strong>
         </div>
 
-        <div class="stat-card">
-            <div class="stat-title">TOTAL SEKRE</div>
-            <div class="stat-value">
-                <strong>{{ $totalSekretaris }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">edit_note</span>
-            </div>
+        <div class="stat-icon">
+            <span class="material-symbols-outlined">
+                admin_panel_settings
+            </span>
         </div>
-    </section>
+    </div>
 
-    <section class="activity-card">
-        <div class="activity-header">
-            <h3 class="activity-title">Daftar User</h3>
-            <p class="activity-description">
-                Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem Jurnify.
-            </p>
+    {{-- GURU --}}
+    <div class="stat-card">
+        <div class="stat-title">GURU AKTIF</div>
+
+        <div class="stat-value">
+            <strong>{{ $totalGuru }}</strong>
         </div>
 
-        <form action="{{ route('admin.user.index') }}" method="GET" class="filters">
-            <div class="search-box">
-                <span class="material-symbols-outlined">search</span>
+        <div class="stat-icon">
+            <span class="material-symbols-outlined">
+                school
+            </span>
+        </div>
+    </div>
 
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="Cari nama atau username..."
-                    value="{{ request('search') }}"
-                >
-            </div>
+    {{-- SEKRETARIS --}}
+    <div class="stat-card">
+        <div class="stat-title">TOTAL SEKRE</div>
 
-            <div class="role-filters">
-                <button
-                    type="submit"
-                    name="role"
-                    value=""
-                    class="role-filter {{ !request('role') ? 'active' : '' }}"
-                >
-                    Semua
-                </button>
+        <div class="stat-value">
+            <strong>{{ $totalSekretaris }}</strong>
+        </div>
 
-                <button
-                    type="submit"
-                    name="role"
-                    value="Guru"
-                    class="role-filter {{ request('role') === 'Guru' ? 'active' : '' }}"
-                >
-                    Guru
-                </button>
+        <div class="stat-icon">
+            <span class="material-symbols-outlined">
+                edit_note
+            </span>
+        </div>
+    </div>
 
                 <button
                     type="submit"
@@ -911,262 +940,590 @@
                     Sekre
                 </button>
             </div>
+</section>
 
-            <a href="{{ route('admin.user.create') }}" class="add-user-btn">
-                <span class="material-symbols-outlined">person_add</span>
-                Tambah User
-            </a>
-        </form>
+{{-- =========================
+     DAFTAR USER
+========================== --}}
+<section class="activity-card">
 
-        <div class="table-wrapper">
-            <table>
-                <thead>
+    <div class="activity-header">
+
+        <h3 class="activity-title">
+            Daftar User
+        </h3>
+
+        <p class="activity-description">
+            Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem Jurnify.
+        </p>
+
+    </div>
+
+    {{-- =========================
+         FILTER
+    ========================== --}}
+    <form
+        action="{{ route('admin.user.index') }}"
+        method="GET"
+        class="filters"
+    >
+
+        {{-- SEARCH --}}
+        <div class="search-box">
+
+            <span class="material-symbols-outlined">
+                search
+            </span>
+
+            <input
+                type="text"
+                name="search"
+                placeholder="Cari nama atau username..."
+                value="{{ request('search') }}"
+            >
+
+        </div>
+
+        {{-- ROLE FILTER --}}
+        <div class="role-filters">
+
+            {{-- SEMUA --}}
+            <button
+                type="submit"
+                name="role"
+                value=""
+                class="role-filter {{ !request('role') ? 'active' : '' }}"
+            >
+                Semua
+            </button>
+
+            {{-- ADMIN --}}
+            <button
+                type="submit"
+                name="role"
+                value="Admin"
+                class="role-filter {{ request('role') === 'Admin' ? 'active' : '' }}"
+            >
+                Admin
+            </button>
+
+            {{-- GURU --}}
+            <button
+                type="submit"
+                name="role"
+                value="Guru"
+                class="role-filter {{ request('role') === 'Guru' ? 'active' : '' }}"
+            >
+                Guru
+            </button>
+
+            {{-- SEKRETARIS --}}
+            <button
+                type="submit"
+                name="role"
+                value="Sekretaris"
+                class="role-filter {{ request('role') === 'Sekretaris' ? 'active' : '' }}"
+            >
+                Sekre
+            </button>
+
+        </div>
+
+        {{-- TAMBAH USER --}}
+        <a
+            href="{{ route('admin.user.create') }}"
+            class="add-user-btn"
+        >
+            <span class="material-symbols-outlined">
+                person_add
+            </span>
+
+            Tambah User
+        </a>
+
+    </form>
+
+    {{-- =========================
+         TABLE
+    ========================== --}}
+    <div class="table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>USER</th>
+                    <th>USERNAME</th>
+                    <th>ROLE</th>
+                    <th>AKSI</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                @forelse($users as $user)
+
                     <tr>
-                        <th>USER</th>
-                        <th>USERNAME</th>
-                        <th>ROLE</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
 
-                <tbody>
-                    @forelse($users as $user)
-                        <tr>
-                            <td class="user-cell">
-                                <strong>{{ $user->nama_user }}</strong>
-                            </td>
+                        {{-- NAMA --}}
+                        <td class="user-cell">
+                            <strong>
+                                {{ $user->nama_user }}
+                            </strong>
+                        </td>
 
-                            <td class="user-id">
-                                {{ $user->username }}
-                            </td>
+                        {{-- USERNAME --}}
+                        <td class="user-id">
+                            {{ $user->username }}
+                        </td>
 
-                            <td>
-                                <span class="role-badge">
-                                    @if($user->role === 'Guru')
-                                        <span class="material-symbols-outlined">school</span>
-                                    @elseif($user->role === 'Sekretaris')
-                                        <span class="material-symbols-outlined">edit_note</span>
-                                    @elseif($user->role === 'Admin')
-                                        <span class="material-symbols-outlined">admin_panel_settings</span>
-                                    @else
-                                        <span class="material-symbols-outlined">person</span>
-                                    @endif
+                        {{-- ROLE --}}
+                        <td>
 
-                                    {{ $user->role }}
+                            <span class="role-badge">
+
+                                @if($user->role === 'Guru')
+
+                                    <span class="material-symbols-outlined">
+                                        school
+                                    </span>
+
+                                @elseif($user->role === 'Sekretaris')
+
+                                    <span class="material-symbols-outlined">
+                                        edit_note
+                                    </span>
+
+                                @elseif($user->role === 'Admin')
+
+                                    <span class="material-symbols-outlined">
+                                        admin_panel_settings
+                                    </span>
+
+                                @else
+
+                                    <span class="material-symbols-outlined">
+                                        person
+                                    </span>
+
+                                @endif
+
+                                {{ $user->role }}
+
+                            </span>
+
+                        </td>
+
+                        {{-- AKSI --}}
+                        <td class="user-actions">
+
+                            {{-- EDIT --}}
+                            <a
+                                href="{{ route('admin.user.edit', $user->id_user) }}"
+                                class="icon-action edit"
+                                title="Edit user"
+                            >
+                                <span class="material-symbols-outlined">
+                                    edit
                                 </span>
-                            </td>
+                            </a>
 
-                            <td class="user-actions">
-                                <a
-                                    href="{{ route('admin.user.edit', $user->id_user) }}"
-                                    class="icon-action edit"
-                                    title="Edit user"
-                                >
-                                    <span class="material-symbols-outlined">edit</span>
-                                </a>
+                            {{-- DELETE --}}
+                            <button
+                                type="button"
+                                class="icon-action delete user-delete-btn"
+                                title="Hapus user"
+                                data-url="{{ route('admin.user.destroy', $user->id_user) }}"
+                                data-name="{{ $user->nama_user }}"
+                                data-username="{{ $user->username }}"
+                                data-role="{{ $user->role }}"
+                                data-admin-count="{{ $totalAdmin }}"
+                            >
+                                <span class="material-symbols-outlined">
+                                    delete
+                                </span>
+                            </button>
 
-                                <button
-                                    type="button"
-                                    class="icon-action delete user-delete-btn"
-                                    title="Hapus user"
-                                    data-url="{{ route('admin.user.destroy', $user->id_user) }}"
-                                    data-name="{{ $user->nama_user }}"
-                                    data-username="{{ $user->username }}"
-                                    data-role="{{ $user->role }}"
-                                    data-admin-count="{{ $totalAdmin }}"
-                                >
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="empty-row">
-                                Belum ada data user.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        </td>
+
+                    </tr>
+
+                @empty
+
+                    <tr>
+                        <td
+                            colspan="4"
+                            class="empty-row"
+                        >
+                            Belum ada data user.
+                        </td>
+                    </tr>
+
+                @endforelse
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {{-- =========================
+         BOTTOM / PAGINATION
+    ========================== --}}
+    <div class="bottom">
+
+        <div class="entries">
+            Showing
+            {{ $users->firstItem() ?? 0 }}
+            to
+            {{ $users->lastItem() ?? 0 }}
+            of
+            {{ $users->total() }}
+            entries
         </div>
 
-        <div class="bottom">
-            <div class="entries">
-                Showing {{ $users->firstItem() ?? 0 }}
-                to {{ $users->lastItem() ?? 0 }}
-                of {{ $users->total() }} entries
-            </div>
+        @if($users->hasPages())
 
-            @if($users->hasPages())
-                <div class="pagination">
-                    @if($users->onFirstPage())
-                        <span class="page disabled">
-                            <span class="material-symbols-outlined">chevron_left</span>
+            <div class="pagination">
+
+                {{-- PREVIOUS --}}
+                @if($users->onFirstPage())
+
+                    <span class="page disabled">
+                        <span class="material-symbols-outlined">
+                            chevron_left
                         </span>
-                    @else
-                        <a href="{{ $users->previousPageUrl() }}" class="page">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-                    @endif
+                    </span>
 
-                    @php
-                        $current = $users->currentPage();
-                        $last = $users->lastPage();
-                    @endphp
+                @else
 
-                    @for($page = 1; $page <= $last; $page++)
-                        @if($page === 1 || $page === $last || abs($page - $current) <= 1)
-                            @if($page === $current)
-                                <span class="page active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $users->url($page) }}" class="page">
-                                    {{ $page }}
-                                </a>
-                            @endif
-                        @elseif($page === 2 && $current > 3)
-                            <span class="dots">...</span>
-                        @elseif($page === $last - 1 && $current < $last - 2)
-                            <span class="dots">...</span>
+                    <a
+                        href="{{ $users->previousPageUrl() }}"
+                        class="page"
+                    >
+                        <span class="material-symbols-outlined">
+                            chevron_left
+                        </span>
+                    </a>
+
+                @endif
+
+                @php
+                    $current = $users->currentPage();
+                    $last = $users->lastPage();
+                @endphp
+
+                {{-- NUMBER --}}
+                @for($page = 1; $page <= $last; $page++)
+
+                    @if(
+                        $page === 1 ||
+                        $page === $last ||
+                        abs($page - $current) <= 1
+                    )
+
+                        @if($page === $current)
+
+                            <span class="page active">
+                                {{ $page }}
+                            </span>
+
+                        @else
+
+                            <a
+                                href="{{ $users->url($page) }}"
+                                class="page"
+                            >
+                                {{ $page }}
+                            </a>
+
                         @endif
-                    @endfor
 
-                    @if($users->hasMorePages())
-                        <a href="{{ $users->nextPageUrl() }}" class="page">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </a>
-                    @else
-                        <span class="page disabled">
-                            <span class="material-symbols-outlined">chevron_right</span>
+                    @elseif($page === 2 && $current > 3)
+
+                        <span class="dots">
+                            ...
                         </span>
+
+                    @elseif(
+                        $page === $last - 1 &&
+                        $current < $last - 2
+                    )
+
+                        <span class="dots">
+                            ...
+                        </span>
+
                     @endif
-                </div>
-            @endif
-        </div>
-    </section>
 
-    <div id="deleteModal" class="delete-modal">
-        <div class="delete-modal-box">
+                @endfor
 
-            <div class="delete-modal-header">
-                <div class="delete-icon">
-                    <span class="material-symbols-outlined">warning</span>
-                </div>
+                {{-- NEXT --}}
+                @if($users->hasMorePages())
 
-                <div class="delete-modal-title">
-                    <h3 id="deleteTitle">Hapus User?</h3>
-                    <p id="deleteDescription">
-                        Apakah Anda yakin ingin menghapus user ini?<br>
-                        Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                </div>
+                    <a
+                        href="{{ $users->nextPageUrl() }}"
+                        class="page"
+                    >
+                        <span class="material-symbols-outlined">
+                            chevron_right
+                        </span>
+                    </a>
+
+                @else
+
+                    <span class="page disabled">
+                        <span class="material-symbols-outlined">
+                            chevron_right
+                        </span>
+                    </span>
+
+                @endif
+
             </div>
 
-            <div class="delete-info">
-                <span id="deleteName" class="delete-info-name">
-                    Nama User
+        @endif
+
+    </div>
+
+</section>
+
+{{-- =========================
+     DELETE MODAL
+========================== --}}
+<div
+    id="deleteModal"
+    class="delete-modal"
+>
+
+    <div class="delete-modal-box">
+
+        <div class="delete-modal-header">
+
+            <div class="delete-icon">
+
+                <span class="material-symbols-outlined">
+                    warning
                 </span>
 
-                <div class="delete-info-detail">
-                    <span>
-                        Username:
-                        <strong id="deleteUsername">username</strong>
-                    </span>
-
-                    <span class="dot">•</span>
-
-                    <span>
-                        Role:
-                        <strong id="deleteRole">Guru</strong>
-                    </span>
-                </div>
             </div>
 
-            <div class="delete-warning">
-                <span class="material-symbols-outlined">info</span>
+            <div class="delete-modal-title">
+
+                <h3 id="deleteTitle">
+                    Hapus User?
+                </h3>
+
+                <p id="deleteDescription">
+                    Apakah Anda yakin ingin menghapus user ini?<br>
+                    Tindakan ini tidak dapat dibatalkan.
+                </p>
+
+            </div>
+
+        </div>
+
+        <div class="delete-info">
+
+            <span
+                id="deleteName"
+                class="delete-info-name"
+            >
+                Nama User
+            </span>
+
+            <div class="delete-info-detail">
 
                 <span>
-                    <span id="deleteWarningText">User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.</span>
+                    Username:
+                    <strong id="deleteUsername">
+                        username
+                    </strong>
                 </span>
-            </div>
 
-            <div class="delete-modal-footer">
-                <button
-                    type="button"
-                    class="btn-delete-cancel"
-                    onclick="closeDeleteModal()"
-                >
-                    Batal
-                </button>
+                <span class="dot">
+                    •
+                </span>
 
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
+                <span>
+                    Role:
+                    <strong id="deleteRole">
+                        Guru
+                    </strong>
+                </span>
 
-                    <button id="deleteConfirmButton" type="submit" class="btn-delete-confirm">
-                        Hapus User
-                    </button>
-                </form>
             </div>
 
         </div>
+
+        <div class="delete-warning">
+
+            <span class="material-symbols-outlined">
+                info
+            </span>
+
+            <span id="deleteWarningText">
+                User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.
+            </span>
+
+        </div>
+
+        <div class="delete-modal-footer">
+
+            <button
+                type="button"
+                class="btn-delete-cancel"
+                onclick="closeDeleteModal()"
+            >
+                Batal
+            </button>
+
+            <form
+                id="deleteForm"
+                method="POST"
+            >
+
+                @csrf
+
+                @method('DELETE')
+
+                <button
+                    id="deleteConfirmButton"
+                    type="submit"
+                    class="btn-delete-confirm"
+                >
+                    Hapus User
+                </button>
+
+            </form>
+
+        </div>
+
     </div>
 
 </div>
 
-<script>
-    function openDeleteModal(url, name, username, role, adminCount) {
-        const isLastAdmin = role === 'Admin' && Number(adminCount) <= 1;
-        const deleteForm = document.getElementById('deleteForm');
-        const deleteInfo = document.querySelector('.delete-info');
-        const deleteTitle = document.getElementById('deleteTitle');
-        const deleteDescription = document.getElementById('deleteDescription');
-        const deleteWarningText = document.getElementById('deleteWarningText');
-        const deleteConfirmButton = document.getElementById('deleteConfirmButton');
 
-        document.getElementById('deleteForm').action = url;
-        document.getElementById('deleteName').textContent = name;
-        document.getElementById('deleteUsername').textContent = username;
-        document.getElementById('deleteRole').textContent = role;
+</div>
+
+<script>
+    function openDeleteModal(
+        url,
+        name,
+        username,
+        role,
+        adminCount
+    ) {
+        const isLastAdmin =
+            role === 'Admin' &&
+            Number(adminCount) <= 1;
+
+        const deleteForm =
+            document.getElementById('deleteForm');
+
+        const deleteInfo =
+            document.querySelector('.delete-info');
+
+        const deleteTitle =
+            document.getElementById('deleteTitle');
+
+        const deleteDescription =
+            document.getElementById('deleteDescription');
+
+        const deleteWarningText =
+            document.getElementById('deleteWarningText');
+
+        const deleteConfirmButton =
+            document.getElementById('deleteConfirmButton');
+
+        // URL DELETE
+        deleteForm.action = url;
+
+        // DATA USER
+        document.getElementById('deleteName').textContent =
+            name;
+
+        document.getElementById('deleteUsername').textContent =
+            username;
+
+        document.getElementById('deleteRole').textContent =
+            role;
+
+        // Jika Admin terakhir
         deleteInfo.hidden = isLastAdmin;
+
         deleteConfirmButton.hidden = isLastAdmin;
-        deleteTitle.textContent = isLastAdmin ? 'Akun Admin Tidak Bisa Dihapus' : 'Hapus User?';
-        deleteDescription.innerHTML = isLastAdmin
-            ? 'Admin terakhir harus tetap tersedia agar sistem dapat digunakan.'
-            : 'Apakah Anda yakin ingin menghapus user ini?<br>Tindakan ini tidak dapat dibatalkan.';
-        deleteWarningText.textContent = isLastAdmin
-            ? 'Buat akun Admin lain terlebih dahulu jika ingin menghapus akun ini.'
-            : 'User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.';
-        document.getElementById('deleteModal').classList.add('show');
+
+        deleteTitle.textContent =
+            isLastAdmin
+                ? 'Akun Admin Tidak Bisa Dihapus'
+                : 'Hapus User?';
+
+        deleteDescription.innerHTML =
+            isLastAdmin
+                ? 'Admin terakhir harus tetap tersedia agar sistem dapat digunakan.'
+                : 'Apakah Anda yakin ingin menghapus user ini?<br>Tindakan ini tidak dapat dibatalkan.';
+
+        deleteWarningText.textContent =
+            isLastAdmin
+                ? 'Buat akun Admin lain terlebih dahulu jika ingin menghapus akun ini.'
+                : 'User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.';
+
+        // Tampilkan modal
+        document
+            .getElementById('deleteModal')
+            .classList
+            .add('show');
+
         document.body.style.overflow = 'hidden';
     }
 
     function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.remove('show');
+        document
+            .getElementById('deleteModal')
+            .classList
+            .remove('show');
+
         document.body.style.overflow = '';
     }
 
-    document.querySelectorAll('.user-delete-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            openDeleteModal(
-                this.dataset.url,
-                this.dataset.name,
-                this.dataset.username,
-                this.dataset.role,
-                this.dataset.adminCount
-            );
+    // Tombol delete
+    document
+        .querySelectorAll('.user-delete-btn')
+        .forEach(button => {
+
+            button.addEventListener('click', function () {
+
+                openDeleteModal(
+                    this.dataset.url,
+                    this.dataset.name,
+                    this.dataset.username,
+                    this.dataset.role,
+                    this.dataset.adminCount
+                );
+
+            });
+
         });
-    });
 
-    document.getElementById('deleteModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeDeleteModal();
-        }
-    });
+    // Klik backdrop
+    document
+        .getElementById('deleteModal')
+        .addEventListener('click', function(event) {
 
+            if (event.target === this) {
+                closeDeleteModal();
+            }
+
+        });
+
+    // Tombol ESC
     document.addEventListener('keydown', function(event) {
+
         if (event.key === 'Escape') {
             closeDeleteModal();
         }
+
     });
 </script>
 

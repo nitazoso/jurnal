@@ -10,6 +10,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 
 
@@ -393,7 +394,15 @@ class JadwalPiketController extends Controller
                 ],
 
 
-                'waka' => $wakaPetugas,
+                'waka' => $wakaPetugas
+                    ? [
+                        'id_guru' =>
+                            $wakaPetugas->id_guru,
+
+                        'nama' =>
+                            $wakaPetugas->guru?->nama_guru ?? '-',
+                    ]
+                    : null,
 
             ];
         }
@@ -1578,6 +1587,10 @@ class JadwalPiketController extends Controller
             'jam_selesai_siang' => '15:00',
         ];
 
+        if (!Schema::hasTable('app_settings')) {
+            return $defaults;
+        }
+
         foreach (array_keys($defaults) as $key) {
             $defaults[$key] = DB::table('app_settings')
                 ->where('key', 'piket.' . $key)
@@ -1646,3 +1659,4 @@ class JadwalPiketController extends Controller
 
     }
 }
+    
