@@ -106,8 +106,10 @@ class SekretarisJurnalValidationTest extends TestCase
         $this->actingAs($userGuru)
             ->get(route('guru.jurnal.show', $jurnal))
             ->assertOk()
-            ->assertSee('VALIDASI OLEH')
+            ->assertSee('VALIDASI OLEH SEKRETARIS')
             ->assertSee('Nita Sekretaris')
+            ->assertSee('Keterangan Pembelajaran')
+            ->assertSee('Siswa berlatih soal pecahan')
             ->assertSee('Tidak Hadir');
 
         $this->actingAs($userGuru)

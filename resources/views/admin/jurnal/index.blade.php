@@ -697,6 +697,13 @@
         white-space: nowrap;
     }
 
+    .jurnal-table td:nth-child(3),
+    .jurnal-table td:nth-child(4),
+    .jurnal-table td:nth-child(5) {
+        overflow-wrap: anywhere;
+        white-space: normal;
+    }
+
 
     /* =========================
        CLICKABLE ROW

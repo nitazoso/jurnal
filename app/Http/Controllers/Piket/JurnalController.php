@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
+use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
@@ -50,6 +51,35 @@ class JurnalController extends Controller
         $totalTidakHadir = $jurnals->sum(fn ($jurnal) => $jurnal->detailAbsensis->filter(fn ($item) => mb_strtolower((string) $item->status) !== 'hadir')->count());
         return ['jenis' => $validated['jenis'], 'objekId' => $validated['objek'], 'objek' => $objek, 'judul' => $validated['jenis'] === 'kelas' ? 'Kelas ' . $objek->nama_kelas : $objek->nama_guru, 'mulai' => \Illuminate\Support\Carbon::parse($validated['mulai']), 'sampai' => \Illuminate\Support\Carbon::parse($validated['sampai']), 'jurnals' => $jurnals, 'totalHadir' => $totalHadir, 'totalTidakHadir' => $totalTidakHadir];
     }
+    public function create(Request $request)
+    {
+        $user = $request->user();
+        abort_unless(
+            $user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday()),
+            403
+        );
+
+        $validated = $request->validate([
+            'id_kelas' => ['nullable', 'integer', 'exists:kelases,id_kelas'],
+        ]);
+
+        $kelases = Kelas::orderBy('nama_kelas')->get();
+        $selectedKelas = isset($validated['id_kelas'])
+            ? $kelases->firstWhere('id_kelas', $validated['id_kelas'])
+            : null;
+
+        $jadwals = $selectedKelas
+            ? Jadwal::with(['guru', 'kelas', 'mapel', 'jamMulai', 'jamSelesai'])
+                ->withCount(['jurnals as jurnal_hari_ini_count' => fn ($query) => $query->whereDate('tanggal', today())])
+                ->where('id_kelas', $selectedKelas->id_kelas)
+                ->orderByRaw("CASE hari WHEN 'Senin' THEN 1 WHEN 'Selasa' THEN 2 WHEN 'Rabu' THEN 3 WHEN 'Kamis' THEN 4 WHEN 'Jumat' THEN 5 ELSE 6 END")
+                ->orderBy('id_jam_mulai')
+                ->get()
+            : collect();
+
+        return view('piket.jurnal.create', compact('kelases', 'selectedKelas', 'jadwals'));
+    }
+
     public function show(Jurnal $jurnal)
     {
         $jurnal->load([
@@ -61,6 +91,7 @@ class JurnalController extends Controller
             'detailAbsensis.siswa',
             'detailAbsensis.dispen',
             'validator',
+            'user',
         ]);
 
         return view('piket.jurnal.show', compact('jurnal'));

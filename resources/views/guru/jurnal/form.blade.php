@@ -1,5 +1,5 @@
 
-@extends('layouts.guru')
+@extends($isPiketEntry ? 'layouts.piket' : 'layouts.guru')
 
 @section('title', 'Isi Jurnal Mengajar - Jurnify')
 @section('page-title', 'Isi Jurnal Mengajar')
@@ -252,6 +252,9 @@
     .student-table-wrap { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; }
     .student-table-scroll { max-height: 420px; overflow-y: auto; }
     .student-table { width: 100%; border-collapse: collapse; }
+    .student-list-controls { display: flex; justify-content: center; padding-top: 12px; }
+    .student-list-toggle { min-height: 38px; padding: 8px 14px; border: 1px solid var(--border); border-radius: 9px; background: #FFFFFF; color: var(--primary); font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .student-list-toggle:hover { border-color: var(--secondary); background: var(--soft-blue); }
 
     .student-table thead th {
         position: sticky;
@@ -611,7 +614,7 @@
             <div class="hero-content">
                 <div class="hero-badge"><span class="hero-badge-dot"></span><span>Jurnal Pembelajaran</span></div>
                 <h1 class="hero-title">Isi Jurnal Mengajar</h1>
-                <p class="hero-description">Lengkapi data pembelajaran, materi, dan kehadiran siswa untuk mencatat kegiatan belajar mengajar hari ini.</p>
+                <p class="hero-description">{{ $isPiketEntry ? 'Lengkapi jurnal untuk guru yang berhalangan hadir.' : 'Lengkapi data pembelajaran, materi, dan kehadiran siswa untuk mencatat kegiatan belajar mengajar hari ini.' }}</p>
             </div>
         </section>
 
@@ -631,7 +634,7 @@
                 ✓ {{ session('success') }}
             </div>
         @endif
-        <form action="{{ route('guru.jurnal.store') }}" method="POST" id="journalForm">
+        <form action="{{ route($isPiketEntry ? 'piket.jurnal.store' : 'guru.jurnal.store') }}" method="POST" id="journalForm">
             @csrf
             <input type="hidden" name="id_jadwal" value="{{ $jadwal->id_jadwal }}">
 
@@ -658,6 +661,12 @@
                         <label class="field-label">Kelas</label>
                         <div class="readonly-field"><span class="material-symbols-rounded">groups</span>{{ $jadwal->kelas->nama_kelas ?? '-' }}</div>
                     </div>
+                    @if($isPiketEntry)
+                        <div class="field-group">
+                            <label class="field-label">Guru Pengajar</label>
+                            <div class="readonly-field"><span class="material-symbols-rounded">person</span>{{ $jadwal->guru->nama_guru ?? '-' }}</div>
+                        </div>
+                    @endif
                     <div class="field-group">
                         <label class="field-label">Jam Pelajaran</label>
                         <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}</div>
@@ -671,6 +680,27 @@
                     </div>
                 </div>
             </section>
+
+            @if($isPiketEntry)
+                <section class="form-card">
+                    <div class="section-header">
+                        <div class="section-icon"><span class="material-symbols-rounded">person_alert</span></div>
+                        <div>
+                            <h3 class="section-title">Kehadiran Guru</h3>
+                            <p class="section-subtitle">Pilih keterangan kehadiran guru yang jurnalnya sedang diisikan.</p>
+                        </div>
+                    </div>
+                    <div class="field-group">
+                        <label class="field-label" for="statusGuru">Status Kehadiran Guru</label>
+                        <select id="statusGuru" name="status_guru" class="field-select" required>
+                            <option value="">Pilih status</option>
+                            <option value="Sakit" {{ old('status_guru') === 'Sakit' ? 'selected' : '' }}>Sakit</option>
+                            <option value="Izin" {{ old('status_guru') === 'Izin' ? 'selected' : '' }}>Izin</option>
+                        </select>
+                        @error('status_guru')<small style="color:#b91c1c;font-size:12px">{{ $message }}</small>@enderror
+                    </div>
+                </section>
+            @endif
 
             {{-- MATERI --}}
             <section class="form-card">
@@ -717,7 +747,7 @@
 
                     <div class="student-search">
                         <span class="material-symbols-rounded">search</span>
-                        <input type="text" id="studentSearchDesktop" class="field-input" placeholder="Cari siswa yang tidak masuk..." autocomplete="off" oninput="searchStudents(this.value)">
+                        <input type="text" id="studentSearchDesktop" class="field-input" placeholder="Cari nama atau NIS siswa..." autocomplete="off" oninput="searchStudents(this.value)">
                     </div>
                 </div>
 
@@ -755,7 +785,7 @@
                 {{-- MOBILE SEARCH --}}
                 <div class="student-mobile-search">
                     <span class="material-symbols-rounded">search</span>
-                    <input type="text" id="studentSearchMobile" class="field-input" placeholder="Cari siswa yang tidak masuk..." autocomplete="off" oninput="searchStudents(this.value)">
+                    <input type="text" id="studentSearchMobile" class="field-input" placeholder="Cari nama atau NIS siswa..." autocomplete="off" oninput="searchStudents(this.value)">
                 </div>
 
                 {{-- DISPEN NOTICE --}}
@@ -790,7 +820,7 @@
                                         $statusSurat = $laporanSakit?->jenis === 'izin' ? 'Izin' : 'Sakit';
                                     @endphp
                                     <tr
-                                        class="student-row"
+                                        class="student-row {{ $loop->iteration <= 5 ? 'visible-row' : '' }}"
                                         data-name="{{ strtolower($item->nama_siswa) }}"
                                         data-nis="{{ strtolower($item->nis ?? '') }}"
                                     >
@@ -868,6 +898,20 @@
                     </div>
                 </div>
 
+                @if($siswa->count() > 5)
+                    <div class="student-list-controls" id="studentListControls">
+                        <button
+                            type="button"
+                            class="student-list-toggle"
+                            id="toggleStudentList"
+                            aria-expanded="false"
+                            onclick="toggleStudentList()"
+                        >
+                            Lihat Semua ({{ $siswa->count() }} siswa)
+                        </button>
+                    </div>
+                @endif
+
                 {{-- SEARCH EMPTY --}}
                 <div id="studentSearchEmpty" class="student-search-empty">
                     <span class="material-symbols-rounded">person_search</span>
@@ -902,9 +946,26 @@
 
             </section>
 
+            @if($isPiketEntry)
+                <section class="form-card">
+                    <div class="section-header">
+                        <div class="section-icon"><span class="material-symbols-rounded">badge</span></div>
+                        <div>
+                            <h3 class="section-title">Data Pengisi Jurnal</h3>
+                            <p class="section-subtitle">Identitas petugas piket akan tersimpan pada jurnal ini.</p>
+                        </div>
+                    </div>
+                    <div class="schedule-grid">
+                        <div class="field-group"><span class="field-label">Nama</span><div class="readonly-field">{{ auth()->user()->nama_user }}</div></div>
+                        <div class="field-group"><span class="field-label">Username</span><div class="readonly-field">{{ auth()->user()->username }}</div></div>
+                        <div class="field-group"><span class="field-label">Nomor WhatsApp</span><div class="readonly-field">{{ auth()->user()->no_wa ?: '-' }}</div></div>
+                    </div>
+                </section>
+            @endif
+
             {{-- ACTION --}}
             <div class="action-buttons">
-                <a href="{{ route('guru.jurnal.create') }}" class="btn btn-secondary">
+                <a href="{{ route($isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.create', $isPiketEntry ? ['id_kelas' => $jadwal->id_kelas] : []) }}" class="btn btn-secondary">
                     <span class="material-symbols-rounded">arrow_back</span> Batal
                 </a>
                 <button type="submit" class="btn btn-primary" id="reviewButton">
@@ -1038,7 +1099,7 @@
   function updateSummary() {
     const counts = { Hadir: 0, Sakit: 0, Izin: 0, Alpha: 0, Dispen: 0 };
 
-    document.querySelectorAll('.student-row').forEach(row => {
+        document.querySelectorAll('.student-row').forEach(row => {
       const input = row.querySelector('.attendance-value');
       if (!input) return;
 
@@ -1047,12 +1108,6 @@
         counts[status]++;
       }
 
-      // Secara default hanya siswa yang tidak hadir dan dispen yang ditampilkan
-      if (status === 'Hadir') {
-        row.classList.remove('visible-row');
-      } else {
-        row.classList.add('visible-row');
-      }
     });
 
     const hadir = document.getElementById('hadirCount');
@@ -1086,31 +1141,27 @@
 
     let visibleCount = 0;
 
-    document.querySelectorAll('.student-row').forEach(row => {
+        document.querySelectorAll('.student-row').forEach((row, index) => {
       const input = row.querySelector('.attendance-value');
       if (!input) return;
 
-      const status = input.value;
+            const matches = keyword === '' || matchesSearch(row, keyword);
+            const withinLimit = showAllStudents || index < 5 || keyword !== '';
+            const shouldShow = matches && withinLimit;
 
-      // Saat tidak ada pencarian, hanya tampilkan siswa tidak hadir/dispen
-      if (keyword === '') {
-        if (status === 'Hadir') {
-          row.classList.remove('visible-row');
-        } else {
-          row.classList.add('visible-row');
-          visibleCount++;
-        }
-        return;
-      }
-
-      // Saat melakukan pencarian, tampilkan siswa yang cocok walaupun hadir
-      if (matchesSearch(row, keyword)) {
-        row.classList.add('visible-row');
-        visibleCount++;
-      } else {
-        row.classList.remove('visible-row');
-      }
+            row.classList.toggle('visible-row', shouldShow);
+            if (shouldShow) visibleCount++;
     });
+
+        const listControls = document.getElementById('studentListControls');
+        const toggleButton = document.getElementById('toggleStudentList');
+        if (listControls) listControls.style.display = keyword ? 'none' : 'flex';
+        if (toggleButton) {
+            toggleButton.textContent = showAllStudents
+                ? 'Tampilkan 5 Siswa Pertama'
+                : `Lihat Semua (${document.querySelectorAll('.student-row').length} siswa)`;
+            toggleButton.setAttribute('aria-expanded', String(showAllStudents));
+        }
 
     if (emptyState) {
       emptyState.classList.toggle('show', keyword !== '' && visibleCount === 0);
@@ -1120,6 +1171,15 @@
   function clearSearch() {
     searchStudents('');
   }
+
+    let showAllStudents = false;
+
+    function toggleStudentList() {
+        showAllStudents = !showAllStudents;
+        const desktopInput = document.getElementById('studentSearchDesktop');
+        const mobileInput = document.getElementById('studentSearchMobile');
+        searchStudents(desktopInput?.value || mobileInput?.value || '');
+    }
 
   /* =========================================================
      HTML ESCAPE

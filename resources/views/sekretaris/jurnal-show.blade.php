@@ -29,6 +29,9 @@
                 <span class="dot">•</span>
                 <span>{{ $jurnal->tanggal ? $jurnal->tanggal->translatedFormat('d F Y') : '-' }}</span>
             </p>
+            @if($jurnal->diisi_oleh_piket)
+                <p class="meta-desc">Diisi petugas piket: {{ $jurnal->user?->nama_user ?? '-' }} · validasi otomatis</p>
+            @endif
         </div>
 
         <a href="{{ route('sekretaris.validasi-jurnal') }}" class="back-btn">
@@ -241,7 +244,7 @@
                 <h3>VALIDASI OLEH</h3>
             </div>
             <div class="info-list">
-                <div class="info-item"><span class="info-label">Validator</span><span class="info-value">Sekretaris<br>{{ $jurnal->validator?->nama_user ?? '-' }}</span></div>
+                <div class="info-item"><span class="info-label">Validasi</span><span class="info-value">{{ $jurnal->diisi_oleh_piket ? 'Otomatis oleh sistem' : 'Sekretaris' }}<br>{{ $jurnal->diisi_oleh_piket ? 'Diisi petugas piket: '.($jurnal->user?->nama_user ?? '-') : ($jurnal->validator?->nama_user ?? '-') }}</span></div>
                 <div class="info-item"><span class="info-label">Tanggal Validasi</span><span class="info-value">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}</span></div>
                 <div class="info-item"><span class="info-label">Waktu Validasi</span><span class="info-value">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->format('H:i') }}</span></div>
                 <div class="info-item"><span class="info-label">Status kehadiran guru</span><span class="info-value">{{ $jurnal->status_kehadiran_validasi }}</span></div>

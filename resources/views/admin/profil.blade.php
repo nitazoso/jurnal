@@ -21,28 +21,6 @@
 
     {{-- PROFILE HERO --}}
     <section class="profile-hero">
-
-        {{-- Edit --}}
-        <a
-            href="{{ url('/admin/profil/edit') }}"
-            class="profile-edit"
-            aria-label="Edit Profil"
-            title="Edit Profil"
-        >
-            <svg
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.2"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                />
-            </svg>
-        </a>
-
         {{-- Avatar --}}
         <div class="profile-avatar">
             <svg viewBox="0 0 24 24">
@@ -77,13 +55,13 @@
 
         <hr class="personal-divider">
 
-        {{-- Username / Email --}}
+        {{-- Username --}}
         <div class="personal-field">
             <p class="personal-label">
-                Email / Username
+                Username
             </p>
             <p class="personal-value">
-                {{ $user->email ?? $user->username ?? '-' }}
+                {{ $user->username ?? '-' }}
             </p>
         </div>
 
@@ -111,6 +89,45 @@
             </p>
         </div>
 
+    </section>
+
+    {{-- EDIT PROFILE FORM --}}
+    <section class="personal-card edit-card" id="edit-profile">
+        <div class="section-header">
+            <h4 class="section-title">Edit Profil</h4>
+        </div>
+
+        @if(session('success'))
+            <p class="success-text">{{ session('success') }}</p>
+        @endif
+
+        <form action="{{ route('admin.profil.update') }}" method="POST" class="profile-form">
+            @csrf
+            @method('PUT')
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required autocomplete="username">
+                @error('username')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password Baru</label>
+                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password" autocomplete="new-password">
+                @error('password')
+                    <small class="error-text">{{ $message }}</small>
+                @enderror
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirmation">Konfirmasi Password</label>
+                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="submit-btn">Simpan Perubahan</button>
+        </form>
     </section>
 
     {{-- LOGOUT --}}
@@ -369,6 +386,78 @@
         margin: 16px 0;
         border: 0;
         border-top: 1px solid #F1F5F9;
+    }
+
+    .edit-card {
+        padding: 24px;
+    }
+
+    .section-header {
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        margin: 0;
+        color: #2D336B;
+        font-size: 1.1rem;
+        font-weight: 800;
+    }
+
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .form-group label {
+        color: #2D336B;
+        font-size: 0.95rem;
+        font-weight: 700;
+    }
+
+    .form-group input {
+        width: 100%;
+        border: 1px solid #D7DDF5;
+        border-radius: 12px;
+        padding: 12px 14px;
+        color: #2D336B;
+        background: #F9FAFF;
+        font-size: 0.97rem;
+    }
+
+    .form-group input:focus {
+        outline: 2px solid rgba(72, 96, 206, 0.18);
+        border-color: #7F8ED8;
+        background: #FFFFFF;
+    }
+
+    .submit-btn {
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        color: #FFFFFF;
+        background: linear-gradient(135deg, #2D336B 0%, #47539B 100%);
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .error-text {
+        color: #C81E1E;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .success-text {
+        margin: 0 0 16px;
+        color: #187548;
+        font-size: 0.9rem;
+        font-weight: 700;
     }
 
     /* LOGOUT */

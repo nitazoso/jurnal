@@ -95,20 +95,14 @@
                 </div>
 
                 <div class="info-item">
-                    <span class="info-label">Status Kehadiran Guru</span>
-                    <div>
-                        <span class="guru-pill">
-                            {{ $jurnal->status_kehadiran_validasi ?? $jurnal->status_guru ?? '-' }}
-                        </span>
-                    </div>
+                    <span class="info-label">Status Guru pada Jurnal</span>
+                    <div><span class="guru-pill">{{ $jurnal->status_guru ?? '-' }}</span></div>
                 </div>
 
-                @if(($jurnal->status_kehadiran_validasi ?? null) === 'Tidak Hadir')
-                    <div class="info-item">
-                        <span class="info-label">Alasan Tidak Hadir</span>
-                        <div class="info-val">{{ $jurnal->status_guru }}</div>
-                    </div>
-                @endif
+                <div class="info-item">
+                    <span class="info-label">Hasil Validasi Kehadiran</span>
+                    <div><span class="guru-pill">{{ $jurnal->status_kehadiran_validasi ?? '-' }}</span></div>
+                </div>
             </div>
         </div>
 
@@ -142,26 +136,38 @@
 
     </div>
 
-    @if($jurnal->detailAbsensis->isNotEmpty())
+    @if($siswaKelas->isNotEmpty())
         <div class="jurnal-card section-card" style="animation-delay: 0.12s;">
-            <h2 class="card-heading">Detail Ketidakhadiran Siswa</h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+            <h2 class="card-heading">Daftar Kehadiran Semua Siswa · {{ $siswaKelas->count() }} siswa</h2>
+            @unless($detailAbsensiLengkap)
+                <p class="attendance-detail-note">Jurnal ini belum memiliki rincian absensi untuk setiap siswa; status yang belum tercatat ditandai “Belum dirinci”.</p>
+            @endunless
+            <div class="attendance-detail-table-wrap">
+                <table class="attendance-detail-table">
                     <thead>
-                        <tr class="text-left border-b">
-                            <th class="py-3 pr-4">Siswa</th>
-                            <th class="py-3 pr-4">Status</th>
-                            <th class="py-3">Surat</th>
+                        <tr>
+                            <th class="attendance-number-column">No</th>
+                            <th class="attendance-nis-column">NIS</th>
+                            <th class="attendance-student-column">Nama Siswa</th>
+                            <th class="attendance-status-column">Status</th>
+                            <th class="attendance-letter-column">Surat</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($jurnal->detailAbsensis as $absensi)
-                            <tr class="border-b last:border-0">
-                                <td class="py-3 pr-4">{{ $absensi->siswa?->nama_siswa ?? '-' }}</td>
-                                <td class="py-3 pr-4">{{ $absensi->status }}</td>
-                                <td class="py-3">
-                                    @if($absensi->dispen?->surat_path)
-                                        <a href="{{ asset('storage/' . $absensi->dispen->surat_path) }}" target="_blank" rel="noopener" class="text-blue-600 underline">Lihat foto surat</a>
+                        @foreach($siswaKelas as $siswa)
+                            @php
+                                $absensi = $absensiBySiswa->get($siswa->id_siswa);
+                                $statusAbsensi = $absensi?->status ?? ($detailAbsensiLengkap ? 'Hadir' : 'Belum dirinci');
+                                $statusClass = $statusAbsensi === 'Belum dirinci' ? 'belum-dirinci' : strtolower($statusAbsensi);
+                            @endphp
+                            <tr>
+                                <td>{{ $loop->iteration }}</td>
+                                <td>{{ $siswa->nis ?? '-' }}</td>
+                                <td>{{ $siswa->nama_siswa }}</td>
+                                <td><span class="attendance-detail-status {{ $statusClass }}">{{ $statusAbsensi }}</span></td>
+                                <td>
+                                    @if($absensi?->dispen?->surat_path)
+                                        <a href="{{ asset('storage/' . $absensi->dispen->surat_path) }}" target="_blank" rel="noopener" class="attendance-letter-link">Lihat foto surat</a>
                                     @else
                                         -
                                     @endif
@@ -185,6 +191,19 @@
         </h2>
         <div class="text-content-box">
             {{ $jurnal->materi ?? 'Tidak ada catatan materi.' }}
+        </div>
+    </div>
+
+    {{-- KETERANGAN PEMBELAJARAN --}}
+    <div class="jurnal-card section-card" style="animation-delay: 0.18s;">
+        <h2 class="card-heading">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+            </svg>
+            Keterangan Pembelajaran
+        </h2>
+        <div class="text-content-box {{ !$jurnal->keterangan ? 'empty-text' : '' }}">
+            {{ $jurnal->keterangan ?: 'Tidak ada keterangan pembelajaran.' }}
         </div>
     </div>
 
@@ -247,12 +266,23 @@
 
     @if($jurnal->validated_at)
         <section class="jurnal-card section-card" style="animation-delay: 0.32s;">
-            <h2 class="card-heading">VALIDASI OLEH</h2>
+            <h2 class="card-heading">
+                {{ $jurnal->diisi_oleh_piket ? 'DIISI OLEH PETUGAS PIKET' : 'VALIDASI OLEH SEKRETARIS' }}
+            </h2>
             <div class="info-items-grid">
-                <div class="info-item"><span class="info-label">Validator</span><div class="info-val">Sekretaris<br>{{ $jurnal->validator?->nama_user ?? '-' }}</div></div>
-                <div class="info-item"><span class="info-label">Tanggal Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}</div></div>
-                <div class="info-item"><span class="info-label">Waktu Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->format('H:i') }}</div></div>
-                <div class="info-item"><span class="info-label">Status kehadiran guru</span><div class="info-val">{{ $jurnal->status_kehadiran_validasi }}</div></div>
+                @if($jurnal->diisi_oleh_piket)
+                    <div class="info-item"><span class="info-label">Nama Pengisi</span><div class="info-val">{{ $jurnal->user?->nama_user ?? '-' }}</div></div>
+                    <div class="info-item"><span class="info-label">Username Pengisi</span><div class="info-val">{{ $jurnal->user?->username ?? '-' }}</div></div>
+                    <div class="info-item"><span class="info-label">Status Guru</span><div class="info-val">{{ $jurnal->status_guru ?? '-' }}</div></div>
+                    <div class="info-item"><span class="info-label">Validasi</span><div class="info-val">Otomatis · {{ $jurnal->status_validasi_guru }}</div></div>
+                    <div class="info-item"><span class="info-label">Tanggal Pengisian</span><div class="info-val">{{ $jurnal->created_at?->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') ?? '-' }}</div></div>
+                    <div class="info-item"><span class="info-label">Waktu Pengisian</span><div class="info-val">{{ $jurnal->created_at?->copy()->timezone('Asia/Jakarta')->format('H:i') ?? '-' }}</div></div>
+                @else
+                    <div class="info-item"><span class="info-label">Validator</span><div class="info-val">Sekretaris<br>{{ $jurnal->validator?->nama_user ?? '-' }}</div></div>
+                    <div class="info-item"><span class="info-label">Tanggal Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y') }}</div></div>
+                    <div class="info-item"><span class="info-label">Waktu Validasi</span><div class="info-val">{{ $jurnal->validated_at->copy()->timezone('Asia/Jakarta')->format('H:i') }}</div></div>
+                    <div class="info-item"><span class="info-label">Status Kehadiran Guru</span><div class="info-val">{{ $jurnal->status_kehadiran_validasi ?? '-' }}</div></div>
+                @endif
             </div>
         </section>
     @endif
@@ -690,6 +720,86 @@
     .btn-back-link:hover svg {
         transform: translateX(-3px);
     }
+
+    .attendance-detail-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+    }
+
+    .attendance-detail-table {
+        width: 100%;
+        min-width: 720px;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .attendance-detail-table th,
+    .attendance-detail-table td {
+        padding: 13px 16px;
+        border-bottom: 1px solid #EDF0F5;
+        text-align: left;
+        vertical-align: middle;
+        overflow-wrap: anywhere;
+    }
+
+    .attendance-detail-table th {
+        background: #F7F8FB;
+        color: #64748B;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .attendance-detail-table td {
+        color: #334155;
+        font-size: 13px;
+    }
+
+    .attendance-detail-table tbody tr:last-child td { border-bottom: 0; }
+    .attendance-number-column { width: 7%; }
+    .attendance-nis-column { width: 17%; }
+    .attendance-student-column { width: 31%; }
+    .attendance-status-column { width: 20%; }
+    .attendance-letter-column { width: 25%; }
+
+    .attendance-detail-status {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 5px 10px;
+        border: 1px solid #D7DFED;
+        border-radius: 7px;
+        background: #F8FAFC;
+        color: #475569;
+        font-size: 11px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .attendance-detail-status.sakit { border-color: #F4D7A2; background: #FFF8E8; color: #9A5B08; }
+    .attendance-detail-status.izin { border-color: #BFDBFE; background: #EFF6FF; color: #1D4ED8; }
+    .attendance-detail-status.alpha { border-color: #FECACA; background: #FFF1F2; color: #B91C1C; }
+    .attendance-detail-status.dispen { border-color: #C4B5FD; background: #F5F3FF; color: #6D28D9; }
+    .attendance-detail-status.belum-dirinci { border-color: #FDE68A; background: #FFFBEB; color: #92400E; }
+
+    .attendance-detail-note {
+        margin: -5px 0 14px;
+        color: #64748B;
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .attendance-letter-link {
+        color: #3157B7;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .attendance-letter-link:hover { color: #233F8C; }
 
     /* RESPONSIVE DESIGN */
     @media (max-width: 992px) {

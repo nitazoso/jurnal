@@ -174,6 +174,9 @@
                         <p>
                             Guru: <strong>{{ $jurnal->guru->nama_guru ?? '-' }}</strong>
                         </p>
+                        @if($jurnal->diisi_oleh_piket)
+                            <small class="piket-entry-note">Diisi petugas piket · validasi otomatis</small>
+                        @endif
                     </div>
 
                 </div>
@@ -266,6 +269,14 @@
                     <small>({{ $jurnal->catatan_revisi }})</small>
                     @endif
                 </div>
+
+                <a href="{{ route('sekretaris.validasi-jurnal.show', $jurnal) }}" class="review-button">
+                    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12 18 18.75 12 18.75 2.25 12 2.25 12Z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Lihat Isi Jurnal
+                </a>
 
                 @endif
 
@@ -687,6 +698,14 @@
 
     .teacher-text strong {
         color: #334155;
+    }
+
+    .piket-entry-note {
+        display: block;
+        margin-top: 5px;
+        color: #187548;
+        font-size: 11px;
+        font-weight: 700;
     }
 
     /* STATUS BADGE */
