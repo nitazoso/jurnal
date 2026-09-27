@@ -7,6 +7,7 @@ use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use App\Models\Mapel;
+use App\Models\PiketJadwal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -272,13 +273,13 @@ class RoleKesiswaanTest extends TestCase
         $response->assertSee('Verifikasi Dispensasi');
     }
 
-    public function test_staff_piket_can_store_dispen_and_route_it_to_selected_recipient(): void
+    public function test_staff_piket_store_dispen_determines_waka_from_schedule(): void
     {
         $piket = User::create([
             'username' => 'piket_dispen',
             'password' => bcrypt('password123'),
             'nama_user' => 'Staff Piket',
-            'role' => 'Staff Piket',
+            'role' => 'Guru',
         ]);
 
         $guru = Guru::create([
@@ -300,18 +301,21 @@ class RoleKesiswaanTest extends TestCase
         ]);
 
         $petugas = User::create([
-            'username' => 'recipient_target',
+            'username' => 'waka_tugas',
             'password' => bcrypt('password123'),
-            'nama_user' => 'Petugas Target',
-            'role' => 'Kesiswaan',
-            'no_wa' => '0812 3456 7890',
+            'nama_user' => 'Waka Tugas',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+            'no_wa' => '081234567890',
         ]);
 
-        $bukanKesiswaan = User::create([
-            'username' => 'recipient_not_kesiswaan',
-            'password' => bcrypt('password123'),
-            'nama_user' => 'Bukan Kesiswaan',
-            'role' => 'Sekretaris',
+        $tanggal = '2026-09-25';
+        PiketJadwal::create([
+            'id_guru' => $guru->id_guru,
+            'tanggal' => $tanggal,
+            'shift' => 'Waka',
+            'jenis_tugas' => 'Piket Waka',
+            'posisi' => 'Petugas',
         ]);
 
         $jamMulai = \App\Models\JamPel::create([
@@ -332,43 +336,30 @@ class RoleKesiswaanTest extends TestCase
             'durasi_menit' => 45,
         ]);
 
-        $form = $this->actingAs($piket)->get(route('piket.dispen.create'));
-        $form->assertOk();
-        $form->assertSee('Petugas Target (0812 3456 7890)');
-        $form->assertDontSee('Bukan Kesiswaan');
-
-        $invalidRecipient = $this->post(route('piket.dispen.store'), [
+        // Staff piket membuat dispen tanpa memilih Waka manual
+        $response = $this->actingAs($piket)->post(route('piket.dispen.store'), [
             'id_kelas' => $kelas->id_kelas,
             'id_siswa' => $siswa->id_siswa,
-            'id_kesiswaan' => $bukanKesiswaan->id_user,
-            'tanggal' => now()->toDateString(),
+            'tanggal' => $tanggal,
             'id_jam_mulai' => $jamMulai->id_jam,
             'id_jam_selesai' => $jamSelesai->id_jam,
-            'alasan' => 'Pengajuan ke role lain',
+            'alasan' => 'Mengikuti lomba sains',
         ]);
-        $invalidRecipient->assertSessionHasErrors('id_kesiswaan');
 
-        $response = $this->post(route('piket.dispen.store'), [
-                'id_kelas' => $kelas->id_kelas,
-                'id_siswa' => $siswa->id_siswa,
-                'id_kesiswaan' => $petugas->id_user,
-                'tanggal' => now()->toDateString(),
-                'id_jam_mulai' => $jamMulai->id_jam,
-                'id_jam_selesai' => $jamSelesai->id_jam,
-                'alasan' => 'Mengikuti lomba',
-            ]);
-
-        $response->assertRedirect();
+        $response->assertRedirect(route('piket.dispen.index'));
 
         $this->assertDatabaseHas('dispens', [
             'id_siswa' => $siswa->id_siswa,
             'id_kesiswaan' => $petugas->id_user,
             'status' => 'menunggu',
-            'alasan' => 'Mengikuti lomba',
+            'alasan' => 'Mengikuti lomba sains',
         ]);
 
         $dispen = \App\Models\Dispen::firstOrFail();
-        $whatsappResponse = $this->get(route('piket.dispen.whatsapp', $dispen));
+        $this->assertNotEmpty($dispen->token_verifikasi);
+
+        // WhatsApp redirect check
+        $whatsappResponse = $this->actingAs($piket)->get(route('piket.dispen.whatsapp', $dispen));
         $whatsappResponse->assertRedirect();
         parse_str(parse_url($whatsappResponse->headers->get('Location'), PHP_URL_QUERY), $whatsappQuery);
 
@@ -377,6 +368,168 @@ class RoleKesiswaanTest extends TestCase
             route('dispen.verifikasi', $dispen->token_verifikasi),
             $whatsappQuery['text']
         );
+    }
+
+    public function test_staff_piket_store_dispen_fails_gracefully_when_no_waka_scheduled(): void
+    {
+        $piket = User::create([
+            'username' => 'piket_test_fail',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Staff Piket',
+            'role' => 'Guru',
+        ]);
+
+        $guru = Guru::create(['nama_guru' => 'Guru']);
+        $kelas = Kelas::create(['nama_kelas' => 'X-1', 'wali_kelas' => $guru->id_guru]);
+        $siswa = \App\Models\Siswa::create([
+            'id_kelas' => $kelas->id_kelas,
+            'nis' => '1002',
+            'no_presensi' => 2,
+            'nama_siswa' => 'Siti',
+            'jenis_kelamin' => 'P',
+        ]);
+
+        $jam = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $response = $this->actingAs($piket)->from(route('piket.dispen.create'))->post(route('piket.dispen.store'), [
+            'id_kelas' => $kelas->id_kelas,
+            'id_siswa' => $siswa->id_siswa,
+            'tanggal' => '2026-10-10', // Tanggal belum ada jadwal
+            'id_jam_mulai' => $jam->id_jam,
+            'id_jam_selesai' => $jam->id_jam,
+            'alasan' => 'Test tanpa jadwal',
+        ]);
+
+        $response->assertRedirect(route('piket.dispen.create'));
+        $response->assertSessionHasErrors('tanggal');
+        $this->assertDatabaseMissing('dispens', ['alasan' => 'Test tanpa jadwal']);
+    }
+
+    public function test_waka_can_approve_dispen_via_verification_link_without_login(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id_kelas' => 1,
+            'nis' => '2002',
+            'no_presensi' => 2,
+            'nama_siswa' => 'Rian',
+            'jenis_kelamin' => 'L',
+        ]);
+
+        $jam = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $waka = User::create([
+            'username' => 'waka_acc',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Waka ACC',
+            'role' => 'Kesiswaan',
+            'no_wa' => '62811111111',
+        ]);
+
+        $dispen = \App\Models\Dispen::create([
+            'id_siswa' => $siswa->id_siswa,
+            'jenis' => 'dispen',
+            'id_kesiswaan' => $waka->id_user,
+            'submitted_by' => null,
+            'tanggal' => '2026-09-25',
+            'id_jam_mulai' => $jam->id_jam,
+            'id_jam_selesai' => $jam->id_jam,
+            'alasan' => 'Lomba PMR',
+            'status' => 'menunggu',
+            'token_verifikasi' => 'token-acc-12345',
+        ]);
+
+        $response = $this->post(route('dispen.verifikasi.approve', $dispen->token_verifikasi));
+        $response->assertRedirect(route('dispen.verifikasi', $dispen->token_verifikasi));
+
+        $dispen->refresh();
+        $this->assertSame('disetujui', $dispen->status);
+        $this->assertEquals($waka->id_user, $dispen->disetujui_oleh);
+        $this->assertNotNull($dispen->disetujui_pada);
+
+        // Link dibuka kembali: tombol sudah tidak ada dan menampilkan status sudah diverifikasi
+        $showResponse = $this->get(route('dispen.verifikasi', $dispen->token_verifikasi));
+        $showResponse->assertOk();
+        $showResponse->assertSee('Dispensasi ini sudah diverifikasi');
+        $showResponse->assertDontSee('SETUJUI DISPENSASI');
+    }
+
+    public function test_waka_rejection_requires_reason_and_updates_status(): void
+    {
+        $siswa = \App\Models\Siswa::create([
+            'id_kelas' => 1,
+            'nis' => '2003',
+            'no_presensi' => 3,
+            'nama_siswa' => 'Rini',
+            'jenis_kelamin' => 'P',
+        ]);
+
+        $jam = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $waka = User::create([
+            'username' => 'waka_tolak',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Waka Tolak',
+            'role' => 'Kesiswaan',
+            'no_wa' => '62822222222',
+        ]);
+
+        $dispen = \App\Models\Dispen::create([
+            'id_siswa' => $siswa->id_siswa,
+            'jenis' => 'dispen',
+            'id_kesiswaan' => $waka->id_user,
+            'submitted_by' => null,
+            'tanggal' => '2026-09-25',
+            'id_jam_mulai' => $jam->id_jam,
+            'id_jam_selesai' => $jam->id_jam,
+            'alasan' => 'Urusan pribadi',
+            'status' => 'menunggu',
+            'token_verifikasi' => 'token-tolak-12345',
+        ]);
+
+        // Tolak tanpa alasan -> gagal validasi
+        $failResponse = $this->post(route('dispen.verifikasi.reject', $dispen->token_verifikasi), [
+            'catatan_persetujuan' => '',
+        ]);
+        $failResponse->assertSessionHasErrors('catatan_persetujuan');
+
+        $dispen->refresh();
+        $this->assertSame('menunggu', $dispen->status);
+
+        // Tolak dengan alasan -> berhasil
+        $successResponse = $this->post(route('dispen.verifikasi.reject', $dispen->token_verifikasi), [
+            'catatan_persetujuan' => 'Alasan tidak memenuhi kriteria dispensasi sekolah.',
+        ]);
+        $successResponse->assertRedirect(route('dispen.verifikasi', $dispen->token_verifikasi));
+
+        $dispen->refresh();
+        $this->assertSame('ditolak', $dispen->status);
+        $this->assertSame('Alasan tidak memenuhi kriteria dispensasi sekolah.', $dispen->catatan_persetujuan);
+        $this->assertEquals($waka->id_user, $dispen->disetujui_oleh);
+        $this->assertNotNull($dispen->disetujui_pada);
+
+        // Cegah proses ulang setelah ditolak
+        $reApprove = $this->post(route('dispen.verifikasi.approve', $dispen->token_verifikasi));
+        $reApprove->assertRedirect(route('dispen.verifikasi', $dispen->token_verifikasi));
+        $dispen->refresh();
+        $this->assertSame('ditolak', $dispen->status); // Tetap ditolak
     }
 
     public function test_staff_piket_can_see_newly_submitted_journal(): void

@@ -13,7 +13,6 @@ use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\JamPelController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\JadwalPiketController as AdminJadwalPiketController;
-use App\Http\Controllers\Admin\JadwalKesiswaanController;
 use App\Http\Controllers\Admin\SiswaController;
 
 use App\Http\Controllers\DispenVerificationController;
@@ -45,6 +44,7 @@ Route::get('/', function () {
         'Guru' => redirect()->route('guru.dashboard'),
         'Staff Piket' => redirect()->route('piket.dashboard'),
         'Sekretaris' => redirect()->route('sekretaris.dashboard'),
+        'Kesiswaan' => redirect()->route('kesiswaan.dashboard'),
         default => redirect()->route('login'),
     };
 })->name('home');
@@ -257,19 +257,6 @@ Route::put('/admin/jadwal-piket/{tanggal}', [AdminJadwalPiketController::class, 
 
 Route::delete('/admin/jadwal-piket/{tanggal}', [AdminJadwalPiketController::class, 'destroy'])
     ->name('admin.jadwal-piket.destroy');
-    Route::get('/admin/jadwal-kesiswaan', [JadwalKesiswaanController::class, 'index'])
-        ->name('admin.jadwal-kesiswaan.index');
-    Route::get('/admin/jadwal-kesiswaan/create', [JadwalKesiswaanController::class, 'create'])
-        ->name('admin.jadwal-kesiswaan.create');
-    Route::post('/admin/jadwal-kesiswaan', [JadwalKesiswaanController::class, 'store'])
-        ->name('admin.jadwal-kesiswaan.store');
-    Route::get('/admin/jadwal-kesiswaan/{jadwalKesiswaan}/edit', [JadwalKesiswaanController::class, 'edit'])
-        ->name('admin.jadwal-kesiswaan.edit');
-    Route::put('/admin/jadwal-kesiswaan/{jadwalKesiswaan}', [JadwalKesiswaanController::class, 'update'])
-        ->name('admin.jadwal-kesiswaan.update');
-    Route::delete('/admin/jadwal-kesiswaan/{jadwalKesiswaan}', [JadwalKesiswaanController::class, 'destroy'])
-        ->name('admin.jadwal-kesiswaan.destroy');
-
     // ====================
     // PROFIL ADMIN
     // ====================
@@ -373,6 +360,20 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::get('/piket/dispen/{dispen}/edit', [PiketDispenController::class, 'edit'])->name('piket.dispen.edit');
     Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');
     Route::delete('/piket/dispen/{dispen}', [PiketDispenController::class, 'destroy'])->name('piket.dispen.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| KESISWAAN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'role:Kesiswaan'])->prefix('kesiswaan')->name('kesiswaan.')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\Kesiswaan\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dispen', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'index'])->name('dispen.index');
+    Route::get('/dispen/riwayat', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'history'])->name('dispen.history');
+    Route::get('/dispen/{dispen}', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'show'])->name('dispen.show');
+    Route::post('/dispen/{dispen}/approve', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'approve'])->name('dispen.approve');
+    Route::post('/dispen/{dispen}/reject', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'reject'])->name('dispen.reject');
 });
 
 

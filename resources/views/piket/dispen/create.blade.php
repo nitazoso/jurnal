@@ -125,6 +125,34 @@
         padding-left: 19px;
     }
 
+    .waka-info-card {
+        padding: 12px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .waka-info-card--success {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #166534;
+    }
+
+    .waka-info-card--warning {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+
+    .waka-info-card--danger {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+    }
+
     .dispen-create-actions {
         display: flex;
         flex-wrap: wrap;
@@ -177,8 +205,14 @@
 <main class="dispen-create-page">
     <header class="dispen-create-header">
         <h1>Tambah Dispen</h1>
-        <p>Tambahkan data dispensasi siswa dan teruskan ke petugas Kesiswaan.</p>
+        <p>Tambahkan data dispensasi siswa. Petugas Waka akan ditentukan otomatis berdasarkan jadwal.</p>
     </header>
+
+    @if(session('error'))
+        <div class="dispen-create-alert" role="alert">
+            {{ session('error') }}
+        </div>
+    @endif
 
     @if ($errors->any())
         <div class="dispen-create-alert" role="alert">
@@ -214,24 +248,16 @@
             </div>
 
             <div class="dispen-create-field">
-                <label for="kesiswaan-select">Tujuan Kesiswaan</label>
-                <select name="id_kesiswaan" id="kesiswaan-select" class="dispen-create-control" required>
-                    <option value="">-- Pilih Kesiswaan --</option>
-                    @foreach ($petugasKesiswaans as $petugas)
-                        <option value="{{ $petugas->id_user }}" @selected(old('id_kesiswaan') == $petugas->id_user)>
-                            {{ $petugas->nama_user }} ({{ $petugas->no_wa }})
-                        </option>
-                    @endforeach
-                    @if ($petugasKesiswaans->isEmpty())
-                        <option value="" disabled>Belum ada akun Kesiswaan dengan nomor WhatsApp</option>
-                    @endif
-                </select>
-                <p class="dispen-create-help">Hanya petugas Kesiswaan dengan nomor WhatsApp terdaftar.</p>
-            </div>
-
-            <div class="dispen-create-field">
                 <label for="dispen-date">Tanggal</label>
                 <input type="date" id="dispen-date" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" class="dispen-create-control" required>
+            </div>
+
+            {{-- Info Petugas Waka Bertugas (Otomatis berdasarkan jadwal) --}}
+            <div class="dispen-create-field">
+                <label>Waka / Kesiswaan Bertugas</label>
+                <div id="waka-status-box" class="waka-info-card waka-info-card--warning">
+                    <span id="waka-status-text">Memeriksa jadwal...</span>
+                </div>
             </div>
 
             <div class="dispen-create-field">
@@ -265,19 +291,24 @@
 
             <div class="dispen-create-actions">
                 <a href="{{ route('piket.dispen.index') }}" class="dispen-create-button dispen-create-button--secondary">Kembali</a>
-                <button type="submit" class="dispen-create-button dispen-create-button--primary">Simpan &amp; Kirim ke Kesiswaan</button>
+                <button type="submit" class="dispen-create-button dispen-create-button--primary">Simpan Dispen</button>
             </div>
         </form>
     </section>
 </main>
-</div>
 
 <script>
     (() => {
         const studentsByClass = @json($siswaPerKelas);
+        const jadwalWakaMap = @json($jadwalWakaMap);
+
         const classSelect = document.getElementById('class-select');
         const studentSelect = document.getElementById('student-select');
         const studentHelp = document.getElementById('student-help');
+        const dateInput = document.getElementById('dispen-date');
+        const wakaBox = document.getElementById('waka-status-box');
+        const wakaText = document.getElementById('waka-status-text');
+
         const selectedStudent = @json((string) old('id_siswa'));
 
         const showStudents = (classId, studentId = '') => {
@@ -295,8 +326,36 @@
                 : 'Pilih kelas untuk menampilkan seluruh siswa.';
         };
 
+        const updateWakaStatus = () => {
+            const dateVal = dateInput.value;
+            wakaBox.className = 'waka-info-card';
+
+            if (!dateVal) {
+                wakaBox.classList.add('waka-info-card--warning');
+                wakaText.textContent = 'Pilih tanggal terlebih dahulu.';
+                return;
+            }
+
+            const schedule = jadwalWakaMap[dateVal];
+            if (schedule) {
+                if (schedule.no_wa) {
+                    wakaBox.classList.add('waka-info-card--success');
+                    wakaText.textContent = `Petugas: ${schedule.nama} (WA: ${schedule.no_wa})`;
+                } else {
+                    wakaBox.classList.add('waka-info-card--warning');
+                    wakaText.textContent = `Petugas: ${schedule.nama} (Nomor WhatsApp belum tersedia)`;
+                }
+            } else {
+                wakaBox.classList.add('waka-info-card--danger');
+                wakaText.textContent = 'Waka untuk tanggal ini belum ada di jadwal piket.';
+            }
+        };
+
         classSelect.addEventListener('change', () => showStudents(classSelect.value));
         if (classSelect.value) showStudents(classSelect.value, selectedStudent);
+
+        dateInput.addEventListener('change', updateWakaStatus);
+        updateWakaStatus();
     })();
 </script>
 

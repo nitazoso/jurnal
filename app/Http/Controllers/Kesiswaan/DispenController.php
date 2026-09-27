@@ -45,16 +45,20 @@ class DispenController extends Controller
     {
         $this->ensureScheduled($dispen);
 
+        abort_unless($dispen->status === 'menunggu', 409, 'Dispen ini sudah diproses.');
+
         $validated = $request->validate([
             'catatan_persetujuan' => 'nullable|string|max:255',
         ]);
 
-        $dispen->update([
+        $updated = Dispen::whereKey($dispen->getKey())->where('status', 'menunggu')->update([
             'status' => 'disetujui',
             'disetujui_oleh' => auth()->id(),
             'disetujui_pada' => now(),
             'catatan_persetujuan' => $validated['catatan_persetujuan'] ?? null,
+            'updated_at' => now(),
         ]);
+        abort_unless($updated, 409, 'Dispen ini sudah diproses.');
 
         return redirect()->route('kesiswaan.dispen.index')
             ->with('success', 'Pengajuan dispen disetujui.');
@@ -64,16 +68,20 @@ class DispenController extends Controller
     {
         $this->ensureScheduled($dispen);
 
+        abort_unless($dispen->status === 'menunggu', 409, 'Dispen ini sudah diproses.');
+
         $validated = $request->validate([
             'catatan_persetujuan' => 'required|string|max:255',
         ]);
 
-        $dispen->update([
+        $updated = Dispen::whereKey($dispen->getKey())->where('status', 'menunggu')->update([
             'status' => 'ditolak',
             'disetujui_oleh' => auth()->id(),
             'disetujui_pada' => now(),
             'catatan_persetujuan' => $validated['catatan_persetujuan'],
+            'updated_at' => now(),
         ]);
+        abort_unless($updated, 409, 'Dispen ini sudah diproses.');
 
         return redirect()->route('kesiswaan.dispen.index')
             ->with('success', 'Pengajuan dispen ditolak.');

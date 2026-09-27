@@ -12,7 +12,8 @@ class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $totalJurnalHariIni = Jurnal::whereDate('created_at', now()->toDateString())->count();
+        $today = now('Asia/Jakarta')->toDateString();
+        $totalJurnalHariIni = Jurnal::whereDate('tanggal', $today)->count();
         $totalGuru = Guru::count();
         $totalKelas = Kelas::count();
         
@@ -20,24 +21,23 @@ class DashboardController extends Controller
         $kelases = Kelas::all();
 
         $jurnals = Jurnal::with(['guru', 'kelas', 'jadwal.mapel']) // Load relasi sampai ke mapel
+            ->whereDate('tanggal', $today)
             ->when($request->search, function ($query, $search) {
-            $query->where('materi', 'like', "%{$search}%")
-              
-              ->orWhereHas('jadwal.mapel', function ($q) use ($search) {
-                  $q->where('nama_mapel', 'like', "%{$search}%"); 
-              })
-              ->orWhereHas('guru', function ($q) use ($search) {
-                  $q->where('nama_guru', 'like', "%{$search}%");
-              });
-             })
+                $query->where(function ($matches) use ($search) {
+                    $matches->where('materi', 'like', "%{$search}%")
+                        ->orWhereHas('jadwal.mapel', function ($q) use ($search) {
+                            $q->where('nama_mapel', 'like', "%{$search}%");
+                        })
+                        ->orWhereHas('guru', function ($q) use ($search) {
+                            $q->where('nama_guru', 'like', "%{$search}%");
+                        });
+                });
+            })
              ->when($request->status, function ($query, $status) {
                  $query->where('status_validasi_guru', $status); 
              })
              ->when($request->kelas_id, function ($query, $kelasId) {
                  $query->where('id_kelas', $kelasId);
-             })
-             ->when($request->tanggal, function ($query, $tanggal) {
-                 $query->whereDate('tanggal', $tanggal);
              })
         ->latest()
         ->paginate(10)

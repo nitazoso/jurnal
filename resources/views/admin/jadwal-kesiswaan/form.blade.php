@@ -10,7 +10,7 @@
             <option value="">Pilih petugas</option>
             @foreach($users as $user)
                 <option value="{{ $user->id_user }}" {{ old('id_user', $jadwal->id_user ?? '') == $user->id_user ? 'selected' : '' }}>
-                    {{ $user->nama_user }} ({{ $user->username }})
+                    {{ $user->nama_user }} ({{ $user->username }}){{ $user->no_wa ? ' — WA: ' . $user->no_wa : ' — (Belum ada WA)' }}
                 </option>
             @endforeach
         </select>

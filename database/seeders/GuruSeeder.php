@@ -9,6 +9,10 @@ class GuruSeeder extends Seeder
 {
     public function run(): void
     {
+        if (DB::table('gurus')->exists()) {
+            return;
+        }
+
         DB::table('gurus')->insert(array (
   0 => 
   array (

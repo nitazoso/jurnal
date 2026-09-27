@@ -670,11 +670,11 @@
 <div class="activity-header">
 
     <h3 class="activity-title">
-        Aktivitas Jurnal Terkini
+        Aktivitas Jurnal Hari Ini
     </h3>
 
     <p class="activity-description">
-        Daftar entri jurnal pembelajaran harian dan status validasi kurikulum.
+        Daftar jurnal yang dibuat untuk tanggal hari ini.
     </p>
 
 </div>
@@ -747,8 +747,10 @@
         </select>
 
 
-        <!-- TANGGAL -->
-        <input type="date" name="tanggal" value="{{ request('tanggal') }}" class="filter-select" onchange="this.form.submit()">
+        <!-- TANGGAL HARI INI -->
+        <span class="filter-select" aria-label="Tanggal yang ditampilkan">
+            {{ now('Asia/Jakarta')->format('d M Y') }}
+        </span>
 
         <!-- RESET -->
         <a href="{{ route('admin.dashboard') }}" class="btn-reset" title="Reset Semua Filter">
@@ -810,7 +812,7 @@
 
                     <td>
                         <span class="date">
-                            {{ $item->created_at->format('d M Y') }}
+                            {{ $item->tanggal?->format('d M Y') ?? '-' }}
                         </span>
 
                         <span class="time" style=" display: block; font-size: 11px; color: #94a3b8;">

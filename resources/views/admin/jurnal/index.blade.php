@@ -11,20 +11,72 @@
 
 <div class="jurnal-page">
 
-```
 <div class="jurnal-card">
 
     {{-- HEADER --}}
-    <div class="jurnal-header">
-        <h3 class="jurnal-title">Daftar Jurnal</h3>
+    <div class="jurnal-header jurnal-header-top">
+        <div>
+            <h3 class="jurnal-title">Daftar Jurnal</h3>
+            <p class="jurnal-description">
+                Pilih kelas atau guru untuk melihat jurnal pembelajaran.
+            </p>
+        </div>
 
-        <p class="jurnal-description">
-            Daftar jurnal pembelajaran yang telah dibuat oleh guru.
-        </p>
+        <form action="{{ route('admin.jurnal.index') }}" method="GET" class="jurnal-mode-filter">
+            <label for="filter-by">Tampilkan berdasarkan</label>
+            <select id="filter-by" name="filter_by" onchange="this.form.submit()">
+                <option value="kelas" {{ $filterBy === 'kelas' ? 'selected' : '' }}>Kelas</option>
+                <option value="guru" {{ $filterBy === 'guru' ? 'selected' : '' }}>Guru</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="jurnal-selection-panel">
+        <div class="jurnal-selection-options">
+            @if($filterBy === 'kelas')
+                <a href="{{ route('admin.jurnal.index', array_filter(['filter_by' => 'kelas', 'tanggal' => request('tanggal'), 'search' => request('search')])) }}"
+                   class="selection-chip {{ request()->filled('id_kelas') ? '' : 'active' }}">Semua Kelas</a>
+                @foreach($kelases->take(6) as $kelas)
+                    <a href="{{ route('admin.jurnal.index', ['filter_by' => 'kelas', 'id_kelas' => $kelas->id_kelas, 'tanggal' => request('tanggal'), 'search' => request('search')]) }}"
+                       class="selection-chip {{ (string) request('id_kelas') === (string) $kelas->id_kelas ? 'active' : '' }}">{{ $kelas->nama_kelas }}</a>
+                @endforeach
+                @if($kelases->count() > 6)
+                    <select class="selection-more" aria-label="Pilih kelas lainnya" onchange="if (this.value) window.location.href = this.value">
+                        <option value="">Kelas lainnya...</option>
+                        @foreach($kelases->skip(6) as $kelas)
+                            <option value="{{ route('admin.jurnal.index', ['filter_by' => 'kelas', 'id_kelas' => $kelas->id_kelas, 'tanggal' => request('tanggal'), 'search' => request('search')]) }}"
+                                {{ (string) request('id_kelas') === (string) $kelas->id_kelas ? 'selected' : '' }}>{{ $kelas->nama_kelas }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            @else
+                <a href="{{ route('admin.jurnal.index', array_filter(['filter_by' => 'guru', 'tanggal' => request('tanggal'), 'search' => request('search')])) }}"
+                   class="selection-chip {{ request()->filled('id_guru') ? '' : 'active' }}">Semua Guru</a>
+                @foreach($gurus->take(6) as $guru)
+                    <a href="{{ route('admin.jurnal.index', ['filter_by' => 'guru', 'id_guru' => $guru->id_guru, 'tanggal' => request('tanggal'), 'search' => request('search')]) }}"
+                       class="selection-chip {{ (string) request('id_guru') === (string) $guru->id_guru ? 'active' : '' }}">{{ $guru->nama_guru }}</a>
+                @endforeach
+                @if($gurus->count() > 6)
+                    <select class="selection-more" aria-label="Pilih guru lainnya" onchange="if (this.value) window.location.href = this.value">
+                        <option value="">Guru lainnya...</option>
+                        @foreach($gurus->skip(6) as $guru)
+                            <option value="{{ route('admin.jurnal.index', ['filter_by' => 'guru', 'id_guru' => $guru->id_guru, 'tanggal' => request('tanggal'), 'search' => request('search')]) }}"
+                                {{ (string) request('id_guru') === (string) $guru->id_guru ? 'selected' : '' }}>{{ $guru->nama_guru }}</option>
+                        @endforeach
+                    </select>
+                @endif
+            @endif
+        </div>
     </div>
 
     {{-- FILTER & SEARCH --}}
     <form action="{{ route('admin.jurnal.index') }}" method="GET" class="jurnal-filter">
+        <input type="hidden" name="filter_by" value="{{ $filterBy }}">
+        @if($filterBy === 'kelas' && request()->filled('id_kelas'))
+            <input type="hidden" name="id_kelas" value="{{ request('id_kelas') }}">
+        @elseif($filterBy === 'guru' && request()->filled('id_guru'))
+            <input type="hidden" name="id_guru" value="{{ request('id_guru') }}">
+        @endif
 
         <div class="search-box">
 
@@ -53,6 +105,11 @@
             >
 
         </div>
+
+        <label class="date-filter">
+            <span>Tanggal</span>
+            <input type="date" name="tanggal" value="{{ request('tanggal') }}">
+        </label>
 
         <button type="submit" class="search-btn">
 
@@ -363,7 +420,6 @@
     @endif
 
 </div>
-```
 
 </div>
 
@@ -529,6 +585,74 @@
         flex-shrink: 0;
     }
 
+
+    .jurnal-header-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+    .jurnal-mode-filter {
+        display: grid;
+        gap: 6px;
+        min-width: 190px;
+        color: #64748B;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .jurnal-mode-filter select,
+    .selection-more,
+    .date-filter input {
+        min-height: 42px;
+        border: 1px solid #CBD5E1;
+        border-radius: 10px;
+        background: #fff;
+        color: #334155;
+        padding: 0 12px;
+        font: inherit;
+    }
+
+    .jurnal-selection-panel {
+        padding: 0 28px 20px;
+    }
+
+    .jurnal-selection-options {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .selection-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 15px;
+        border-radius: 10px;
+        background: #F1F5F9;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: .2s ease;
+    }
+
+    .selection-chip:hover { background: #E2E8F0; }
+    .selection-chip.active { background: #2D336B; color: #fff; }
+    .selection-more { min-width: 170px; font-size: 12px; }
+
+    .date-filter {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748B;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .date-filter input { min-width: 160px; }
 
     /* =========================
        TABLE
@@ -838,6 +962,11 @@
             padding: 0 20px 20px;
         }
 
+        .jurnal-header-top { flex-direction: column; }
+        .jurnal-mode-filter { width: 100%; }
+        .jurnal-selection-panel { padding: 0 20px 20px; }
+        .date-filter { justify-content: space-between; }
+
 
         .search-box {
             width: 100%;
@@ -860,361 +989,5 @@
 
 </style>
 
-
-<div class="user-page">
-
-    @if(session('success'))
-        <div class="success-message">{{ session('success') }}</div>
-    @endif
-
-    <section class="stats">
-        <div class="stat-card">
-            <div class="stat-title">TOTAL USERS</div>
-            <div class="stat-value">
-                <strong>{{ $totalUser }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">groups</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-title">GURU AKTIF</div>
-            <div class="stat-value">
-                <strong>{{ $totalGuru }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">school</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-title">STAFF PIKET</div>
-            <div class="stat-value">
-                <strong>{{ $totalStaffPiket }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">support_agent</span>
-            </div>
-        </div>
-
-        <div class="stat-card">
-            <div class="stat-title">TOTAL SEKRE</div>
-            <div class="stat-value">
-                <strong>{{ $totalSekretaris }}</strong>
-            </div>
-            <div class="stat-icon">
-                <span class="material-symbols-outlined">edit_note</span>
-            </div>
-        </div>
-    </section>
-
-    <section class="activity-card">
-        <div class="activity-header">
-            <h3 class="activity-title">Daftar User</h3>
-            <p class="activity-description">
-                Kelola dan pantau seluruh pengguna yang terdaftar dalam sistem Jurnify.
-            </p>
-        </div>
-
-        <form action="{{ route('admin.user.index') }}" method="GET" class="filters">
-            <div class="search-box">
-                <span class="material-symbols-outlined">search</span>
-
-                <input
-                    type="text"
-                    name="search"
-                    placeholder="Cari nama, username, NIP..."
-                    value="{{ request('search') }}"
-                >
-            </div>
-
-            <div class="role-filters">
-                <button
-                    type="submit"
-                    name="role"
-                    value=""
-                    class="role-filter {{ !request('role') ? 'active' : '' }}"
-                >
-                    Semua
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
-                    value="Guru"
-                    class="role-filter {{ request('role') === 'Guru' ? 'active' : '' }}"
-                >
-                    Guru
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
-                    value="Staff Piket"
-                    class="role-filter {{ request('role') === 'Staff Piket' ? 'active' : '' }}"
-                >
-                    Staff Piket
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
-                    value="Staff Piket"
-                    class="role-filter {{ request('role') === 'Staff Piket' ? 'active' : '' }}"
-                >
-                    Staff
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
-                    value="Sekretaris"
-                    class="role-filter {{ request('role') === 'Sekretaris' ? 'active' : '' }}"
-                >
-                    Sekre
-                </button>
-            </div>
-
-            <a href="{{ route('admin.user.create') }}" class="add-user-btn">
-                <span class="material-symbols-outlined">person_add</span>
-                Tambah User
-            </a>
-        </form>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>USER</th>
-                        <th>NIP / ID</th>
-                        <th>ROLE</th>
-                        <th>AKSI</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($users as $user)
-                        <tr>
-                            <td class="user-cell">
-                                <strong>{{ $user->nama_user }}</strong>
-                            </td>
-
-                            <td class="user-id">
-                                {{ $user->username }}
-                            </td>
-
-                            <td>
-                                <span class="role-badge">
-                                    @if($user->role === 'Guru')
-                                        <span class="material-symbols-outlined">school</span>
-                                    @elseif($user->role === 'Staff Piket')
-                                        <span class="material-symbols-outlined">support_agent</span>
-                                    @elseif($user->role === 'Sekretaris')
-                                        <span class="material-symbols-outlined">edit_note</span>
-                                    @elseif($user->role === 'Admin')
-                                        <span class="material-symbols-outlined">admin_panel_settings</span>
-                                    @else
-                                        <span class="material-symbols-outlined">person</span>
-                                    @endif
-
-                                    {{ $user->role }}
-                                </span>
-                            </td>
-
-                            <td class="user-actions">
-                                <a
-                                    href="{{ route('admin.user.edit', $user->id_user) }}"
-                                    class="icon-action edit"
-                                    title="Edit user"
-                                >
-                                    <span class="material-symbols-outlined">edit</span>
-                                </a>
-
-                                <button
-                                    type="button"
-                                    class="icon-action delete user-delete-btn"
-                                    title="Hapus user"
-                                    data-url="{{ route('admin.user.destroy', $user->id_user) }}"
-                                    data-name="{{ $user->nama_user }}"
-                                    data-username="{{ $user->username }}"
-                                    data-role="{{ $user->role }}"
-                                >
-                                    <span class="material-symbols-outlined">delete</span>
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="empty-row">
-                                Belum ada data user.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="bottom">
-            <div class="entries">
-                Showing {{ $users->firstItem() ?? 0 }}
-                to {{ $users->lastItem() ?? 0 }}
-                of {{ $users->total() }} entries
-            </div>
-
-            @if($users->hasPages())
-                <div class="pagination">
-                    @if($users->onFirstPage())
-                        <span class="page disabled">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </span>
-                    @else
-                        <a href="{{ $users->previousPageUrl() }}" class="page">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </a>
-                    @endif
-
-                    @php
-                        $current = $users->currentPage();
-                        $last = $users->lastPage();
-                    @endphp
-
-                    @for($page = 1; $page <= $last; $page++)
-                        @if($page === 1 || $page === $last || abs($page - $current) <= 1)
-                            @if($page === $current)
-                                <span class="page active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $users->url($page) }}" class="page">
-                                    {{ $page }}
-                                </a>
-                            @endif
-                        @elseif($page === 2 && $current > 3)
-                            <span class="dots">...</span>
-                        @elseif($page === $last - 1 && $current < $last - 2)
-                            <span class="dots">...</span>
-                        @endif
-                    @endfor
-
-                    @if($users->hasMorePages())
-                        <a href="{{ $users->nextPageUrl() }}" class="page">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </a>
-                    @else
-                        <span class="page disabled">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </span>
-                    @endif
-                </div>
-            @endif
-        </div>
-    </section>
-
-    <div id="deleteModal" class="delete-modal">
-        <div class="delete-modal-box">
-
-            <div class="delete-modal-header">
-                <div class="delete-icon">
-                    <span class="material-symbols-outlined">warning</span>
-                </div>
-
-                <div class="delete-modal-title">
-                    <h3>Hapus User?</h3>
-                    <p>
-                        Apakah Anda yakin ingin menghapus user ini?<br>
-                        Tindakan ini tidak dapat dibatalkan.
-                    </p>
-                </div>
-            </div>
-
-            <div class="delete-info">
-                <span id="deleteName" class="delete-info-name">
-                    Nama User
-                </span>
-
-                <div class="delete-info-detail">
-                    <span>
-                        Username:
-                        <strong id="deleteUsername">username</strong>
-                    </span>
-
-                    <span class="dot">•</span>
-
-                    <span>
-                        Role:
-                        <strong id="deleteRole">Guru</strong>
-                    </span>
-                </div>
-            </div>
-
-            <div class="delete-warning">
-                <span class="material-symbols-outlined">info</span>
-
-                <span>
-                    User yang dihapus tidak dapat dikembalikan dan seluruh akses akun tersebut akan dinonaktifkan.
-                </span>
-            </div>
-
-            <div class="delete-modal-footer">
-                <button
-                    type="button"
-                    class="btn-delete-cancel"
-                    onclick="closeDeleteModal()"
-                >
-                    Batal
-                </button>
-
-                <form id="deleteForm" method="POST">
-                    @csrf
-                    @method('DELETE')
-
-                    <button type="submit" class="btn-delete-confirm">
-                        Hapus User
-                    </button>
-                </form>
-            </div>
-
-        </div>
-    </div>
-
-</div>
-
-<script>
-    function openDeleteModal(url, name, username, role) {
-        document.getElementById('deleteForm').action = url;
-        document.getElementById('deleteName').textContent = name;
-        document.getElementById('deleteUsername').textContent = username;
-        document.getElementById('deleteRole').textContent = role;
-        document.getElementById('deleteModal').classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeDeleteModal() {
-        document.getElementById('deleteModal').classList.remove('show');
-        document.body.style.overflow = '';
-    }
-
-    document.querySelectorAll('.user-delete-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            openDeleteModal(
-                this.dataset.url,
-                this.dataset.name,
-                this.dataset.username,
-                this.dataset.role
-            );
-        });
-    });
-
-    document.getElementById('deleteModal').addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeDeleteModal();
-        }
-    });
-
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeDeleteModal();
-        }
-    });
-</script>
 
 @endsection

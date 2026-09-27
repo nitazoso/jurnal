@@ -7,7 +7,6 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Smooth Entrance Animation */
         @keyframes cardPop {
             0% {
                 opacity: 0;
@@ -23,7 +22,6 @@
             animation: cardPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Subtle Glow on Action */
         .btn-glow-emerald:hover {
             box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.35);
         }
@@ -38,15 +36,13 @@
     <!-- Container Kartu Utama -->
     <main class="w-full max-w-lg bg-white border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden animate-card">
         
-        <!-- Header Kartu (Gaya Navy Blue Jurnify) -->
+        <!-- Header Kartu -->
         <header class="bg-[#1e254b] p-6 text-white relative overflow-hidden">
-            <!-- Pattern Ornamen Halus -->
             <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full blur-xl pointer-events-none"></div>
 
             <div class="flex items-center justify-between relative z-10">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/10">
-                        <!-- Icon Buku / Logo Jurnify -->
                         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                         </svg>
@@ -74,6 +70,31 @@
 
         <!-- Body Content -->
         <div class="p-6 space-y-5">
+
+            <!-- Flash Alerts -->
+            @if(session('success'))
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2">
+                    <svg class="w-5 h-5 flex-shrink-0 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>{{ session('success') }}</span>
+                </div>
+            @endif
+
+            @if(session('info'))
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-sm flex items-center gap-2">
+                    <svg class="w-5 h-5 flex-shrink-0 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <span>{{ session('info') }}</span>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm">
+                    <ul class="list-disc pl-5 space-y-1">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
             
             <!-- Detail Informasi Siswa -->
             <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
@@ -87,12 +108,12 @@
                 </div>
                 <div>
                     <span class="text-xs font-medium text-slate-400 block mb-0.5">Tanggal</span>
-                    <p class="text-sm font-bold text-slate-800">{{ $dispen->tanggal->format('d-m-Y') }}</p>
+                    <p class="text-sm font-bold text-slate-800">{{ $dispen->tanggal ? $dispen->tanggal->format('d-m-Y') : '-' }}</p>
                 </div>
                 <div>
                     <span class="text-xs font-medium text-slate-400 block mb-0.5">Jam Ke-</span>
                     <p class="text-sm font-bold text-slate-800">
-                        {{ $dispen->jamMulai->jam_mulai ?? '-' }} - {{ $dispen->jamSelesai->jam_selesai ?? '-' }}
+                        {{ $dispen->jamMulai ? substr($dispen->jamMulai->jam_mulai, 0, 5) : '-' }} - {{ $dispen->jamSelesai ? substr($dispen->jamSelesai->jam_selesai, 0, 5) : '-' }}
                     </p>
                 </div>
             </div>
@@ -103,7 +124,7 @@
                 <p class="text-sm text-slate-700 leading-relaxed font-normal">{{ $dispen->alasan }}</p>
             </div>
 
-            <!-- Section Form Action -->
+            <!-- Section Form Action atau Status Selesai -->
             @if ($dispen->status === 'menunggu')
                 <div class="pt-2 space-y-4">
                     <!-- Tombol Setujui -->
@@ -132,9 +153,9 @@
                                 name="catatan_persetujuan" 
                                 rows="3" 
                                 required 
-                                placeholder="Tuliskan alasan penolakan..."
+                                placeholder="Wajib menuliskan alasan penolakan..."
                                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#1e254b]/20 focus:border-[#1e254b] transition-all duration-200 resize-none"
-                            ></textarea>
+                            >{{ old('catatan_persetujuan') }}</textarea>
                         </div>
                         <button type="submit" class="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-xl border border-rose-200/80 transition-all duration-200 active:scale-[0.99] btn-glow-rose flex items-center justify-center gap-2 text-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -143,16 +164,37 @@
                     </form>
                 </div>
             @else
-                <!-- Keterangan Jika Link Sudah Digunakan -->
-                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-1">
-                    <p class="text-xs text-slate-500">Link verifikasi ini sudah tidak aktif.</p>
-                    <p class="text-sm font-semibold text-slate-700">
-                        Status Terakhir: <span class="text-[#1e254b] font-bold">{{ ucfirst($dispen->status) }}</span>
+                <!-- Keterangan Jika Dispen Sudah Diverifikasi (Pencegahan Proses Ulang) -->
+                <div class="p-5 rounded-xl bg-slate-50 border border-slate-200 text-center space-y-2">
+                    <div class="w-10 h-10 mx-auto rounded-full flex items-center justify-center {{ $dispen->status === 'disetujui' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600' }}">
+                        @if ($dispen->status === 'disetujui')
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        @else
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                        @endif
+                    </div>
+                    <p class="text-sm font-bold text-slate-800">
+                        Dispensasi ini sudah diverifikasi
                     </p>
+                    <p class="text-xs text-slate-500">
+                        Keputusan tidak dapat diubah kembali melalui link ini.
+                    </p>
+                    <div class="pt-2 border-t border-slate-200 text-xs text-slate-600 space-y-1">
+                        <div>
+                            Status: <strong class="capitalize {{ $dispen->status === 'disetujui' ? 'text-emerald-600' : 'text-rose-600' }}">{{ $dispen->status }}</strong>
+                        </div>
+                        @if ($dispen->approver)
+                            <div>Diverifikasi oleh: <strong>{{ $dispen->approver->nama_user }}</strong></div>
+                        @endif
+                        @if ($dispen->disetujui_pada)
+                            <div>Waktu verifikasi: <strong>{{ $dispen->disetujui_pada->format('d-m-Y H:i:s') }}</strong></div>
+                        @endif
+                    </div>
+
                     @if ($dispen->catatan_persetujuan)
                         <div class="mt-3 pt-3 border-t border-slate-200 text-left">
-                            <span class="text-xs text-slate-400 font-medium block mb-0.5">Catatan Penolakan:</span>
-                            <p class="text-sm text-slate-600 italic">"{{ $dispen->catatan_persetujuan }}"</p>
+                            <span class="text-xs text-slate-400 font-medium block mb-0.5">Alasan Penolakan:</span>
+                            <p class="text-sm text-slate-700 italic bg-white p-2.5 rounded-lg border border-slate-200">"{{ $dispen->catatan_persetujuan }}"</p>
                         </div>
                     @endif
                 </div>
@@ -160,9 +202,9 @@
 
         </div>
 
-        <!-- Footer Ringkas -->
+        <!-- Footer -->
         <footer class="px-6 py-3 bg-slate-50/80 border-t border-slate-100 text-center">
-            <p class="text-[11px] text-slate-400">© {{ date('Y') }} Jurnify — Kementerian Pendidikan</p>
+            <p class="text-[11px] text-slate-400">© {{ date('Y') }} Jurnify — Sistem Informasi Dispensasi</p>
         </footer>
     </main>
 

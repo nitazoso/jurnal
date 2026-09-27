@@ -3,8 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Guru;
 use App\Models\Jurnal;
-use App\Models\User;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 
 class JurnalController extends Controller
@@ -14,17 +15,31 @@ class JurnalController extends Controller
      */
     public function index(Request $request)
     {
+        $filterBy = in_array($request->input('filter_by'), ['kelas', 'guru'], true)
+            ? $request->input('filter_by')
+            : 'kelas';
+
         $query = Jurnal::with([
             'guru',
+            'user',
             'kelas',
             'jadwal.mapel',
         ])->whereHas('jadwal');
 
-        // =========================
-        // SEARCH
-        // =========================
+        if ($filterBy === 'kelas' && $request->filled('id_kelas')) {
+            $query->where('id_kelas', $request->input('id_kelas'));
+        }
+
+        if ($filterBy === 'guru' && $request->filled('id_guru')) {
+            $query->where('id_guru', $request->input('id_guru'));
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $request->input('tanggal'));
+        }
+
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = $request->input('search');
 
             $query->where(function ($q) use ($search) {
                 $q->where('materi', 'like', '%' . $search . '%')
@@ -33,49 +48,35 @@ class JurnalController extends Controller
                     })
                     ->orWhereHas('kelas', function ($kelas) use ($search) {
                         $kelas->where('nama_kelas', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('jadwal.mapel', function ($mapel) use ($search) {
+                        $mapel->where('nama_mapel', 'like', '%' . $search . '%');
                     });
             });
         }
 
-        // =========================
-        // FILTER STATUS GURU
-        // =========================
         if ($request->filled('status_guru')) {
-            $query->where('status_guru', $request->status_guru);
+            $query->where('status_guru', $request->input('status_guru'));
         }
 
-        // =========================
-        // FILTER VALIDASI
-        // =========================
         if ($request->filled('status_validasi_guru')) {
-            $query->where('status_validasi_guru', $request->status_validasi_guru);
+            $query->where('status_validasi_guru', $request->input('status_validasi_guru'));
         }
 
-        // =========================
-        // DATA JURNAL
-        // =========================
         $jurnals = $query
-            ->latest('tanggal')
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id_jurnal')
             ->paginate(10)
             ->withQueryString();
 
-        $users = User::with(['guru', 'kelas'])
-            ->latest('id_user')
-            ->paginate(10, ['*'], 'users_page')
-            ->withQueryString();
-
-        $totalUser = User::count();
-        $totalGuru = User::where('role', 'Guru')->count();
-        $totalStaffPiket = User::where('role', 'Staff Piket')->count();
-        $totalSekretaris = User::where('role', 'Sekretaris')->count();
+        $kelases = Kelas::orderBy('nama_kelas')->get();
+        $gurus = Guru::orderBy('nama_guru')->get();
 
         return view('admin.jurnal.index', compact(
             'jurnals',
-            'users',
-            'totalUser',
-            'totalGuru',
-            'totalStaffPiket',
-            'totalSekretaris'
+            'kelases',
+            'gurus',
+            'filterBy'
         ));
     }
 

@@ -98,28 +98,76 @@
         font-size: 22px;
     }
 
-    .user-page .success-message {
-        margin-bottom: 20px;
-        padding: 12px 16px;
-        border-radius: 8px;
-        background: #d5f7e8;
-        color: #087451;
-        font-size: 13px;
-        font-weight: 600;
-        animation: fadeDown .35s ease both;
+    .user-toast-stack {
+        position: fixed;
+        top: 86px;
+        right: 24px;
+        z-index: 11000;
+        display: grid;
+        gap: 12px;
+        width: min(420px, calc(100vw - 32px));
+        pointer-events: none;
     }
 
-    .user-page .error-message {
-        margin-bottom: 20px;
-        padding: 12px 16px;
-        border: 1px solid #f3b4b4;
-        border-radius: 8px;
-        background: #fff0f0;
-        color: #a12626;
-        font-size: 13px;
-        font-weight: 700;
-        animation: fadeDown .35s ease both;
+    .user-toast {
+        position: relative;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        overflow: hidden;
+        padding: 16px 48px 17px 16px;
+        border: 1px solid #dbe4ef;
+        border-left: 4px solid #16a36a;
+        border-radius: 14px;
+        background: #fff;
+        color: #334155;
+        box-shadow: 0 16px 38px rgba(15, 23, 42, .16);
+        pointer-events: auto;
+        animation: toastEnter .28s ease both;
     }
+
+    .user-toast.is-error { border-left-color: #dc3545; }
+
+    .user-toast-icon {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+        border-radius: 50%;
+        background: #e9f8f0;
+        color: #138354;
+    }
+
+    .user-toast.is-error .user-toast-icon { background: #fff0f0; color: #c52b38; }
+    .user-toast-copy { min-width: 0; padding-top: 1px; }
+    .user-toast-title { display: block; margin-bottom: 3px; color: #172b4d; font-size: 13px; font-weight: 800; }
+    .user-toast-message { display: block; color: #596579; font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+
+    .user-toast-dismiss {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        color: #748094;
+        cursor: pointer;
+    }
+
+    .user-toast-dismiss:hover { background: #f1f5f9; color: #1e293b; }
+    .user-toast-progress { position: absolute; right: 0; bottom: 0; left: 0; height: 3px; background: #e8f5ed; }
+    .user-toast-progress::after { display: block; height: 100%; width: 100%; content: ''; background: #19a56b; transform-origin: left; animation: toastProgress 6s linear forwards; }
+    .user-toast.is-error .user-toast-progress { background: #fce8e9; }
+    .user-toast.is-error .user-toast-progress::after { background: #dc3545; }
+
+    @keyframes toastEnter { from { opacity: 0; transform: translateY(-8px) translateX(8px); } to { opacity: 1; transform: translateY(0) translateX(0); } }
+    @keyframes toastExit { to { opacity: 0; transform: translateY(-6px); } }
+    @keyframes toastProgress { to { transform: scaleX(0); } }
 
     .user-page .activity-card {
         width: 100%;
@@ -843,19 +891,49 @@
 <div class="user-page">
 
 
-{{-- SUCCESS --}}
-@if(session('success'))
-    <div class="success-message">
-        {{ session('success') }}
-    </div>
-@endif
+<div class="user-toast-stack" aria-live="polite" aria-atomic="false">
+    @if(session('success'))
+        <div class="user-toast" role="status" data-auto-dismiss>
+            <span class="user-toast-icon material-symbols-outlined" aria-hidden="true">check</span>
+            <div class="user-toast-copy">
+                <strong class="user-toast-title">Berhasil</strong>
+                <span class="user-toast-message">{{ session('success') }}</span>
+            </div>
+            <button type="button" class="user-toast-dismiss" aria-label="Tutup notifikasi">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+            <span class="user-toast-progress" aria-hidden="true"></span>
+        </div>
+    @endif
 
-{{-- ERROR --}}
-@if(session('error'))
-    <div class="error-message" role="alert">
-        {{ session('error') }}
-    </div>
-@endif
+    @if(session('error'))
+        <div class="user-toast is-error" role="alert" data-auto-dismiss>
+            <span class="user-toast-icon material-symbols-outlined" aria-hidden="true">error</span>
+            <div class="user-toast-copy">
+                <strong class="user-toast-title">Tidak dapat melanjutkan</strong>
+                <span class="user-toast-message">{{ session('error') }}</span>
+            </div>
+            <button type="button" class="user-toast-dismiss" aria-label="Tutup notifikasi">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+            <span class="user-toast-progress" aria-hidden="true"></span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="user-toast is-error" role="alert" data-auto-dismiss>
+            <span class="user-toast-icon material-symbols-outlined" aria-hidden="true">error</span>
+            <div class="user-toast-copy">
+                <strong class="user-toast-title">Periksa kembali</strong>
+                <span class="user-toast-message">{{ $errors->first() }}</span>
+            </div>
+            <button type="button" class="user-toast-dismiss" aria-label="Tutup notifikasi">
+                <span class="material-symbols-outlined" aria-hidden="true">close</span>
+            </button>
+            <span class="user-toast-progress" aria-hidden="true"></span>
+        </div>
+    @endif
+</div>
 
 {{-- =========================
      STATISTIK
@@ -922,24 +1000,6 @@
         </div>
     </div>
 
-                <button
-                    type="submit"
-                    name="role"
-                    value="Kesiswaan"
-                    class="role-filter {{ request('role') === 'Kesiswaan' ? 'active' : '' }}"
-                >
-                    Kesiswaan
-                </button>
-
-                <button
-                    type="submit"
-                    name="role"
-                    value="Sekretaris"
-                    class="role-filter {{ request('role') === 'Sekretaris' ? 'active' : '' }}"
-                >
-                    Sekre
-                </button>
-            </div>
 </section>
 
 {{-- =========================
@@ -1015,6 +1075,16 @@
                 class="role-filter {{ request('role') === 'Guru' ? 'active' : '' }}"
             >
                 Guru
+            </button>
+
+            {{-- KESISWAAN --}}
+            <button
+                type="submit"
+                name="role"
+                value="Kesiswaan"
+                class="role-filter {{ request('role') === 'Kesiswaan' ? 'active' : '' }}"
+            >
+                Kesiswaan
             </button>
 
             {{-- SEKRETARIS --}}
@@ -1407,6 +1477,17 @@
 </div>
 
 <script>
+    document.querySelectorAll('[data-auto-dismiss]').forEach((toast) => {
+        const dismiss = () => {
+            if (!toast.isConnected) return;
+            toast.style.animation = 'toastExit .2s ease forwards';
+            window.setTimeout(() => toast.remove(), 220);
+        };
+
+        toast.querySelector('.user-toast-dismiss')?.addEventListener('click', dismiss);
+        window.setTimeout(dismiss, 6000);
+    });
+
     function openDeleteModal(
         url,
         name,
@@ -1420,9 +1501,6 @@
 
         const deleteForm =
             document.getElementById('deleteForm');
-
-        const deleteInfo =
-            document.querySelector('.delete-info');
 
         const deleteTitle =
             document.getElementById('deleteTitle');
@@ -1450,8 +1528,6 @@
             role;
 
         // Jika Admin terakhir
-        deleteInfo.hidden = isLastAdmin;
-
         deleteConfirmButton.hidden = isLastAdmin;
 
         deleteTitle.textContent =

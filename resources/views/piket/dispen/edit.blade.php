@@ -1,5 +1,8 @@
 @extends('layouts.piket')
 
+@section('title', 'Edit Dispen - Jurnify')
+@section('page-title', 'Edit Dispen')
+
 @section('content')
 
 <div class="p-6">
@@ -9,9 +12,15 @@
             Edit Dispen
         </h1>
         <p class="text-gray-500 mt-1">
-            Perbarui data dispensasi siswa
+            Perbarui data dispensasi siswa. Petugas Waka akan ditentukan otomatis berdasarkan jadwal.
         </p>
     </div>
+
+    @if(session('error'))
+        <div class="mb-4 p-4 rounded-lg bg-red-100 text-red-700">
+            {{ session('error') }}
+        </div>
+    @endif
 
     @if ($errors->any())
         <div class="mb-4 p-4 rounded-lg bg-red-100 text-red-700">
@@ -23,63 +32,61 @@
         </div>
     @endif
 
-    <div class="bg-white rounded-xl shadow p-6">
+    <div class="bg-white rounded-xl shadow p-6 max-w-4xl">
 
         <form action="{{ route('piket.dispen.update', $dispen->id_dispen) }}" method="POST">
             @csrf
             @method('PUT')
 
-            <div class="mb-4">
-                <label class="block mb-2 font-medium text-gray-700">Kelas</label>
-                <select name="id_kelas" id="class-select"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2"
-                        required>
-                    <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
-                    @foreach ($kelases as $kelas)
-                        <option value="{{ $kelas->id_kelas }}"
-                            {{ old('id_kelas', $dispen->siswa?->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}>
-                            {{ $kelas->nama_kelas }}
-                        </option>
-                    @endforeach
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block mb-2 font-medium text-gray-700">Kelas</label>
+                    <select name="id_kelas" id="class-select"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                            required>
+                        <option value="">-- Pilih Kelas Terlebih Dahulu --</option>
+                        @foreach ($kelases as $kelas)
+                            <option value="{{ $kelas->id_kelas }}"
+                                {{ old('id_kelas', $dispen->siswa?->id_kelas) == $kelas->id_kelas ? 'selected' : '' }}>
+                                {{ $kelas->nama_kelas }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block mb-2 font-medium text-gray-700">Siswa</label>
+                    <select name="id_siswa" id="student-select"
+                            class="w-full border border-gray-300 rounded-lg px-4 py-2" required disabled>
+                        <option value="">-- Pilih kelas terlebih dahulu --</option>
+                    </select>
+                    <p id="student-help" class="mt-1 text-xs text-gray-500">Pilih kelas untuk menampilkan seluruh siswa.</p>
+                </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block mb-2 font-medium text-gray-700">Siswa</label>
-                <select name="id_siswa" id="student-select"
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2" required disabled>
-                    <option value="">-- Pilih kelas terlebih dahulu --</option>
-                </select>
-                <p id="student-help" class="mt-1 text-sm text-gray-500">Pilih kelas untuk menampilkan seluruh siswa.</p>
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block mb-2 font-medium text-gray-700">
+                        Tanggal
+                    </label>
 
-            <div class="mb-4">
-                <label class="block mb-2 font-medium text-gray-700">Kirim ke Kesiswaan</label>
-                <select name="id_kesiswaan" class="w-full border border-gray-300 rounded-lg px-4 py-2" required>
-                    <option value="">-- Pilih Kesiswaan --</option>
-                    @foreach ($petugasKesiswaans as $petugas)
-                        <option value="{{ $petugas->id_user }}"
-                            {{ old('id_kesiswaan', $dispen->id_kesiswaan) == $petugas->id_user ? 'selected' : '' }}>
-                            {{ $petugas->nama_user }} ({{ $petugas->no_wa }})
-                        </option>
-                    @endforeach
-                    @if ($petugasKesiswaans->isEmpty())
-                        <option value="" disabled>Belum ada akun Kesiswaan dengan nomor WhatsApp</option>
-                    @endif
-                </select>
-                <p class="mt-1 text-sm text-gray-500">Hanya petugas Kesiswaan dengan nomor WhatsApp yang terdaftar.</p>
-            </div>
+                    <input type="date"
+                           id="dispen-date"
+                           name="tanggal"
+                           value="{{ old('tanggal', $dispen->tanggal ? $dispen->tanggal->format('Y-m-d') : '') }}"
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2"
+                           required>
+                </div>
 
-            <div class="mb-4">
-                <label class="block mb-2 font-medium text-gray-700">
-                    Tanggal
-                </label>
+                <div>
+                    <label class="block mb-2 font-medium text-gray-700">
+                        Waka / Kesiswaan Bertugas
+                    </label>
 
-                <input type="date"
-                       name="tanggal"
-                       value="{{ old('tanggal', $dispen->tanggal->format('Y-m-d')) }}"
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2"
-                       required>
+                    <div id="waka-status-box" class="p-2.5 rounded-lg border text-sm flex items-center bg-gray-50 border-gray-200 text-gray-600">
+                        <span id="waka-status-text">Memeriksa jadwal...</span>
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -162,9 +169,15 @@
 <script>
     (() => {
         const studentsByClass = @json($siswaPerKelas);
+        const jadwalWakaMap = @json($jadwalWakaMap);
+
         const classSelect = document.getElementById('class-select');
         const studentSelect = document.getElementById('student-select');
         const studentHelp = document.getElementById('student-help');
+        const dateInput = document.getElementById('dispen-date');
+        const wakaBox = document.getElementById('waka-status-box');
+        const wakaText = document.getElementById('waka-status-text');
+
         const selectedStudent = @json((string) old('id_siswa', $dispen->id_siswa));
 
         const showStudents = (classId, studentId = '') => {
@@ -182,8 +195,36 @@
                 : 'Pilih kelas untuk menampilkan seluruh siswa.';
         };
 
+        const updateWakaStatus = () => {
+            const dateVal = dateInput.value;
+            wakaBox.className = 'p-2.5 rounded-lg border text-sm flex items-center';
+
+            if (!dateVal) {
+                wakaBox.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-700');
+                wakaText.textContent = 'Pilih tanggal terlebih dahulu.';
+                return;
+            }
+
+            const schedule = jadwalWakaMap[dateVal];
+            if (schedule) {
+                if (schedule.no_wa) {
+                    wakaBox.classList.add('bg-green-50', 'border-green-200', 'text-green-700');
+                    wakaText.textContent = `Petugas: ${schedule.nama} (WA: ${schedule.no_wa})`;
+                } else {
+                    wakaBox.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-700');
+                    wakaText.textContent = `Petugas: ${schedule.nama} (Nomor WhatsApp belum tersedia)`;
+                }
+            } else {
+                wakaBox.classList.add('bg-red-50', 'border-red-200', 'text-red-700');
+                wakaText.textContent = 'Waka untuk tanggal ini belum ada di jadwal piket.';
+            }
+        };
+
         classSelect.addEventListener('change', () => showStudents(classSelect.value));
         if (classSelect.value) showStudents(classSelect.value, selectedStudent);
+
+        dateInput.addEventListener('change', updateWakaStatus);
+        updateWakaStatus();
     })();
 </script>
 

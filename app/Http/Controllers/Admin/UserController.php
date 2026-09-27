@@ -197,6 +197,12 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
+        if ($user->role === 'Admin' && User::where('role', 'Admin')->count() <= 1) {
+            return redirect()
+                ->route('admin.user.index')
+                ->with('error', 'Admin terakhir harus tetap tersedia agar sistem dapat digunakan.');
+        }
+
         $user->delete();
 
         return redirect()

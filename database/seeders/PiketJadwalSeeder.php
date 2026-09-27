@@ -9,6 +9,10 @@ class PiketJadwalSeeder extends Seeder
 {
     public function run(): void
     {
+        if (DB::table('piket_jadwals')->exists()) {
+            return;
+        }
+
         $data = require database_path('seeders/PiketJadwalData.php');
 
         DB::table('piket_jadwals')->insert($data);

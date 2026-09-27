@@ -13,7 +13,7 @@ class JadwalKesiswaanController extends Controller
     public function index()
     {
         $jadwals = JadwalKesiswaan::with('user')
-            ->orderBy('tanggal')
+            ->orderBy('tanggal', 'desc')
             ->get();
 
         return view('admin.jadwal-kesiswaan.index', compact('jadwals'));
@@ -69,6 +69,12 @@ class JadwalKesiswaanController extends Controller
                 'date',
                 Rule::unique('jadwal_kesiswaans', 'tanggal')->ignore($jadwal?->id_jadwal_kesiswaan, 'id_jadwal_kesiswaan'),
             ],
+        ], [
+            'id_user.required' => 'Petugas kesiswaan wajib dipilih.',
+            'id_user.exists' => 'Petugas yang dipilih tidak valid atau bukan merupakan user Kesiswaan.',
+            'tanggal.required' => 'Tanggal tugas wajib diisi.',
+            'tanggal.date' => 'Format tanggal tidak valid.',
+            'tanggal.unique' => 'Jadwal kesiswaan untuk tanggal tersebut sudah ada.',
         ]);
     }
 }

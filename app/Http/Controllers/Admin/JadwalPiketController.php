@@ -397,10 +397,10 @@ class JadwalPiketController extends Controller
                 'waka' => $wakaPetugas
                     ? [
                         'id_guru' =>
-                            $wakaPetugas->id_guru,
+                            $wakaPetugas['id_guru'],
 
                         'nama' =>
-                            $wakaPetugas->guru?->nama_guru ?? '-',
+                            $wakaPetugas['nama'] ?? '-',
                     ]
                     : null,
 

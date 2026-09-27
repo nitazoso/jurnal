@@ -31,19 +31,23 @@ class DatabaseSeeder extends Seeder
             ?? Guru::create(['nama_guru' => 'Budi Santoso, S.Pd']);
 
         // 2. Data kelas
-        $kelas12RPL1 = Kelas::create([
-            'nama_kelas' => 'XII RPL 1',
-            'wali_kelas' => $guruSendang->id_guru,
-            'jumlah_siswa' => 35,
-        ]);
+        $kelas12RPL1 = Kelas::firstOrCreate(
+            ['nama_kelas' => 'XII RPL 1'],
+            [
+                'wali_kelas' => $guruSendang->id_guru,
+                'jumlah_siswa' => 35,
+            ]
+        );
 
-        $kelas12RPL2 = Kelas::create([
-            'nama_kelas' => 'XII RPL 2',
-            'wali_kelas' => $guruBudi->id_guru,
-            'jumlah_siswa' => 32,
-        ]);
+        $kelas12RPL2 = Kelas::firstOrCreate(
+            ['nama_kelas' => 'XII RPL 2'],
+            [
+                'wali_kelas' => $guruBudi->id_guru,
+                'jumlah_siswa' => 32,
+            ]
+        );
 
-        // 3. User role admin dan guru
+        // 3. User role admin, guru, kesiswaan, sekretaris
         $admin = User::withTrashed()->firstOrNew(['username' => 'admin']);
         $admin->password = Hash::make('password123');
         $admin->nama_user = 'Admin Utama';
@@ -71,8 +75,18 @@ class DatabaseSeeder extends Seeder
 
         User::updateOrCreate(['username' => 'kesiswaan'], [
             'password' => Hash::make('password123'),
-            'nama_user' => 'Kesiswaan SMK',
+            'nama_user' => 'Ahmad Kesiswaan, S.Pd',
             'role' => 'Kesiswaan',
+            'no_wa' => '6281234567890',
+            'id_guru' => null,
+            'id_kelas' => null,
+        ]);
+
+        User::updateOrCreate(['username' => 'kesiswaan_b'], [
+            'password' => Hash::make('password123'),
+            'nama_user' => 'Budi Kesiswaan, M.Pd',
+            'role' => 'Kesiswaan',
+            'no_wa' => '6281298765432',
             'id_guru' => null,
             'id_kelas' => null,
         ]);
@@ -94,38 +108,42 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // 4. Mata pelajaran
-        $mapelMatematika = Mapel::create(['nama_mapel' => 'Matematika Wajib']);
-        $mapelBahasa = Mapel::create(['nama_mapel' => 'Bahasa Indonesia']);
-        $mapelPkn = Mapel::create(['nama_mapel' => 'Pendidikan Pancasila']);
+        $mapelMatematika = Mapel::firstOrCreate(['nama_mapel' => 'Matematika Wajib']);
+        $mapelBahasa = Mapel::firstOrCreate(['nama_mapel' => 'Bahasa Indonesia']);
+        $mapelPkn = Mapel::firstOrCreate(['nama_mapel' => 'Pendidikan Pancasila']);
 
         // 5. Jam pelajaran
-        $jam1 = JamPel::create([
+        $jam1 = JamPel::firstOrCreate([
             'klp_hari' => 'Senin-Kamis',
             'jam_ke' => 1,
+        ], [
             'jenis' => 'pelajaran',
             'jam_mulai' => '07:00:00',
             'jam_selesai' => '07:45:00',
         ]);
 
-        $jam2 = JamPel::create([
+        $jam2 = JamPel::firstOrCreate([
             'klp_hari' => 'Senin-Kamis',
             'jam_ke' => 2,
+        ], [
             'jenis' => 'pelajaran',
             'jam_mulai' => '07:45:00',
             'jam_selesai' => '08:30:00',
         ]);
 
-        $jam3 = JamPel::create([
+        $jam3 = JamPel::firstOrCreate([
             'klp_hari' => 'Senin-Kamis',
             'jam_ke' => 3,
+        ], [
             'jenis' => 'pelajaran',
             'jam_mulai' => '08:30:00',
             'jam_selesai' => '09:15:00',
         ]);
 
-        $jam4 = JamPel::create([
+        $jam4 = JamPel::firstOrCreate([
             'klp_hari' => 'Senin-Kamis',
             'jam_ke' => 4,
+        ], [
             'jenis' => 'pelajaran',
             'jam_mulai' => '09:30:00',
             'jam_selesai' => '10:15:00',
@@ -143,8 +161,9 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($siswaData as $index => $siswa) {
-            Siswa::create([
+            Siswa::firstOrCreate([
                 'nis' => $siswa['nis'],
+            ], [
                 'id_kelas' => $siswa['id_kelas'],
                 'no_presensi' => $index + 1,
                 'nama_siswa' => $siswa['nama_siswa'],
@@ -153,37 +172,40 @@ class DatabaseSeeder extends Seeder
         }
 
         // 7. Jadwal untuk guru Sendang
-        $jadwalSendang = \App\Models\Jadwal::create([
+        $jadwalSendang = \App\Models\Jadwal::firstOrCreate([
             'id_guru' => $guruSendang->id_guru,
             'id_mapel' => $mapelMatematika->id_mapel,
             'id_kelas' => $kelas12RPL1->id_kelas,
+            'hari' => 'Senin',
+        ], [
             'id_jam_mulai' => $jam1->id_jam,
             'id_jam_selesai' => $jam2->id_jam,
-            'hari' => 'Senin',
             'semester' => 'Ganjil',
             'tahun_ajaran' => '2026/2027',
         ]);
 
-        \App\Models\Jadwal::create([
+        \App\Models\Jadwal::firstOrCreate([
             'id_guru' => $guruSendang->id_guru,
             'id_mapel' => $mapelBahasa->id_mapel,
             'id_kelas' => $kelas12RPL1->id_kelas,
+            'hari' => 'Rabu',
+        ], [
             'id_jam_mulai' => $jam3->id_jam,
             'id_jam_selesai' => $jam4->id_jam,
-            'hari' => 'Rabu',
             'semester' => 'Ganjil',
             'tahun_ajaran' => '2026/2027',
         ]);
 
         // 8. Contoh jurnal guru Sendang
-        \App\Models\Jurnal::create([
+        \App\Models\Jurnal::firstOrCreate([
             'id_jadwal' => $jadwalSendang->id_jadwal,
+            'tanggal' => now()->toDateString(),
+        ], [
             'id_kelas' => $kelas12RPL1->id_kelas,
             'id_guru' => $guruSendang->id_guru,
             'id_user' => User::where('username', 'sendang')->first()->id_user,
             'id_jam_mulai' => $jam1->id_jam,
             'id_jam_selesai' => $jam2->id_jam,
-            'tanggal' => now()->toDateString(),
             'materi' => 'Pengenalan materi persamaan linear dan latihan soal dasar',
             'status_guru' => 'Hadir',
             'ada_tugas' => 'Ya',
@@ -194,6 +216,10 @@ class DatabaseSeeder extends Seeder
             'catatan_umum' => 'Kelas kondusif dan antusiasme baik',
         ]);
 
+        // 9. Piket Jadwal Seeder
         $this->call(PiketJadwalSeeder::class);
+
+        // 11. Dispen Seeder
+        $this->call(DispenSeeder::class);
     }
 }

@@ -22,6 +22,33 @@
     [x-cloak] {
         display: none !important;
     }
+
+    .jadwal-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: rgba(15, 23, 42, .5);
+        -webkit-backdrop-filter: blur(4px);
+        backdrop-filter: blur(4px);
+    }
+
+    .jadwal-modal-backdrop--top {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding-top: 20px;
+    }
+
+    .jadwal-modal-panel {
+        position: relative;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        background: #fff !important;
+        color: #1e293b;
+    }
 </style>
 @endpush
 
@@ -440,14 +467,14 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
 
-            class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
+            class="jadwal-modal-backdrop jadwal-modal-backdrop--top"
 
             x-cloak
         >
 
             <div
                 @click.away="showEditModal = false"
-                class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 border border-slate-100 relative"
+                class="jadwal-modal-panel bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 border border-slate-100"
             >
 
                 <!-- HEADER MODAL -->
@@ -784,7 +811,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
 
-            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+            class="jadwal-modal-backdrop"
 
             x-cloak
         >
@@ -792,7 +819,7 @@
             <div
                 @click.away="showDeleteModal = false"
 
-                class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-5 border border-slate-100 relative"
+                class="jadwal-modal-panel bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-5 border border-slate-100"
             >
 
                 <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto text-rose-500 text-2xl animate-bounce">
