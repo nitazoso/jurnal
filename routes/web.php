@@ -264,6 +264,25 @@ Route::delete('/admin/jadwal-piket/{tanggal}', [AdminJadwalPiketController::clas
     Route::get('/admin/profil', function () {
         return view('admin.profil');
     })->name('admin.profil');
+
+    Route::put('/admin/profil', function (Request $request) {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:50', 'unique:users,username,'.$user->id_user.',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = $validated['password'];
+        }
+
+        $user->save();
+
+        return redirect()->route('admin.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('admin.profil.update');
 });
 
 
@@ -362,6 +381,12 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::delete('/piket/dispen/{dispen}', [PiketDispenController::class, 'destroy'])->name('piket.dispen.destroy');
 });
 
+Route::middleware(['auth', 'role:Guru|Staff Piket'])->prefix('piket')->name('piket.')->group(function () {
+    Route::get('/isi-jurnal', [PiketJurnalController::class, 'create'])->name('jurnal.create');
+    Route::get('/isi-jurnal/jadwal/{jadwal}', [GuruJurnalController::class, 'formForPiket'])->name('jurnal.form');
+    Route::post('/isi-jurnal', [GuruJurnalController::class, 'store'])->name('jurnal.store');
+});
+
 /*
 |--------------------------------------------------------------------------
 | KESISWAAN
@@ -387,8 +412,6 @@ Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekr
     Route::get('/validasi-jurnal', [SekretarisJurnalController::class, 'index'])->name('validasi-jurnal');
     Route::get('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'show'])->name('validasi-jurnal.show');
     Route::patch('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'validateJurnal'])->name('validasi-jurnal.update');
-    Route::get('/isi-jurnal', [SekretarisJurnalController::class, 'create'])->name('isi-jurnal');
-    Route::post('/isi-jurnal', [SekretarisJurnalController::class, 'store'])->name('isi-jurnal.store');
     Route::view('/profil', 'sekretaris.profil')->name('profil');
     Route::put('/profil', function (Request $request) {
         $user = $request->user();

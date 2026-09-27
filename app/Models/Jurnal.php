@@ -30,6 +30,7 @@ class Jurnal extends Model
         'jml_tidak_hadir',
         'status_validasi_guru',
         'status_kehadiran_validasi',
+        'diisi_oleh_piket',
         'validated_by',
         'validated_at',
         'catatan_revisi',
@@ -39,6 +40,7 @@ class Jurnal extends Model
     protected $casts = [
         'tanggal' => 'date',
         'validated_at' => 'datetime',
+        'diisi_oleh_piket' => 'boolean',
     ];
 
     public function getStatusValidasiLabelAttribute(): string

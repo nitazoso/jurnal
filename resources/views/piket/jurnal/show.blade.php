@@ -376,5 +376,17 @@
             </dl>
         </section>
     @endif
+
+    <section class="journal-detail-panel">
+        <h2>Diisi Oleh</h2>
+        <dl class="journal-detail-info">
+            <div class="journal-detail-info-item"><dt>Nama</dt><dd>{{ $jurnal->user?->nama_user ?? '-' }}</dd></div>
+            <div class="journal-detail-info-item"><dt>Username</dt><dd>{{ $jurnal->user?->username ?? '-' }}</dd></div>
+            <div class="journal-detail-info-item"><dt>Peran</dt><dd>{{ $jurnal->user?->role ?? '-' }}</dd></div>
+            <div class="journal-detail-info-item"><dt>Nomor WhatsApp</dt><dd>{{ $jurnal->user?->no_wa ?: '-' }}</dd></div>
+            <div class="journal-detail-info-item"><dt>ID Pengisi</dt><dd>{{ $jurnal->id_user }}</dd></div>
+            <div class="journal-detail-info-item"><dt>Waktu Input</dt><dd>{{ $jurnal->created_at?->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') ?? '-' }}</dd></div>
+        </dl>
+    </section>
 </main>
 @endsection

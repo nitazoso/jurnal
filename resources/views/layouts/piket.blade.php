@@ -16,6 +16,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+    @yield('head')
 
     <title>@yield('title', 'Staff Piket')</title>
 
@@ -373,6 +374,10 @@
                 <a href="{{ route('piket.jurnal.rekap') }}" class="nav-item {{ request()->routeIs('piket.jurnal.rekap') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
+                </a>
+                <a href="{{ route('piket.jurnal.create') }}" class="nav-item {{ request()->routeIs('piket.jurnal.create', 'piket.jurnal.form') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">edit_note</span>
+                    <span>Isi Jurnal Guru</span>
                 </a>
                 <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') && !request()->routeIs('piket.dispen.sakit.*', 'piket.dispen.history') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">report</span> 

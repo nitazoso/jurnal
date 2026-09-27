@@ -138,6 +138,8 @@ class GuruAutomaticAttendanceTest extends TestCase
 
         $jurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)->firstOrFail();
 
+        $this->assertSame('Menunggu', $jurnal->status_validasi_guru);
+        $this->assertFalse($jurnal->diisi_oleh_piket);
         $this->assertSame(1, $jurnal->jml_hadir);
         $this->assertSame(2, $jurnal->jml_tidak_hadir);
         $this->assertDatabaseHas('detail_absensi', [
@@ -156,6 +158,14 @@ class GuruAutomaticAttendanceTest extends TestCase
         $this->actingAs($userGuru)
             ->get(route('guru.jurnal.show', $jurnal))
             ->assertOk()
+            ->assertSee('attendance-detail-table-wrap')
+            ->assertSee('attendance-detail-status sakit')
+            ->assertSee('Daftar Kehadiran Semua Siswa · 3 siswa')
+            ->assertSee('Siswa Sakit')
+            ->assertSee('Siswa Dispen')
+            ->assertSee('Siswa Hadir')
+            ->assertSee('attendance-detail-status dispen')
+            ->assertSee('attendance-detail-status hadir')
             ->assertSee('Lihat foto surat')
             ->assertSee($laporanSakit->surat_path);
 

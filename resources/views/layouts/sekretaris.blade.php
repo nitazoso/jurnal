@@ -615,18 +615,6 @@
                 <span>Validasi Kehadiran Guru</span>
             </a>
 
-            <a href="{{ route('sekretaris.isi-jurnal') }}"
-                class="nav-link {{ request()->routeIs('sekretaris.isi-jurnal*') ? 'active' : '' }}">
-                <span class="nav-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
-                        <path d="M4 19.5V5a2 2 0 0 1 2-2h10.5L20 6.5V19.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
-                        <path d="M16 3v4h4" />
-                        <path d="M8 12h8M8 16h6" />
-                    </svg>
-                </span>
-                <span>Isi Jurnal Guru</span>
-            </a>
-
             <a href="{{ route('sekretaris.profil') }}"
                 class="nav-link {{ request()->routeIs('sekretaris.profil') ? 'active' : '' }}">
                 <span class="nav-icon">

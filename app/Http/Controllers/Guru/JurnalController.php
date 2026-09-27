@@ -146,6 +146,7 @@ class JurnalController extends Controller
         // Daftar siswa dengan dispen aktif, dipakai untuk notice
         // "Siswa Dispensasi" di Blade.
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
+        $isPiketEntry = false;
 
         return view('guru.jurnal.form', compact(
             'jadwal',
@@ -153,12 +154,55 @@ class JurnalController extends Controller
             'activeDispenSiswa',
             'activeSickReports',
             'activeDispenBerakhir',
-            'siswaDispen'
+            'siswaDispen',
+            'isPiketEntry'
+        ));
+    }
+
+    public function formForPiket(Jadwal $jadwal)
+    {
+        $user = auth()->user();
+        abort_unless(
+            $user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday()),
+            403
+        );
+
+        $today = Carbon::today();
+
+        if (! $jadwal->jamMulai || ! $jadwal->jamSelesai) {
+            return redirect()
+                ->route('piket.jurnal.create', ['id_kelas' => $jadwal->id_kelas])
+                ->with('error', 'Jadwal ini tidak memiliki jam pelajaran aktif.');
+        }
+
+        if ($jadwal->jurnals()->whereDate('tanggal', $today)->exists()) {
+            return redirect()
+                ->route('piket.jurnal.create', ['id_kelas' => $jadwal->id_kelas])
+                ->with('info', 'Jurnal untuk jadwal ini hari ini sudah tersimpan.');
+        }
+
+        $jadwal->load(['kelas', 'mapel', 'guru', 'jamMulai', 'jamSelesai']);
+        $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)->orderBy('nama_siswa')->get();
+        $activeDispenSiswa = $this->activeDispenSiswa($jadwal->id_kelas, $today->toDateString());
+        $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $today->toDateString());
+        $activeDispenBerakhir = $this->activeDispenBerakhir($jadwal->id_kelas, $today->toDateString());
+        $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
+        $isPiketEntry = true;
+
+        return view('guru.jurnal.form', compact(
+            'jadwal',
+            'siswa',
+            'activeDispenSiswa',
+            'activeSickReports',
+            'activeDispenBerakhir',
+            'siswaDispen',
+            'isPiketEntry'
         ));
     }
 
     public function store(Request $request)
     {
+        $isPiketEntry = $request->routeIs('piket.jurnal.store');
         $validated = $request->validate([
             'id_jadwal' => 'required|exists:jadwals,id_jadwal',
             'tanggal' => 'required|date',
@@ -179,9 +223,14 @@ class JurnalController extends Controller
                 'required',
                 'in:Hadir,Sakit,Izin,Alpha,Dispen',
             ],
+            'status_guru' => $isPiketEntry ? 'required|in:Sakit,Izin' : 'prohibited',
         ]);
 
         $user = auth()->user();
+        abort_if(
+            $isPiketEntry && ! ($user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday())),
+            403
+        );
 
         // Tanggal jurnal selalu hari ini di server.
         // Jangan percaya tanggal dari browser.
@@ -192,18 +241,18 @@ class JurnalController extends Controller
             $validated['id_jadwal']
         );
 
-        if ($jadwal->id_guru != $user->id_guru) {
+        if (! $isPiketEntry && $jadwal->id_guru != $user->id_guru) {
             abort(403);
         }
 
         // Cegah jurnal ganda untuk jadwal yang sama di hari yang sama.
         if (Jurnal::where('id_jadwal', $jadwal->id_jadwal)->whereDate('tanggal', $tanggal)->exists()) {
             return redirect()
-                ->route('guru.jurnal.create')
+                ->route($isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.create', $isPiketEntry ? ['id_kelas' => $jadwal->id_kelas] : [])
                 ->with('error', 'Jurnal untuk jadwal ini hari ini sudah dibuat.');
         }
 
-        if (! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
+        if (! $isPiketEntry && ! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
             return back()
                 ->withErrors([
                     'id_jadwal' =>
@@ -261,7 +310,7 @@ class JurnalController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($validated, $jadwal, $user, $tanggal, $jmlHadir, $jmlTidakHadir, $activeSickReports, $activeDispenReports) {
+            DB::transaction(function () use ($validated, $jadwal, $user, $tanggal, $jmlHadir, $jmlTidakHadir, $activeSickReports, $activeDispenReports, $isPiketEntry) {
                 $jurnal = Jurnal::create([
                     'id_jadwal' => $jadwal->id_jadwal,
                     'id_kelas' => $jadwal->id_kelas,
@@ -275,7 +324,7 @@ class JurnalController extends Controller
                     'materi' => $validated['materi'],
                     'keterangan' => $validated['keterangan'],
 
-                    'status_guru' => 'Hadir',
+                    'status_guru' => $isPiketEntry ? $validated['status_guru'] : 'Hadir',
 
                     'ada_tugas' => $validated['ada_tugas'],
                     'deskripsi_tugas' =>
@@ -284,7 +333,10 @@ class JurnalController extends Controller
                     'jml_hadir' => $jmlHadir,
                     'jml_tidak_hadir' => $jmlTidakHadir,
 
-                    'status_validasi_guru' => 'Menunggu',
+                    'status_kehadiran_validasi' => $isPiketEntry ? 'Tidak Hadir' : null,
+                    'status_validasi_guru' => $isPiketEntry ? 'Disetujui' : 'Menunggu',
+                    'diisi_oleh_piket' => $isPiketEntry,
+                    'validated_at' => $isPiketEntry ? now() : null,
 
                     'catatan_umum' =>
                         $validated['catatan_umum'] ?? null,
@@ -313,7 +365,7 @@ class JurnalController extends Controller
             });
 
             return redirect()
-                ->route('guru.jurnal.index')
+                ->route($isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.index', $isPiketEntry ? ['id_kelas' => $jadwal->id_kelas] : [])
                 ->with(
                     'success',
                     'Jurnal berhasil disimpan.'
@@ -342,12 +394,21 @@ class JurnalController extends Controller
             'jamMulai',
             'jamSelesai',
             'detailAbsensis.siswa',
+            'detailAbsensis.dispen',
             'validator',
+            'user',
         ]);
+
+        $siswaKelas = Siswa::where('id_kelas', $jurnal->id_kelas)
+            ->orderBy('no_presensi')
+            ->orderBy('nama_siswa')
+            ->get();
+        $absensiBySiswa = $jurnal->detailAbsensis->keyBy('id_siswa');
+        $detailAbsensiLengkap = $jurnal->detailAbsensis->count() >= (int) ($jurnal->jml_tidak_hadir ?? 0);
 
         return view(
             'guru.jurnal.show',
-            compact('jurnal')
+            compact('jurnal', 'siswaKelas', 'absensiBySiswa', 'detailAbsensiLengkap')
         );
     }
 

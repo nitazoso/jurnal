@@ -66,24 +66,6 @@
             </div>
         </div>
 
-        {{-- ACTION CARD --}}
-        <a href="{{ route('sekretaris.isi-jurnal') }}" class="metric-card action">
-            <div class="metric-top">
-                <span>Isi Jurnal Guru</span>
-
-                <div class="metric-icon">
-                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                    </svg>
-                </div>
-            </div>
-
-            <div class="metric-bottom">
-                <strong>Buat Baru</strong>
-                <span>Buat jurnal atas nama guru</span>
-            </div>
-        </a>
-
     </section>
 
     {{-- RINGKASAN JURNAL --}}

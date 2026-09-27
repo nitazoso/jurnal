@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Sekretaris;
 
 use App\Http\Controllers\Controller;
-use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
@@ -36,7 +35,7 @@ class JurnalController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
+        $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai', 'user'])
             ->whereHas('jadwal')
             ->latest('tanggal');
 
@@ -100,38 +99,4 @@ class JurnalController extends Controller
         return back()->with('success', 'Kehadiran guru berhasil divalidasi.');
     }
 
-    public function create()
-    {
-        $jadwals = Jadwal::with(['guru', 'kelas', 'mapel', 'jamMulai', 'jamSelesai'])->orderBy('hari')->orderBy('id_jam_mulai')->get();
-        return view('sekretaris.isi-jurnal', compact('jadwals'));
-    }
-
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'id_jadwal' => 'required|exists:jadwals,id_jadwal', 'tanggal' => 'required|date', 'materi' => 'required|string|max:255',
-            'keterangan' => 'required|string',
-            'status_kehadiran_validasi' => 'required|in:Hadir,Tidak Hadir',
-            'alasan_tidak_hadir' => 'nullable|required_if:status_kehadiran_validasi,Tidak Hadir|in:Sakit,Izin',
-            'ada_tugas' => 'required|in:Ya,Tidak',
-            'deskripsi_tugas' => 'nullable|required_if:ada_tugas,Ya|string', 'jml_hadir' => 'required|integer|min:0',
-            'jml_tidak_hadir' => 'required|integer|min:0', 'catatan_umum' => 'nullable|string|max:255',
-        ]);
-        $jadwal = Jadwal::findOrFail($validated['id_jadwal']);
-        $statusGuru = $validated['status_kehadiran_validasi'] === 'Hadir'
-            ? 'Hadir'
-            : $validated['alasan_tidak_hadir'];
-
-        Jurnal::create([
-            'id_jadwal' => $jadwal->id_jadwal, 'id_kelas' => $jadwal->id_kelas, 'id_guru' => $jadwal->id_guru,
-            'id_user' => $request->user()->id_user, 'id_jam_mulai' => $jadwal->id_jam_mulai, 'id_jam_selesai' => $jadwal->id_jam_selesai,
-            'tanggal' => $validated['tanggal'], 'materi' => $validated['materi'], 'keterangan' => $validated['keterangan'],
-            'status_guru' => $statusGuru, 'status_kehadiran_validasi' => $validated['status_kehadiran_validasi'],
-            'ada_tugas' => $validated['ada_tugas'], 'deskripsi_tugas' => $validated['deskripsi_tugas'] ?? null,
-            'jml_hadir' => $validated['jml_hadir'], 'jml_tidak_hadir' => $validated['jml_tidak_hadir'],
-            'status_validasi_guru' => 'Disetujui', 'catatan_umum' => $validated['catatan_umum'] ?? null,
-            'validated_by' => $request->user()->id_user, 'validated_at' => now(),
-        ]);
-        return redirect()->route('sekretaris.validasi-jurnal')->with('success', 'Jurnal atas nama guru berhasil disimpan dan langsung tervalidasi.');
-    }
 }
