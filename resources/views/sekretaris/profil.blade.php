@@ -371,42 +371,7 @@
         </span>
     </section>
 
-    {{-- PERSONAL DETAILS --}}
-    <section class="personal-card">
-
-        {{-- Nama --}}
-        <div class="personal-field">
-            <p class="personal-label">Nama Lengkap</p>
-            <p class="personal-value">{{ $profileName }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Username --}}
-        <div class="personal-field">
-            <p class="personal-label">Username</p>
-            <p class="personal-value">{{ $user->username ?? '-' }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Role --}}
-        <div class="personal-field">
-            <p class="personal-label">Role</p>
-            <p class="personal-value">{{ $user->role ?? 'Sekretaris' }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Kelas --}}
-        <div class="personal-field">
-            <p class="personal-label">Kelas</p>
-            <p class="personal-value">{{ $user->kelas->nama_kelas ?? 'Belum ditetapkan' }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-    </section>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName])
 
     {{-- EDIT PROFILE FORM --}}
     <section class="personal-card">
@@ -447,9 +412,9 @@
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">
-        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin keluar?');">
+        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
             @csrf
-            <button class="logout-button" type="submit">Keluar</button>
+            <button class="logout-button" type="submit">Logout</button>
         </form>
     </div>
 

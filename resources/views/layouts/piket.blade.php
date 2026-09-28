@@ -390,10 +390,12 @@
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
                 </a>
+                @unless(cache('jadwal_all_disabled', false))
                 <a href="{{ route('piket.jurnal.create') }}" class="nav-item {{ request()->routeIs('piket.jurnal.create', 'piket.jurnal.form') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">edit_note</span>
                     <span>Isi Jurnal Guru</span>
                 </a>
+                @endunless
                 <a href="{{ route('piket.dispen.index') }}" class="nav-item {{ request()->routeIs('piket.dispen.*') && !request()->routeIs('piket.dispen.sakit.*', 'piket.dispen.history') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">report</span> 
                     <span>Dispen</span>
@@ -408,15 +410,6 @@
                 </a>
             </nav>
 
-            <div class="logout-wrap">
-                <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
-                    @csrf
-                    <button type="submit">
-                        <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-                        <span>Logout</span>
-                    </button>
-                </form>
-            </div>
         </aside>
 
         <!-- Content Area -->

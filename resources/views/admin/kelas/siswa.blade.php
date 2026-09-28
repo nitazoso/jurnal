@@ -329,7 +329,7 @@
             <input type="text"
                    name="search"
                    value="{{ request('search') }}"
-                   placeholder="Cari nama atau NIS... (Tekan Enter)"
+                   placeholder="Cari nama atau NISN... (Tekan Enter)"
                    class="custom-input"
                    style="width: 100%; padding: 10px 14px 10px 40px; background: #f1f5f9; border-radius: 10px; font-size: 13px; outline: none; color: #334155;">
         </form>
@@ -369,7 +369,7 @@
                     </th>
 
                     <th style="padding: 14px 16px; text-align: center;">
-                        NIS
+                        NISN
                     </th>
 
                     <th style="padding: 14px 16px; text-align: center;">
@@ -739,18 +739,18 @@
             </div>
 
 
-            <!-- NIS -->
+            <!-- NISN -->
             <div style="margin-bottom: 14px;">
 
                 <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">
-                    NIS
+                    NISN
                 </label>
 
                 <input type="text"
                        id="inputNisSiswa"
                        name="nis"
                        value="{{ old('form_type') === 'tambah' ? old('nis') : '' }}"
-                       placeholder="10123"
+                       placeholder="4837291056"
                        inputmode="numeric"
                        pattern="[0-9]*"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
@@ -758,7 +758,7 @@
                        style="width: 100%; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;"
                        required>
 
-                <!-- NOTE NIS DUPLIKAT -->
+                <!-- NOTE NISN DUPLIKAT -->
                 <div id="nisDuplicateNote"
                      class="duplicate-note">
 
@@ -768,7 +768,7 @@
                     </span>
 
                     <span>
-                        NIS ini sudah terdaftar. Silakan gunakan NIS lain.
+                        NISN ini sudah terdaftar. Silakan gunakan NISN lain.
                     </span>
 
                 </div>
@@ -925,18 +925,18 @@
             </div>
 
 
-            <!-- NIS -->
+            <!-- NISN -->
             <div style="margin-bottom: 14px;">
 
                 <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">
-                    NIS
+                    NISN
                 </label>
 
                 <input type="text"
                        id="editNisSiswa"
                        name="nis"
                        value="{{ old('form_type') === 'edit' ? old('nis') : '' }}"
-                       placeholder="10123"
+                       placeholder="4837291056"
                        inputmode="numeric"
                        pattern="[0-9]*"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
@@ -944,7 +944,7 @@
                        style="width: 100%; padding: 10px; background: #f8fafc; border-radius: 8px; font-size: 13px; outline: none; box-sizing: border-box;"
                        required>
 
-                <!-- NOTE NIS DUPLIKAT EDIT -->
+                <!-- NOTE NISN DUPLIKAT EDIT -->
                 <div id="editNisDuplicateNote"
                      class="duplicate-note">
 
@@ -954,7 +954,7 @@
                     </span>
 
                     <span>
-                        NIS ini sudah digunakan oleh siswa lain.
+                        NISN ini sudah digunakan oleh siswa lain.
                     </span>
 
                 </div>
@@ -1466,7 +1466,7 @@ async function confirmVerifikasiTambah(event) {
     try {
 
         /*
-         * Cek NIS ke server.
+         * Cek NISN ke server.
          *
          * Bukan menggunakan $siswas yang sedang tampil
          * karena $siswas menggunakan pagination.
@@ -1479,7 +1479,7 @@ async function confirmVerifikasiTambah(event) {
 
         if (!response.ok) {
 
-            throw new Error('Gagal mengecek NIS');
+            throw new Error('Gagal mengecek NISN');
 
         }
 
@@ -1489,7 +1489,7 @@ async function confirmVerifikasiTambah(event) {
 
         /*
          * =====================================================
-         * NIS SUDAH TERDAFTAR
+         * NISN SUDAH TERDAFTAR
          * =====================================================
          *
          * Hanya tampilkan note merah.
@@ -1520,7 +1520,7 @@ async function confirmVerifikasiTambah(event) {
 
         /*
          * =====================================================
-         * NIS BELUM TERDAFTAR
+         * NISN BELUM TERDAFTAR
          * =====================================================
          *
          * Baru tampilkan modal verifikasi.
@@ -1539,7 +1539,7 @@ async function confirmVerifikasiTambah(event) {
 
             'Verifikasi Tambah Murid',
 
-            `Apakah Anda yakin data murid "${namaSiswa}" (NIS: ${nis}) sudah benar dan ingin disimpan?`,
+            `Apakah Anda yakin data murid "${namaSiswa}" (NISN: ${nis}) sudah benar dan ingin disimpan?`,
 
             false,
 
@@ -1553,7 +1553,7 @@ async function confirmVerifikasiTambah(event) {
 
     } catch (error) {
 
-        console.error('Gagal mengecek NIS:', error);
+        console.error('Gagal mengecek NISN:', error);
 
         sedangCekNis = false;
 
@@ -1564,7 +1564,7 @@ async function confirmVerifikasiTambah(event) {
         button.style.cursor = 'pointer';
 
         alert(
-            'Gagal mengecek NIS. Silakan coba lagi.'
+            'Gagal mengecek NISN. Silakan coba lagi.'
         );
 
     }
@@ -1639,7 +1639,7 @@ async function confirmVerifikasiEditSiswa(event) {
 
         if (!response.ok) {
 
-            throw new Error('Gagal mengecek NIS');
+            throw new Error('Gagal mengecek NISN');
 
         }
 
@@ -1648,7 +1648,7 @@ async function confirmVerifikasiEditSiswa(event) {
 
 
         /*
-         * Kalau NIS digunakan siswa lain,
+         * Kalau NISN digunakan siswa lain,
          * langsung tampilkan note merah.
          */
 
@@ -1692,12 +1692,12 @@ async function confirmVerifikasiEditSiswa(event) {
 
     } catch (error) {
 
-        console.error('Gagal mengecek NIS:', error);
+        console.error('Gagal mengecek NISN:', error);
 
         sedangCekNis = false;
 
         alert(
-            'Gagal mengecek NIS. Silakan coba lagi.'
+            'Gagal mengecek NISN. Silakan coba lagi.'
         );
 
     }

@@ -38,6 +38,100 @@ class RoleKesiswaanTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
+    public function test_all_role_profiles_render_the_same_account_information_fields(): void
+    {
+        $profiles = [
+            ['Admin', 'admin.profil', 'Nomor Telepon'],
+            ['Guru', 'guru.profil', null],
+            ['Staff Piket', 'piket.profil', 'Nomor Telepon'],
+            ['Kesiswaan', 'kesiswaan.profil', 'Nomor WhatsApp'],
+            ['Sekretaris', 'sekretaris.profil', 'Kelas'],
+        ];
+
+        foreach ($profiles as $index => [$role, $routeName, $roleSpecificField]) {
+            $user = User::create([
+                'username' => 'profile_'.$index,
+                'password' => bcrypt('password123'),
+                'nama_user' => 'Pengguna '.$role,
+                'role' => $role,
+                'no_wa' => in_array($role, ['Admin', 'Staff Piket', 'Kesiswaan'], true) ? '081234567890' : null,
+            ]);
+
+            $response = $this->actingAs($user)
+                ->get(route($routeName))
+                ->assertOk()
+                ->assertSee('Informasi Akun')
+                ->assertSee('Nama Lengkap')
+                ->assertSee('Username')
+                ->assertSee('Role');
+
+            if ($roleSpecificField) {
+                $response->assertSee($roleSpecificField);
+            }
+        }
+    }
+
+    public function test_kesiswaan_can_update_username_and_password_from_profile(): void
+    {
+        $user = User::create([
+            'username' => 'kesiswaan_lama',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Petugas Kesiswaan',
+            'role' => 'Kesiswaan',
+        ]);
+
+        $this->actingAs($user)
+            ->put(route('kesiswaan.profil.update'), [
+                'username' => 'kesiswaan_baru',
+                'password' => 'password-baru-123',
+                'password_confirmation' => 'password-baru-123',
+            ])
+            ->assertRedirect(route('kesiswaan.profil'));
+
+        $this->assertDatabaseHas('users', [
+            'id_user' => $user->id_user,
+            'username' => 'kesiswaan_baru',
+        ]);
+        $this->assertTrue(password_verify('password-baru-123', $user->fresh()->password));
+    }
+
+    public function test_teacher_on_piket_duty_is_displayed_as_guru_piket_without_changing_primary_role(): void
+    {
+        $guru = Guru::create([
+            'nama_guru' => 'Guru Bertugas',
+            'no_hp' => '081234567890',
+        ]);
+        $user = User::create([
+            'username' => 'guru_bertugas',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Guru Bertugas',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+        ]);
+
+        PiketJadwal::create([
+            'id_guru' => $guru->id_guru,
+            'tanggal' => now('Asia/Jakarta')->toDateString(),
+            'shift' => 'Pagi',
+            'jam_mulai' => '07:00',
+            'jam_selesai' => '08:00',
+            'jenis_tugas' => 'Piket KBM Pagi',
+            'created_by' => $user->id_user,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('guru.profil'))
+            ->assertOk()
+            ->assertSee('GURU PIKET')
+            ->assertSee('Guru Piket');
+
+        $this->get(route('piket.profil'))
+            ->assertOk()
+            ->assertSee('Guru Piket');
+
+        $this->assertSame('Guru', $user->fresh()->role);
+    }
+
     public function test_staff_piket_role_is_rejected_for_user_creation(): void
     {
         $admin = User::create([

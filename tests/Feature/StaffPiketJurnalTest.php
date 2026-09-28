@@ -12,6 +12,7 @@ use App\Models\PiketJadwal;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class StaffPiketJurnalTest extends TestCase
@@ -30,7 +31,104 @@ class StaffPiketJurnalTest extends TestCase
             ->assertSee('Petugas Piket')
             ->assertSee($staff->username)
             ->assertSee('Staff Piket')
-            ->assertSee('piket-profile-page');
+            ->assertSee('piket-profile-page')
+            ->assertSee('Edit Profil')
+            ->assertSee('name="username"', false)
+            ->assertSee('name="password"', false);
+    }
+
+    public function test_staff_piket_can_update_username_and_password_from_profile(): void
+    {
+        $staff = $this->createStaffPiket();
+
+        $this->actingAs($staff)
+            ->put(route('piket.profil.update'), [
+                'username' => 'petugas_baru',
+                'password' => 'password-baru-123',
+                'password_confirmation' => 'password-baru-123',
+            ])
+            ->assertRedirect(route('piket.profil'))
+            ->assertSessionHas('success', 'Profil berhasil diperbarui.');
+
+        $this->assertDatabaseHas('users', [
+            'id_user' => $staff->id_user,
+            'username' => 'petugas_baru',
+        ]);
+        $this->assertTrue(password_verify('password-baru-123', $staff->fresh()->password));
+
+        $this->get(route('piket.profil'))
+            ->assertOk()
+            ->assertSee('petugas_baru')
+            ->assertSee('Profil berhasil diperbarui.');
+    }
+
+    public function test_event_mode_is_shared_and_blocks_journal_entry_until_disabled(): void
+    {
+        $kelas = Kelas::create(['nama_kelas' => 'X-Event']);
+        $jadwal = $this->createSchedule($kelas, 'Guru Event', 'Matematika');
+        $admin = User::create([
+            'username' => 'admin_event_test',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Admin Event',
+            'role' => 'Admin',
+        ]);
+        $guru = User::create([
+            'username' => 'guru_event_test',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Guru Event',
+            'role' => 'Guru',
+            'id_guru' => $jadwal->id_guru,
+        ]);
+        $staff = $this->createStaffPiket();
+
+        $this->actingAs($admin)
+            ->get(route('admin.jadwal.index', [
+                'id_kelas' => $kelas->id_kelas,
+                'all_disabled' => 1,
+            ]))
+            ->assertOk();
+
+        $this->assertTrue(Cache::get('jadwal_all_disabled'));
+
+        $this->actingAs($guru)
+            ->get(route('guru.jurnal.create'))
+            ->assertOk()
+            ->assertSee('Pengisian jurnal sementara dinonaktifkan')
+            ->assertDontSee('JADWAL & KELAS');
+
+        $this->get(route('guru.jurnal.form', $jadwal))
+            ->assertRedirect(route('guru.jurnal.create'));
+
+        $this->post(route('guru.jurnal.store'), [])
+            ->assertRedirect(route('guru.jurnal.create'));
+
+        $this->actingAs($staff)
+            ->get(route('piket.jurnal.create', ['id_kelas' => $kelas->id_kelas]))
+            ->assertOk()
+            ->assertSee('Pengisian jurnal sementara dinonaktifkan')
+            ->assertDontSee('Tampilkan Jadwal');
+
+        $this->get(route('piket.jurnal.form', $jadwal))
+            ->assertRedirect(route('piket.jurnal.create'));
+
+        $this->post(route('piket.jurnal.store'), [])
+            ->assertRedirect(route('piket.jurnal.create'));
+
+        $this->assertDatabaseMissing('jurnals', ['id_jadwal' => $jadwal->id_jadwal]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.jadwal.index', [
+                'id_kelas' => $kelas->id_kelas,
+                'all_disabled' => 0,
+            ]))
+            ->assertOk();
+
+        $this->assertFalse(Cache::get('jadwal_all_disabled'));
+
+        $this->actingAs($guru)
+            ->get(route('guru.jurnal.create'))
+            ->assertOk()
+            ->assertDontSee('Pengisian jurnal sementara dinonaktifkan');
     }
 
     public function test_staff_piket_sees_all_current_teacher_schedules_for_the_selected_class(): void

@@ -48,14 +48,11 @@ class DashboardController extends Controller
             ->whereDate('tanggal', $today)
             ->first();
 
-        $tahunAjaran = '2026/2027 Ganjil';
-
         return view('guru.dashboard', compact(
             'jurnals',
             'totalJurnal',
             'piketTerdekat',
-            'piketHariIni',
-            'tahunAjaran'
+            'piketHariIni'
         ));
     }
 }

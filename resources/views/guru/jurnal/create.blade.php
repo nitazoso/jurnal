@@ -524,6 +524,23 @@
 
 <div class="create-journal-page">
 
+    @if($allDisabled)
+
+        <section class="schedule-card" role="status">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" />
+                        <path d="m5.6 5.6 12.8 12.8" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <p class="empty-title">Pengisian jurnal sementara dinonaktifkan</p>
+                <p class="empty-text">Admin mengaktifkan mode event. Fitur pengisian jurnal akan tersedia kembali setelah mode event dinonaktifkan.</p>
+            </div>
+        </section>
+
+    @else
+
     {{-- HERO --}}
     <section class="journal-hero">
 
@@ -696,6 +713,8 @@
         </div>
 
     </section>
+
+    @endif
 
 </div>
 

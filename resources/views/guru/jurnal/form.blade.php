@@ -4,7 +4,7 @@
 @section('title', 'Isi Jurnal Mengajar - Jurnify')
 @section('page-title', 'Isi Jurnal Mengajar')
 @section('page-subtitle', 'Catat kegiatan pembelajaran hari ini')
-@section('tahun_ajaran', $jadwal->tahun_ajaran ?? 'Ganjil 2026/2027')
+@section('tahun_ajaran', trim(($jadwal->semester ?? '').' '.($jadwal->tahun_ajaran ?? '')) ?: 'Tahun ajaran belum diatur')
 
 @section('head')
 <link rel="preconnect" href="https://fonts.googleapis.com">

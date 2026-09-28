@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicPeriod;
 use App\Models\Jadwal;
 use App\Models\Guru;
 use App\Models\Mapel;
@@ -11,6 +12,7 @@ use App\Models\JamPel;
 use App\Models\Jurnal;
 use App\Models\GuruQrAttendance;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class JadwalController extends Controller
@@ -18,6 +20,21 @@ class JadwalController extends Controller
 public function index(Request $request)
 {
     $kelases = Kelas::orderBy('nama_kelas')->get();
+    $academicPeriod = AcademicPeriod::current() ?? Jadwal::latestAcademicPeriod();
+    $semesterDefault = $academicPeriod?->semester;
+    $tahunAjaranDefault = $academicPeriod?->tahun_ajaran ?? '';
+
+    $shiftSeninJumat = $request->has('shift_senin_jumat')
+        ? $request->boolean('shift_senin_jumat')
+        : session('jadwal_shift_senin_jumat', false);
+
+    if ($request->has('all_disabled')) {
+        Cache::forever('jadwal_all_disabled', $request->boolean('all_disabled'));
+    }
+
+    $allDisabled = Cache::get('jadwal_all_disabled', false);
+
+    session(['jadwal_shift_senin_jumat' => $shiftSeninJumat]);
 
     $selectedKelasId = $request->get(
         'id_kelas',
@@ -68,17 +85,49 @@ public function index(Request $request)
     $gurus = Guru::orderBy('nama_guru')->get();
     $mapels = Mapel::orderBy('nama_mapel')->get();
 
-return view('admin.jadwal.index', compact(
-    'kelases', 
-    'selectedKelasId', 
-    'selectedKelas', 
-    'jamPels', 
-    'jamPelsGrouped', 
-    'jadwals', 
-    'mapels', 
-    'gurus', 
-    'maxJamPerHari'
-));}
+    return view('admin.jadwal.index', compact(
+        'kelases',
+        'selectedKelasId',
+        'selectedKelas',
+        'jamPels',
+        'jamPelsGrouped',
+        'jadwals',
+        'mapels',
+        'gurus',
+        'maxJamPerHari',
+        'shiftSeninJumat',
+        'allDisabled',
+        'semesterDefault',
+        'tahunAjaranDefault'
+    ));
+}
+
+public function academicPeriodSettings()
+{
+    $academicPeriod = AcademicPeriod::current() ?? Jadwal::latestAcademicPeriod();
+
+    return view('admin.jadwal.academic-period', compact('academicPeriod'));
+}
+
+public function updateAcademicPeriod(Request $request)
+{
+    $validated = $request->validate([
+        'semester' => ['required', 'in:Ganjil,Genap'],
+        'tahun_ajaran' => ['required', 'regex:/^\d{4}\/\d{4}$/'],
+    ], [
+        'tahun_ajaran.regex' => 'Tahun ajaran harus menggunakan format YYYY/YYYY.',
+    ]);
+
+    $academicPeriod = AcademicPeriod::current() ?? new AcademicPeriod();
+    $academicPeriod->id = 1;
+    $academicPeriod->fill($validated);
+    $academicPeriod->save();
+
+    return redirect()
+        ->route('admin.jadwal.index')
+        ->with('success', 'Tahun ajaran aktif berhasil diperbarui.');
+}
+
     public function store(Request $request)
     {
         $validated = $request->validate([

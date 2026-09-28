@@ -626,6 +626,7 @@
                         <span>Dashboard</span>
                     </a>
 
+                    @unless(cache('jadwal_all_disabled', false))
                     {{-- ISI JURNAL --}}
                     <a
                         href="{{ route('guru.jurnal.create') }}"
@@ -647,11 +648,12 @@
 
                         <span>Isi Jurnal</span>
                     </a>
+                    @endunless
 
                     {{-- DAFTAR JURNAL --}}
                     <a
                         href="{{ route('guru.jurnal.index') }}"
-                        class="{{ request()->routeIs('guru.jurnal.index') || request()->routeIs('guru.jurnal.show') ? 'active' : '' }}"
+                        class="{{ request()->routeIs('guru.jurnal.index') || (request()->routeIs('guru.jurnal.show') && !($fromWaliKelasRekap ?? false)) ? 'active' : '' }}"
                     >
                         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path
@@ -663,6 +665,18 @@
 
                         <span>Daftar Jurnal</span>
                     </a>
+
+                    @if(auth()->user()->guru?->kelasWali()->exists())
+                    <a
+                        href="{{ route('guru.jurnal.wali-kelas-rekap') }}"
+                        class="{{ request()->routeIs('guru.jurnal.wali-kelas-rekap') || (request()->routeIs('guru.jurnal.show') && ($fromWaliKelasRekap ?? false)) ? 'active' : '' }}"
+                    >
+                        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M4 19V5m0 14h16M8 15v-3m4 3V7m4 8v-5m4 5V4" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>Rekap Jurnal Wali Kelas</span>
+                    </a>
+                    @endif
 
                     {{-- PROFIL --}}
                     <a href="{{ route('guru.profil') }}" class="{{ request()->routeIs('guru.profil') ? 'active' : '' }}">
@@ -718,7 +732,7 @@
                 </div>
 
                 <div class="mobile-year">
-                    @yield('tahun_ajaran', 'Ganjil 2026/2027')
+                    @yield('tahun_ajaran', $tahunAjaranAktif)
                 </div>
 
             </div>
@@ -754,7 +768,7 @@
                     <div class="header-year">
                         Tahun Ajaran:
                         <strong>
-                            @yield('tahun_ajaran', 'Ganjil 2026/2027')
+                            @yield('tahun_ajaran', $tahunAjaranAktif)
                         </strong>
                     </div>
 

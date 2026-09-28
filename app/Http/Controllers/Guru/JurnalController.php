@@ -10,6 +10,7 @@ use App\Models\Jurnal;
 use App\Models\Siswa;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -35,6 +36,61 @@ class JurnalController extends Controller
         return view('guru.jurnal.index', compact('jurnals'));
     }
 
+    public function waliKelasRekap(Request $request)
+    {
+        $kelases = auth()->user()->guru?->kelasWali()->orderBy('nama_kelas')->get() ?? collect();
+        abort_if($kelases->isEmpty(), 403);
+
+        $validated = $request->validate([
+            'id_kelas' => ['nullable', 'integer'],
+            'bulan' => ['nullable', 'date_format:Y-m'],
+            'status' => ['nullable', 'in:Menunggu,Disetujui,Ditolak,Perlu Diperbaiki'],
+        ]);
+
+        $selectedKelas = isset($validated['id_kelas'])
+            ? $kelases->firstWhere('id_kelas', (int) $validated['id_kelas'])
+            : $kelases->first();
+        abort_if(! $selectedKelas, 404);
+
+        $baseQuery = Jurnal::with([
+            'guru',
+            'kelas',
+            'jadwal.mapel',
+            'jamMulai',
+            'jamSelesai',
+        ])
+            ->where('id_kelas', $selectedKelas->id_kelas)
+            ->whereHas('jadwal', function ($query) {
+                $query->whereColumn('jadwals.id_kelas', 'jurnals.id_kelas');
+            });
+
+        $summary = [
+            'total' => (clone $baseQuery)->count(),
+            'menunggu' => (clone $baseQuery)->where('status_validasi_guru', 'Menunggu')->count(),
+            'disetujui' => (clone $baseQuery)->where('status_validasi_guru', 'Disetujui')->count(),
+            'perlu_diperbaiki' => (clone $baseQuery)->whereIn('status_validasi_guru', ['Ditolak', 'Perlu Diperbaiki'])->count(),
+        ];
+
+        $jurnals = (clone $baseQuery)
+            ->when(isset($validated['bulan']), function ($query) use ($validated) {
+                $month = Carbon::createFromFormat('Y-m', $validated['bulan']);
+                $query->whereBetween('tanggal', [$month->copy()->startOfMonth(), $month->copy()->endOfMonth()]);
+            })
+            ->when(isset($validated['status']), fn ($query) => $query->where('status_validasi_guru', $validated['status']))
+            ->orderByDesc('tanggal')
+            ->orderByDesc('id_jurnal')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('guru.jurnal.wali-kelas-rekap', compact(
+            'kelases',
+            'selectedKelas',
+            'jurnals',
+            'summary',
+            'validated'
+        ));
+    }
+
     /**
      * Halaman pilih jadwal untuk mengisi jurnal.
      *
@@ -46,6 +102,17 @@ class JurnalController extends Controller
      */
     public function create()
     {
+        $allDisabled = Cache::get('jadwal_all_disabled', false);
+
+        if ($allDisabled) {
+            return view('guru.jurnal.create', [
+                'jadwals' => collect(),
+                'hariIni' => 'Pelajaran dinonaktifkan',
+                'today' => Carbon::today(),
+                'allDisabled' => $allDisabled,
+            ]);
+        }
+
         $user = auth()->user();
         $today = Carbon::today();
 
@@ -87,12 +154,17 @@ class JurnalController extends Controller
         return view('guru.jurnal.create', compact(
             'jadwals',
             'hariIni',
-            'today'
+            'today',
+            'allDisabled'
         ));
     }
 
     public function form(Jadwal $jadwal)
     {
+        if (Cache::get('jadwal_all_disabled', false)) {
+            return redirect()->route('guru.jurnal.create')->with('error', 'Pelajaran sedang dinonaktifkan karena event khusus.');
+        }
+
         $user = auth()->user();
         $today = Carbon::today();
 
@@ -161,6 +233,10 @@ class JurnalController extends Controller
 
     public function formForPiket(Jadwal $jadwal)
     {
+        if (Cache::get('jadwal_all_disabled', false)) {
+            return redirect()->route('piket.jurnal.create')->with('error', 'Pelajaran sedang dinonaktifkan karena event khusus.');
+        }
+
         $user = auth()->user();
         abort_unless(
             $user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday()),
@@ -203,6 +279,13 @@ class JurnalController extends Controller
     public function store(Request $request)
     {
         $isPiketEntry = $request->routeIs('piket.jurnal.store');
+
+        if (Cache::get('jadwal_all_disabled', false)) {
+            $createRoute = $isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.create';
+
+            return redirect()->route($createRoute)->with('error', 'Pelajaran sedang dinonaktifkan karena event khusus.');
+        }
+
         $validated = $request->validate([
             'id_jadwal' => 'required|exists:jadwals,id_jadwal',
             'tanggal' => 'required|date',
@@ -379,12 +462,35 @@ class JurnalController extends Controller
         }
     }
 
-    public function show(Jurnal $jurnal)
+    public function show(Request $request, Jurnal $jurnal)
     {
         $user = auth()->user();
+        $jadwal = $jurnal->jadwal;
+        $isOwnJournal = $jadwal && (int) $jadwal->id_guru === (int) $user->id_guru;
+        $isWaliForJournalClass = $jadwal
+            && (int) $jadwal->id_kelas === (int) $jurnal->id_kelas
+            && $user->guru?->kelasWali()->where('id_kelas', $jurnal->id_kelas)->exists();
 
-        if (! $jurnal->jadwal || $jurnal->jadwal->id_guru != $user->id_guru) {
+        if (! $jadwal || (! $isOwnJournal && ! $isWaliForJournalClass)) {
             abort(403);
+        }
+
+        $fromWaliKelasRekap = $isWaliForJournalClass && $request->query('from') === 'wali-kelas-rekap';
+        $backUrl = route('guru.jurnal.index');
+        if ($fromWaliKelasRekap) {
+            $backQuery = ['id_kelas' => $jurnal->id_kelas];
+            $month = (string) $request->query('bulan', '');
+            $status = $request->query('status');
+
+            if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $month)) {
+                $backQuery['bulan'] = $month;
+            }
+
+            if (in_array($status, ['Menunggu', 'Disetujui', 'Ditolak', 'Perlu Diperbaiki'], true)) {
+                $backQuery['status'] = $status;
+            }
+
+            $backUrl = route('guru.jurnal.wali-kelas-rekap', $backQuery);
         }
 
         $jurnal->load([
@@ -408,7 +514,7 @@ class JurnalController extends Controller
 
         return view(
             'guru.jurnal.show',
-            compact('jurnal', 'siswaKelas', 'absensiBySiswa', 'detailAbsensiLengkap')
+            compact('jurnal', 'siswaKelas', 'absensiBySiswa', 'detailAbsensiLengkap', 'backUrl', 'fromWaliKelasRekap')
         );
     }
 

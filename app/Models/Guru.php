@@ -17,4 +17,9 @@ class Guru extends Model
         'nama_guru',
         'no_hp',
     ];
+
+    public function kelasWali()
+    {
+        return $this->hasMany(Kelas::class, 'wali_kelas', 'id_guru');
+    }
 }

@@ -157,18 +157,22 @@
                     </div>
 
                     <div class="journal-mapel-label">
-                        Mata Pelajaran & Materi
+                        Mata Pelajaran
                     </div>
 
-                    <p class="journal-material" title="{{ $materi }}">
-                        {{ $materi }}
-                    </p>
-                    
                     @if($mapel !== '-')
                         <p class="journal-mapel">
                             {{ $mapel }}
                         </p>
                     @endif
+
+                    <div class="journal-mapel-label" style="margin-top: 8px;">
+                        Materi
+                    </div>
+
+                    <p class="journal-material" title="{{ $materi }}">
+                        {{ $materi }}
+                    </p>
                 </div>
 
                 {{-- RIGHT: STATUS & ACTION --}}

@@ -1,7 +1,5 @@
 @extends('layouts.guru')
 @section('title', 'Jadwal Piket - Jurnify')
-@section('tahun_ajaran', '2026/2027 Ganjil')
-
 @section('content')
 <div class="card">
     <div class="section-header">

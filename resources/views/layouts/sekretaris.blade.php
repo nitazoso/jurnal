@@ -701,7 +701,7 @@
 
                 <div class="header-year">
                     Tahun Ajaran:
-                    <strong>@yield('tahun_ajaran', 'Ganjil 2026/2027')</strong>
+                    <strong>@yield('tahun_ajaran', $tahunAjaranAktif)</strong>
                 </div>
 
                 <div class="header-secretary">
@@ -731,7 +731,7 @@
             </div>
 
             <div class="mobile-year">
-                @yield('tahun_ajaran', 'Ganjil 2026/2027')
+                @yield('tahun_ajaran', $tahunAjaranAktif)
             </div>
         </header>
 

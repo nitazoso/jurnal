@@ -13,6 +13,7 @@
 @php
 $user = auth()->user();
 $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
+$profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' : ($user->role ?? 'Guru');
 @endphp
 
 <div class="profile-page">
@@ -29,34 +30,11 @@ $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
         {{-- Nama & Role Badge --}}
         <h2 class="profile-name">{{ $profileName }}</h2>
         <span class="profile-role">
-            {{ strtoupper($user->role ?? 'GURU') }}
+            {{ strtoupper($profileRole) }}
         </span>
     </section>
 
-    {{-- PERSONAL DETAILS --}}
-    <section class="personal-card">
-        {{-- Nama --}}
-        <div class="personal-field">
-            <p class="personal-label">Nama Lengkap</p>
-            <p class="personal-value">{{ $profileName }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Username --}}
-        <div class="personal-field">
-            <p class="personal-label">Username</p>
-            <p class="personal-value">{{ $user->username ?? '-' }}</p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Role --}}
-        <div class="personal-field">
-            <p class="personal-label">Role</p>
-            <p class="personal-value">{{ ucfirst($user->role ?? '-') }}</p>
-        </div>
-    </section>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'profileRole' => $profileRole])
 
     {{-- EDIT PROFILE FORM --}}
     <section class="personal-card edit-card">
@@ -98,7 +76,7 @@ $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
         <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
             @csrf
             <button class="logout-button" type="submit">
-                Keluar
+                Logout
             </button>
         </form>
     </div>

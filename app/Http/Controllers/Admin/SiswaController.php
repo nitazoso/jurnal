@@ -87,8 +87,8 @@ class SiswaController extends Controller
             'id_kelas'      => 'required|exists:kelases,id_kelas',
         ], [
             'nama_siswa.required'    => 'Nama siswa wajib diisi.',
-            'nis.required'           => 'NIS wajib diisi.',
-            'nis.unique'             => 'NIS sudah terdaftar. Silakan gunakan NIS yang berbeda.',
+            'nis.required'           => 'NISN wajib diisi.',
+            'nis.unique'             => 'NISN sudah terdaftar. Silakan gunakan NISN yang berbeda.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'jenis_kelamin.in'       => 'Jenis kelamin yang dipilih tidak valid.',
             'id_kelas.required'      => 'Kelas wajib dipilih.',
@@ -186,8 +186,8 @@ class SiswaController extends Controller
             'id_kelas' => 'nullable|exists:kelases,id_kelas',
         ], [
             'nama_siswa.required' => 'Nama siswa wajib diisi.',
-            'nis.required' => 'NIS wajib diisi.',
-            'nis.unique' => 'NIS sudah digunakan oleh siswa lain.',
+            'nis.required' => 'NISN wajib diisi.',
+            'nis.unique' => 'NISN sudah digunakan oleh siswa lain.',
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'jenis_kelamin.in' => 'Jenis kelamin yang dipilih tidak valid.',
             'id_kelas.exists' => 'Kelas yang dipilih tidak ditemukan.',

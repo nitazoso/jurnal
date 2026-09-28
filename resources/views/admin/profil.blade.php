@@ -40,56 +40,7 @@
 
     </section>
 
-    {{-- PERSONAL DETAILS --}}
-    <section class="personal-card">
-
-        {{-- Nama Lengkap --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Nama Lengkap
-            </p>
-            <p class="personal-value">
-                {{ $profileName }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Username --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Username
-            </p>
-            <p class="personal-value">
-                {{ $user->username ?? '-' }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Role --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Role
-            </p>
-            <p class="personal-value">
-                {{ ucfirst($user->role ?? 'Admin') }}
-            </p>
-        </div>
-
-        <hr class="personal-divider">
-
-        {{-- Nomor Telepon --}}
-        <div class="personal-field">
-            <p class="personal-label">
-                Nomor Telepon
-            </p>
-            <p class="personal-value">
-                {{ $profilePhone }}
-            </p>
-        </div>
-
-    </section>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName])
 
     {{-- EDIT PROFILE FORM --}}
     <section class="personal-card edit-card" id="edit-profile">
@@ -144,7 +95,7 @@
                 class="logout-button"
                 type="submit"
             >
-                Keluar
+                Logout
             </button>
 
         </form>

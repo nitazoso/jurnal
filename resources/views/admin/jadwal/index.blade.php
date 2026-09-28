@@ -79,16 +79,89 @@
             <!-- TOOLBAR KELAS -->
             <div class="space-y-4">
 
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="space-y-3">
 
-                    <p class="text-xs sm:text-sm text-slate-500 font-medium">
-                        Tentukan kelas yang ingin Anda atur atau tinjau jadwal pelajarannya
-                    </p>
+                    <form method="GET" class="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="flex min-w-0 flex-col items-start gap-2">
+                            <a href="{{ route('admin.jadwal.academic-period') }}" class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 lg:justify-start">
+                                <i class="fa-solid fa-calendar-days text-indigo-600" aria-hidden="true"></i>
+                                Pengaturan Tahun Ajaran
+                            </a>
+                            <p class="text-xs sm:text-sm text-slate-500 font-medium">
+                                Tentukan kelas yang ingin Anda atur atau tinjau jadwal pelajarannya
+                            </p>
+                        </div>
 
-                    <div class="inline-flex items-center gap-2 bg-slate-100 text-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl">
-                        <i class="fa-regular fa-calendar text-slate-400"></i>
+                        @if($selectedKelasId)
+                            <input type="hidden" name="id_kelas" value="{{ $selectedKelasId }}">
+                        @endif
 
-                    </div>
+                        <label class="group inline-flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-3 py-2.5 shadow-sm shadow-amber-100/60 transition-all duration-200 hover:border-amber-200 hover:shadow-md hover:shadow-amber-200/60">
+                            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md shadow-amber-500/30">
+                                <i class="fa-solid fa-ban text-base" aria-hidden="true"></i>
+                            </span>
+
+                            <span class="flex flex-col text-left leading-tight">
+                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-500">
+                                    Mode Event
+                                </span>
+                                <span class="text-[11px] font-extrabold text-slate-700">
+                                    Pelajaran dinonaktifkan
+                                </span>
+                            </span>
+
+                            <span class="rounded-md px-1.5 py-1 text-[9px] font-extrabold tracking-wide {{ $allDisabled ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                {{ $allDisabled ? 'AKTIF' : 'NONAKTIF' }}
+                            </span>
+
+                            <span class="relative inline-block h-6 w-11 shrink-0">
+                                <input type="hidden" name="all_disabled" value="0">
+                                <input
+                                    type="checkbox"
+                                    name="all_disabled"
+                                    value="1"
+                                    onchange="this.form.submit()"
+                                    {{ $allDisabled ? 'checked' : '' }}
+                                    class="peer sr-only"
+                                >
+                                <span class="absolute inset-0 rounded-full bg-rose-200 transition-all duration-300 peer-checked:bg-emerald-500"></span>
+                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-5"></span>
+                            </span>
+                        </label>
+
+                        <label class="group inline-flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50 px-3 py-2.5 shadow-sm shadow-indigo-100/60 transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-200/60">
+                            <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/30">
+                                <i class="fa-solid fa-calendar-days text-[11px]"></i>
+                            </span>
+
+                            <span class="flex flex-col text-left leading-tight">
+                                <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-indigo-500">
+                                    Jam Khusus
+                                </span>
+                                <span class="text-[11px] font-extrabold text-slate-700">
+                                    Senin & Jumat +1 jam
+                                </span>
+                            </span>
+
+                            <span class="rounded-md px-1.5 py-1 text-[9px] font-extrabold tracking-wide {{ $shiftSeninJumat ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                                {{ $shiftSeninJumat ? 'AKTIF' : 'NONAKTIF' }}
+                            </span>
+
+                            <span class="relative inline-block h-6 w-11 shrink-0">
+                                <input type="hidden" name="shift_senin_jumat" value="0">
+                                <input
+                                    type="checkbox"
+                                    name="shift_senin_jumat"
+                                    value="1"
+                                    onchange="this.form.submit()"
+                                    {{ $shiftSeninJumat ? 'checked' : '' }}
+                                    class="peer sr-only"
+                                >
+                                <span class="absolute inset-0 rounded-full bg-rose-200 transition-all duration-300 peer-checked:bg-emerald-500"></span>
+                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-5"></span>
+                            </span>
+                        </label>
+                    </form>
 
                 </div>
 
@@ -101,7 +174,11 @@
                         @foreach($kelases->take(6) as $kls)
 
                             <a
-                                href="{{ route('admin.jadwal.index', ['id_kelas' => $kls->id_kelas]) }}"
+                                href="{{ route('admin.jadwal.index', [
+                                    'id_kelas' => $kls->id_kelas,
+                                    'shift_senin_jumat' => $shiftSeninJumat ? 1 : 0,
+                                    'all_disabled' => $allDisabled ? 1 : 0,
+                                ]) }}"
                                 class="px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 shadow-sm hover:scale-105
                                 {{ $selectedKelasId == $kls->id_kelas
                                     ? 'bg-blue-600 text-white shadow-blue-500/20'
@@ -136,7 +213,11 @@
                                 @foreach($kelases as $kls)
 
                                     <option
-                                        value="{{ route('admin.jadwal.index', ['id_kelas' => $kls->id_kelas]) }}"
+                                        value="{{ route('admin.jadwal.index', [
+                                            'id_kelas' => $kls->id_kelas,
+                                            'shift_senin_jumat' => $shiftSeninJumat ? 1 : 0,
+                                            'all_disabled' => $allDisabled ? 1 : 0,
+                                        ]) }}"
                                     >
                                         {{ $kls->nama_kelas }}
                                     </option>
@@ -251,19 +332,22 @@
                                                 // Detail master jam
                                                 $jamObj = $jamPelsGrouped[$jamKe][$klpHari] ?? null;
 
+                                                $shiftThisDay = $shiftSeninJumat && in_array($hari, ['Senin', 'Jumat'], true);
+                                                $effectiveJamKe = $shiftThisDay ? $jamKe + 1 : $jamKe;
+
                                                 // Batas jam setiap hari
                                                 $maxJam = $maxJamPerHari[$hari] ?? 11;
+                                                $isBatasJam = $effectiveJamKe > ($shiftThisDay ? $maxJam + 1 : $maxJam);
 
-                                                $isBatasJam = $jamKe > $maxJam;
-
-                                                // Cari jadwal
-                                                $matchJadwal = $jadwals->first(function($item) use ($hari, $jamKe) {
-
-                                                    return $item->hari === $hari
-                                                        && optional($item->jamMulai)->jam_ke <= $jamKe
-                                                        && optional($item->jamSelesai)->jam_ke >= $jamKe;
-
-                                                });
+                                                if ($allDisabled) {
+                                                    $matchJadwal = null;
+                                                } else {
+                                                    $matchJadwal = $jadwals->first(function($item) use ($hari, $effectiveJamKe) {
+                                                        return $item->hari === $hari
+                                                            && optional($item->jamMulai)->jam_ke <= $effectiveJamKe
+                                                            && optional($item->jamSelesai)->jam_ke >= $effectiveJamKe;
+                                                    });
+                                                }
 
                                             @endphp
 
@@ -271,8 +355,19 @@
                                             <td class="p-2.5 border-r border-slate-100 last:border-r-0 vertical-top">
 
 
+                                                <!-- MODE EVENT -->
+                                                @if($allDisabled)
+
+                                                    <div class="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-center text-amber-800 min-h-[88px] flex flex-col items-center justify-center gap-1.5 select-none">
+                                                        <i class="fa-solid fa-ban text-base" aria-hidden="true"></i>
+                                                        <span class="text-[10px] font-extrabold uppercase tracking-[0.14em]">
+                                                            Dinonaktifkan
+                                                        </span>
+                                                    </div>
+
+
                                                 <!-- 1. MELEBIHI BATAS JAM -->
-                                                @if($isBatasJam)
+                                                @elseif($isBatasJam)
 
                                                     <div class="p-4 bg-slate-100/60 border border-slate-200/50 rounded-2xl text-center text-slate-300 min-h-[88px] flex items-center justify-center cursor-not-allowed select-none">
 
@@ -296,6 +391,8 @@
                                                             id_jam_mulai: '{{ $matchJadwal->id_jam_mulai }}',
                                                             id_jam_selesai: '{{ $matchJadwal->id_jam_selesai }}',
                                                             hari: '{{ $matchJadwal->hari }}',
+                                                            semester: '{{ $matchJadwal->semester }}',
+                                                            tahun_ajaran: '{{ $matchJadwal->tahun_ajaran }}',
                                                             mapel_nama: '{{ e($matchJadwal->mapel?->nama_mapel) }}',
                                                             guru_nama: '{{ e($matchJadwal->guru?->nama_guru) }}',
                                                             jam_mulai_ke: '{{ $matchJadwal->jamMulai?->jam_ke }}',
@@ -541,21 +638,26 @@
 
                     <input
                         type="hidden"
-                        name="semester"
-                        value="Ganjil"
-                    >
-
-                    <input
-                        type="hidden"
-                        name="tahun_ajaran"
-                        value="2026/2027"
-                    >
-
-                    <input
-                        type="hidden"
                         name="hari"
                         :value="activeData.hari"
                     >
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <label class="block text-xs font-bold text-slate-700">
+                            Semester
+                            <select name="semester" required x-model="activeData.semester" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+                                <option value="" disabled>Pilih semester</option>
+                                @foreach(['Ganjil', 'Genap'] as $semester)
+                                    <option value="{{ $semester }}">{{ $semester }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+
+                        <label class="block text-xs font-bold text-slate-700">
+                            Tahun Ajaran
+                            <input type="text" name="tahun_ajaran" x-model="activeData.tahun_ajaran" placeholder="Masukkan tahun ajaran" maxlength="9" required class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+                        </label>
+                    </div>
 
 
                     <!-- MATA PELAJARAN -->
@@ -962,6 +1064,10 @@ function jadwalManager() {
 
             jam_selesai_ke: '',
 
+            semester: '',
+
+            tahun_ajaran: '',
+
             jam_range: '',
 
             waktu: ''
@@ -1019,6 +1125,10 @@ function jadwalManager() {
                 jam_mulai_ke: jamKe,
 
                 jam_selesai_ke: jamKe,
+
+                semester: @json($semesterDefault),
+
+                tahun_ajaran: @json($tahunAjaranDefault),
 
                 mapel_nama: '',
 

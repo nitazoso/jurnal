@@ -4,6 +4,11 @@
 @section('page-title', 'Profil Kesiswaan')
 
 @section('content')
+@php
+    $user = auth()->user();
+    $profileName = $user->nama_user ?? '-';
+@endphp
+
 <div class="card profile-card">
     <h3>Profil Pengguna</h3>
 
@@ -21,10 +26,7 @@
         </div>
     @endif
 
-    <div class="profile-summary">
-        <p><strong>Nama:</strong> {{ auth()->user()->nama_user ?? '-' }}</p>
-        <p><strong>Role:</strong> {{ auth()->user()->role ?? '-' }}</p>
-    </div>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName])
 
     <h4>Edit Profil</h4>
     <form method="POST" action="{{ route('kesiswaan.profil.update') }}" class="profile-form">

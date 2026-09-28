@@ -219,6 +219,12 @@ Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
     Route::get('/admin/jadwal', [JadwalController::class, 'index'])
         ->name('admin.jadwal.index');
 
+    Route::get('/admin/jadwal/tahun-ajaran', [JadwalController::class, 'academicPeriodSettings'])
+        ->name('admin.jadwal.academic-period');
+
+    Route::put('/admin/jadwal/tahun-ajaran', [JadwalController::class, 'updateAcademicPeriod'])
+        ->name('admin.jadwal.academic-period.update');
+
     Route::get('/admin/jadwal/create', [JadwalController::class, 'create'])
         ->name('admin.jadwal.create');
 
@@ -303,6 +309,9 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     Route::get('/guru/jurnal', [GuruJurnalController::class, 'index'])
         ->name('guru.jurnal.index');    
 
+    Route::get('/guru/jurnal/rekap-wali-kelas', [GuruJurnalController::class, 'waliKelasRekap'])
+        ->name('guru.jurnal.wali-kelas-rekap');
+
     Route::get('/guru/jurnal/create', [GuruJurnalController::class, 'create'])
         ->name('guru.jurnal.create');
 
@@ -374,6 +383,25 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
         return view('piket.profil');
     })->name('piket.profil');
 
+    Route::put('/piket/profil', function (Request $request) {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id_user.',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = $validated['password'];
+        }
+
+        $user->save();
+
+        return redirect()->route('piket.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('piket.profil.update');
+
     Route::get('/piket/izin-sakit', [PiketDispenController::class, 'izinSakitIndex'])->name('piket.izin-sakit.index');
     Route::get('/piket/izin-sakit/create', [PiketDispenController::class, 'izinSakitCreate'])->name('piket.izin-sakit.create');
     Route::post('/piket/izin-sakit', [PiketDispenController::class, 'izinSakitStore'])->name('piket.izin-sakit.store');
@@ -407,6 +435,25 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->prefix('piket')->name('pik
 */
 Route::middleware(['auth', 'role:Kesiswaan'])->prefix('kesiswaan')->name('kesiswaan.')->group(function () {
     Route::get('/dashboard', [\App\Http\Controllers\Kesiswaan\DashboardController::class, 'index'])->name('dashboard');
+    Route::view('/profil', 'kesiswaan.profil')->name('profil');
+    Route::put('/profil', function (Request $request) {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,'.$user->id_user.',id_user'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->username = $validated['username'];
+
+        if ($request->filled('password')) {
+            $user->password = $validated['password'];
+        }
+
+        $user->save();
+
+        return redirect()->route('kesiswaan.profil')->with('success', 'Profil berhasil diperbarui.');
+    })->name('profil.update');
     Route::get('/dispen', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'index'])->name('dispen.index');
     Route::get('/dispen/riwayat', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'history'])->name('dispen.history');
     Route::get('/dispen/{dispen}', [\App\Http\Controllers\Kesiswaan\DispenController::class, 'show'])->name('dispen.show');

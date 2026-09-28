@@ -37,6 +37,16 @@
 
 @section('content')
 <div class="journal-entry-page">
+    @if($allDisabled)
+        <section class="journal-entry-section" role="status" style="padding: 32px 20px; text-align: center;">
+            <svg width="38" height="38" fill="none" stroke="#b45309" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="m5.6 5.6 12.8 12.8" stroke-linecap="round" />
+            </svg>
+            <h2 style="margin: 12px 0 6px;">Pengisian jurnal sementara dinonaktifkan</h2>
+            <p class="journal-empty-state" style="padding: 0;">Mode event sedang aktif. Pemilihan jadwal dan pengisian jurnal akan tersedia kembali setelah mode event dinonaktifkan.</p>
+        </section>
+    @else
     <header class="journal-entry-heading">
         <h1>Isi Jurnal Guru</h1>
         <p>Pilih kelas untuk melihat seluruh jadwal mengajar yang dikelola admin.</p>
@@ -103,6 +113,7 @@
                 </div>
             @endif
         </section>
+    @endif
     @endif
 </div>
 @endsection

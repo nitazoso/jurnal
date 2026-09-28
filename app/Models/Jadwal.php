@@ -24,6 +24,16 @@ class Jadwal extends Model
         'tahun_ajaran',
     ];
 
+    public static function latestAcademicPeriod(): ?self
+    {
+        return static::query()
+            ->whereNotNull('tahun_ajaran')
+            ->where('tahun_ajaran', '!=', '')
+            ->orderByDesc('tahun_ajaran')
+            ->orderByDesc('updated_at')
+            ->first(['semester', 'tahun_ajaran']);
+    }
+
     // Relasi ke Guru Pengajar
     public function guru()
     {

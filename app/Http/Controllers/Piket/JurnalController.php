@@ -8,6 +8,7 @@ use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Kelas;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use ZipArchive;
 
@@ -53,6 +54,15 @@ class JurnalController extends Controller
     }
     public function create(Request $request)
     {
+        if (Cache::get('jadwal_all_disabled', false)) {
+            return view('piket.jurnal.create', [
+                'kelases' => collect(),
+                'selectedKelas' => null,
+                'jadwals' => collect(),
+                'allDisabled' => true,
+            ]);
+        }
+
         $user = $request->user();
         abort_unless(
             $user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday()),
@@ -77,7 +87,7 @@ class JurnalController extends Controller
                 ->get()
             : collect();
 
-        return view('piket.jurnal.create', compact('kelases', 'selectedKelas', 'jadwals'));
+        return view('piket.jurnal.create', compact('kelases', 'selectedKelas', 'jadwals') + ['allDisabled' => false]);
     }
 
     public function show(Jurnal $jurnal)

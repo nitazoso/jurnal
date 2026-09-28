@@ -232,7 +232,7 @@
                         type="text"
                         name="tahun_ajaran"
                         value="{{ old('tahun_ajaran') }}"
-                        placeholder="Contoh: 2026/2027"
+                        placeholder="Masukkan tahun ajaran"
                         required
                         class="w-full bg-slate-100 border-0 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                     >
