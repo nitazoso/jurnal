@@ -248,6 +248,42 @@
     .dispen-notice strong { display: block; margin-bottom: 2px; font-weight: 800; }
     .dispen-notice span { color: #581C87; font-weight: 500; }
 
+    /* ========================= ABSENT STUDENTS ========================= */
+    .attendance-card { overflow:visible; }
+    .attendance-heading { align-items:center; }
+    .attendance-heading > div:nth-child(2) { flex:1; min-width:0; }
+    .absence-total { padding:7px 11px; border:1px solid #dbeafe; border-radius:999px; background:#eff6ff; color:#2563eb; font-size:12px; font-weight:800; white-space:nowrap; }
+    .absence-summary { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:8px; margin:0 0 14px; }
+    .absence-summary span { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px 10px; border:1px solid #e8edf5; border-radius:10px; background:#f8fafc; color:#64748b; font-size:11px; font-weight:700; }
+    .absence-summary strong { color:#1e293b; font-size:13px; }
+    .absence-list { display:grid; gap:10px; }
+    .absence-row { display:grid; grid-template-columns:38px minmax(0,1fr) minmax(135px,.72fr) 42px; align-items:center; gap:10px; padding:9px; border:1px solid #e1e7f2; border-radius:15px; background:linear-gradient(110deg,#fff 0%,#fbfcff 100%); }
+    .absence-index { display:grid; width:32px; height:32px; place-items:center; border-radius:50%; background:#3b82f6; color:#fff; font-size:14px; font-weight:800; }
+    .absence-student-picker { position:relative; min-width:0; }
+    .absence-student-search,.absence-status { width:100%; min-height:42px; box-sizing:border-box; padding:9px 12px; border:1px solid #d5dced; border-radius:12px; background:#fff; color:#1e293b; font:inherit; font-size:13px; outline:none; transition:border-color .16s,box-shadow .16s; }
+    .absence-student-search:focus,.absence-status:focus { border-color:#6396ff; box-shadow:0 0 0 3px #3b82f61a; }
+    .absence-status { cursor:pointer; }
+    .absence-status:disabled { appearance:none; background:#f1f5f9; color:#475569; font-weight:700; opacity:1; }
+    .absence-options { position:absolute; z-index:15; top:calc(100% + 5px); left:0; right:0; display:none; max-height:220px; overflow:auto; padding:5px; border:1px solid #dbe3f0; border-radius:12px; background:#fff; box-shadow:0 14px 32px #0f172a1a; }
+    .absence-options.open { display:grid; gap:3px; }
+    .absence-option { display:flex; justify-content:space-between; gap:10px; padding:9px 10px; border:0; border-radius:8px; background:#fff; color:#1e293b; text-align:left; font:inherit; cursor:pointer; }
+    .absence-option:hover,.absence-option:focus { background:#eff6ff; outline:none; }
+    .absence-option small { color:#64748b; white-space:nowrap; }
+    .absence-remove { display:grid; width:38px; height:38px; place-items:center; border:1px solid #fecaca; border-radius:11px; background:#fff1f2; color:#ef4444; cursor:pointer; transition:.16s; }
+    .absence-remove:hover { background:#fee2e2; transform:translateY(-1px); }
+    .absence-remove:disabled { border-color:#e2e8f0; background:#f1f5f9; color:#94a3b8; cursor:not-allowed; transform:none; }
+    .absence-remove .material-symbols-rounded { font-size:20px; }
+    .absence-row-error { grid-column:2/-1; color:#b91c1c; font-size:11px; }
+    .absence-add { display:flex; width:100%; min-height:42px; align-items:center; justify-content:flex-start; gap:8px; margin-top:12px; padding:9px 13px; border:1px solid #3b82f6; border-radius:10px; background:#eff6ff; color:#2874e8; font:inherit; font-size:13px; font-weight:800; cursor:pointer; transition:.16s; }
+    .absence-add:hover { background:#dbeafe; box-shadow:0 4px 12px #3b82f61a; }
+    .absence-add .material-symbols-rounded { font-size:22px; }
+    .absence-empty { display:flex; min-height:74px; align-items:center; justify-content:center; gap:8px; border:1px dashed #d5deec; border-radius:13px; color:#718096; font-size:12px; text-align:center; }
+    .absence-empty .material-symbols-rounded { color:#22a06b; font-size:20px; }
+    .absence-footnote { display:flex; align-items:center; gap:6px; margin:12px 0 0; color:#718096; font-size:11px; }
+    .absence-footnote .material-symbols-rounded { color:#7886c7; font-size:16px; }
+    .absence-search-empty { display:none; margin-top:9px; color:#b45309; font-size:12px; }
+    .absence-search-empty.show { display:block; }
+
     /* ========================= STUDENT TABLE ========================= */
     .student-table-wrap { overflow: hidden; border: 1px solid var(--border); border-radius: 14px; }
     .student-table-scroll { max-height: 420px; overflow-y: auto; }
@@ -462,7 +498,7 @@
         word-break: break-word;
     }
 
-    .review-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .review-summary { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
     .review-summary-item { padding: 10px; border-radius: 10px; text-align: center; }
     .review-summary-item span { display: block; color: #64748B; font-size: 9.5px; font-weight: 700; }
     .review-summary-item strong { display: block; margin-top: 3px; font-size: 18px; line-height: 1; }
@@ -475,6 +511,8 @@
     .review-summary-item.izin strong { color: #0369A1; }
     .review-summary-item.alpha { background: #FEE2E2; }
     .review-summary-item.alpha strong { color: #B91C1C; }
+    .review-summary-item.dispen { background: #FAF5FF; }
+    .review-summary-item.dispen strong { color: #7E22CE; }
 
     .review-student-list { display: flex; flex-direction: column; gap: 7px; }
     .review-student-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: #FFFFFF; }
@@ -539,6 +577,14 @@
         .summary-label { font-size: 9px; }
         .summary-number { font-size: 17px; }
 
+        .absence-summary { grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+        .absence-summary span { padding:7px; font-size:10px; }
+        .absence-row { grid-template-columns:32px minmax(0,1fr) minmax(95px,.72fr) 38px; gap:7px; padding:7px; }
+        .absence-index { width:28px; height:28px; font-size:12px; }
+        .absence-student-search,.absence-status { min-height:40px; padding:8px 9px; font-size:12px; }
+        .absence-remove { width:35px; height:35px; }
+        .absence-total { font-size:10px; padding:6px 8px; }
+        .absence-footnote { align-items:flex-start; line-height:1.5; }
         .student-table-wrap { overflow: visible; border: 0; }
         .student-table-scroll { max-height: none; overflow: visible; }
         .student-table, .student-table tbody, .student-table tr, .student-table td { display: block; width: 100%; }
@@ -595,7 +641,7 @@
         .review-header p { font-size: 10px; }
         .review-body { padding: 16px; }
         .review-info-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .review-summary { grid-template-columns: repeat(4, 1fr); gap: 5px; }
+        .review-summary { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
         .review-summary-item { padding: 8px 4px; }
         .review-summary-item span { font-size: 8px; }
         .review-summary-item strong { font-size: 16px; }
@@ -727,198 +773,66 @@
             </section>
 
             {{-- KEHADIRAN SISWA --}}
-            <section class="form-card">
-                {{-- DESKTOP --}}
-                <div class="student-desktop-header">
-                    <div class="student-title-wrap">
-                        <div class="section-icon"><span class="material-symbols-rounded">groups</span></div>
-                        <div>
-                            <h3 class="section-title">Kehadiran Siswa</h3>
-                            <p class="section-subtitle">
-                                {{ $jadwal->kelas->nama_kelas ?? '-' }}
-                                ·
-                                <span>{{ $siswa->count() }}</span> siswa
-                                @if($activeDispenSiswa->isNotEmpty())
-                                    · <span class="text-emerald-600">{{ $activeDispenSiswa->count() }} dispen aktif</span>
-                                @endif
-                            </p>
-                        </div>
-                    </div>
+            @php
+                $submittedAbsences = old('absensi', []);
+                $initialAttendanceAbsences = [];
+                $journalStudentRoster = $siswa->map(fn ($student) => [
+                    'id' => $student->id_siswa,
+                    'name' => $student->nama_siswa,
+                    'nis' => $student->nis,
+                ])->values()->all();
 
-                    <div class="student-search">
-                        <span class="material-symbols-rounded">search</span>
-                        <input type="text" id="studentSearchDesktop" class="field-input" placeholder="Cari nama atau NIS siswa..." autocomplete="off" oninput="searchStudents(this.value)">
+                foreach ($siswa as $student) {
+                    $studentId = (string) $student->id_siswa;
+                    $sickReport = $activeSickReports->get($student->id_siswa);
+                    $hasDispen = $activeDispenSiswa->contains($student->id_siswa);
+                    $savedStatus = $submittedAbsences[$studentId] ?? null;
+                    $lockedStatus = $hasDispen ? 'Dispen' : ($sickReport ? ($sickReport->jenis === 'izin' ? 'Izin' : 'Sakit') : null);
+                    $status = $lockedStatus ?? ($savedStatus && $savedStatus !== 'Hadir' ? $savedStatus : null);
+
+                    if ($status) {
+                        $initialAttendanceAbsences[] = [
+                            'id' => $student->id_siswa,
+                            'name' => $student->nama_siswa,
+                            'nis' => $student->nis,
+                            'status' => $status,
+                            'locked' => (bool) $lockedStatus,
+                        ];
+                    }
+                }
+            @endphp
+            <section class="form-card attendance-card">
+                <div class="section-header attendance-heading">
+                    <div class="section-icon"><span class="material-symbols-rounded">person_alert</span></div>
+                    <div>
+                        <h3 class="section-title">Siswa Tidak Hadir</h3>
+                        <p class="section-subtitle">{{ $jadwal->kelas->nama_kelas ?? '-' }} · {{ $siswa->count() }} siswa terdaftar. Tambahkan siswa yang tidak hadir.</p>
                     </div>
+                    <span class="absence-total" id="absenceTotal">0 siswa</span>
                 </div>
 
-                {{-- MOBILE --}}
-                <div class="student-mobile-header">
-                    <div class="student-mobile-title">
-                        <div>
-                            <h2>Kehadiran Siswa - {{ $jadwal->kelas->nama_kelas ?? '-' }}</h2>
-                            <p>Materi: {{ $jadwal->mapel->nama_mapel ?? '-' }}</p>
-                        </div>
-                        <span class="student-total-badge">{{ $siswa->count() }} Siswa</span>
-                    </div>
+                <div class="absence-summary" aria-label="Ringkasan kehadiran kelas">
+                    <span>Hadir <strong id="hadirCount">{{ $siswa->count() - count($initialAttendanceAbsences) }}</strong></span>
+                    <span>Sakit <strong id="sakitCount">{{ collect($initialAttendanceAbsences)->where('status', 'Sakit')->count() }}</strong></span>
+                    <span>Izin <strong id="izinCount">{{ collect($initialAttendanceAbsences)->where('status', 'Izin')->count() }}</strong></span>
+                    <span>Alpa <strong id="alpaCount">{{ collect($initialAttendanceAbsences)->where('status', 'Alpha')->count() }}</strong></span>
+                    <span>Dispen <strong id="dispenCount">{{ collect($initialAttendanceAbsences)->where('status', 'Dispen')->count() }}</strong></span>
                 </div>
-
-                {{-- SUMMARY --}}
-                <div class="summary-grid">
-                    <div class="summary-card summary-hadir">
-                        <div class="summary-top"><span class="summary-label">Hadir</span><span class="material-symbols-rounded summary-icon">check_circle</span></div>
-                        <p id="hadirCount" class="summary-number">0</p>
-                    </div>
-                    <div class="summary-card summary-sakit">
-                        <div class="summary-top"><span class="summary-label">Sakit</span><span class="material-symbols-rounded summary-icon">medical_services</span></div>
-                        <p id="sakitCount" class="summary-number">0</p>
-                    </div>
-                    <div class="summary-card summary-izin">
-                        <div class="summary-top"><span class="summary-label">Izin</span><span class="material-symbols-rounded summary-icon">info</span></div>
-                        <p id="izinCount" class="summary-number">0</p>
-                    </div>
-                    <div class="summary-card summary-alpha">
-                        <div class="summary-top"><span class="summary-label">Alpa</span><span class="material-symbols-rounded summary-icon">cancel</span></div>
-                        <p id="alpaCount" class="summary-number">0</p>
-                    </div>
+                <div class="absence-list" id="absenceRows" data-roster-count="{{ $siswa->count() }}"></div>
+                <div class="absence-empty" id="absenceEmpty">
+                    <span class="material-symbols-rounded">task_alt</span>
+                    <span>Belum ada siswa tidak hadir. Semua siswa dianggap hadir.</span>
                 </div>
-
-                {{-- MOBILE SEARCH --}}
-                <div class="student-mobile-search">
-                    <span class="material-symbols-rounded">search</span>
-                    <input type="text" id="studentSearchMobile" class="field-input" placeholder="Cari nama atau NIS siswa..." autocomplete="off" oninput="searchStudents(this.value)">
-                </div>
-
-                {{-- DISPEN NOTICE --}}
-                @if(isset($siswaDispen) && $siswaDispen->count())
-                    <div class="dispen-notice">
-                        <span class="material-symbols-rounded">event_available</span>
-                        <div>
-                            <strong>Siswa Dispensasi</strong>
-                            <span>{{ $siswaDispen->pluck('nama_siswa')->join(', ') }}</span>
-                        </div>
-                    </div>
-                @endif
-
-                {{-- STUDENT TABLE --}}
-                <div class="student-table-wrap">
-                    <div class="student-table-scroll">
-                        <table class="student-table">
-                            <thead>
-                                <tr>
-                                    <th class="student-number">No</th>
-                                    <th class="student-nis">NIS</th>
-                                    <th>Nama Siswa</th>
-                                    <th>Status Kehadiran</th>
-                                    <th>Foto Surat</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($siswa as $item)
-                                    @php
-                                        $isDispenAktif = $activeDispenSiswa->contains($item->id_siswa);
-                                        $laporanSakit = $activeSickReports->get($item->id_siswa);
-                                        $statusSurat = $laporanSakit?->jenis === 'izin' ? 'Izin' : 'Sakit';
-                                    @endphp
-                                    <tr
-                                        class="student-row {{ $loop->iteration <= 5 ? 'visible-row' : '' }}"
-                                        data-name="{{ strtolower($item->nama_siswa) }}"
-                                        data-nis="{{ strtolower($item->nis ?? '') }}"
-                                    >
-                                        <td class="student-number">
-                                            {{ sprintf('%02d', $loop->iteration) }}
-                                        </td>
-
-                                        <td class="student-nis">
-                                            {{ $item->nis }}
-                                        </td>
-
-                                        <td
-                                            class="student-name"
-                                            data-initial="{{ strtoupper(substr($item->nama_siswa, 0, 1)) }}{{ strtoupper(substr(explode(' ', trim($item->nama_siswa))[1] ?? '', 0, 1)) }}"
-                                            data-gender="{{ $item->jenis_kelamin ?? $item->jk ?? '' }}"
-                                        >
-                                            <div class="student-name-text">{{ $item->nama_siswa }}</div>
-                                        </td>
-
-                                        <td class="attendance-cell">
-                                            @if($isDispenAktif)
-                                                <div class="attendance-locked">Dispen · Terkonfirmasi</div>
-                                                <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
-                                                    value="Dispen"
-                                                    class="attendance-value"
-                                                >
-                                            @elseif($laporanSakit)
-                                                <div class="attendance-locked sick">{{ $statusSurat }} · Surat dari Piket</div>
-                                                <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
-                                                    value="{{ $statusSurat }}"
-                                                    class="attendance-value"
-                                                >
-                                            @else
-                                                <div class="attendance-options">
-                                                    <button type="button" class="attendance-btn active" data-status="Hadir" onclick="setStudentStatus(this)">
-                                                        Hadir
-                                                    </button>
-                                                    <button type="button" class="attendance-btn" data-status="Sakit" onclick="setStudentStatus(this)">
-                                                        Sakit
-                                                    </button>
-                                                    <button type="button" class="attendance-btn" data-status="Izin" onclick="setStudentStatus(this)">
-                                                        Izin
-                                                    </button>
-                                                    <button type="button" class="attendance-btn" data-status="Alpha" onclick="setStudentStatus(this)">
-                                                        Alpa
-                                                    </button>
-                                                    <input type="hidden" name="absensi[{{ $item->id_siswa }}]"
-                                                        value="Hadir"
-                                                        class="attendance-value"
-                                                    >
-                                                </div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if($laporanSakit?->surat_path)
-                                                <a class="sick-letter-link" href="{{ asset('storage/' . $laporanSakit->surat_path) }}" target="_blank" rel="noopener">Lihat foto surat</a>
-                                            @elseif($laporanSakit)
-                                                <span class="text-muted">Tidak ada foto</span>
-                                            @else
-                                                -
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5">
-                                            <div class="empty-students">
-                                                Belum ada siswa di kelas ini.
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                @if($siswa->count() > 5)
-                    <div class="student-list-controls" id="studentListControls">
-                        <button
-                            type="button"
-                            class="student-list-toggle"
-                            id="toggleStudentList"
-                            aria-expanded="false"
-                            onclick="toggleStudentList()"
-                        >
-                            Lihat Semua ({{ $siswa->count() }} siswa)
-                        </button>
-                    </div>
-                @endif
-
-                {{-- SEARCH EMPTY --}}
-                <div id="studentSearchEmpty" class="student-search-empty">
-                    <span class="material-symbols-rounded">person_search</span>
-                    <strong>Siswa tidak ditemukan</strong>
-                    <span>Coba cari dengan nama atau NIS siswa.</span>
-                </div>
+                <button type="button" class="absence-add" id="addAbsenceRow">
+                    <span class="material-symbols-rounded">add</span>Tambah Siswa Tidak Hadir
+                </button>
+                <p class="absence-footnote"><span class="material-symbols-rounded">info</span>Data izin, sakit, atau dispen yang dicatat Piket hari ini akan terisi otomatis.</p>
+                <div class="absence-search-empty" id="absenceSearchEmpty">Siswa tidak ditemukan di kelas ini.</div>
             </section>
+            <script>
+                window.journalStudentRoster = @json($journalStudentRoster);
+                window.initialJournalAbsences = @json($initialAttendanceAbsences);
+            </script>
 
             {{-- TUGAS & CATATAN --}}
             <section class="form-card" id="taskNotesSection">
@@ -1030,6 +944,7 @@
                     <div class="review-summary-item sakit"><span>Sakit</span><strong id="reviewSakit">0</strong></div>
                     <div class="review-summary-item izin"><span>Izin</span><strong id="reviewIzin">0</strong></div>
                     <div class="review-summary-item alpha"><span>Alpa</span><strong id="reviewAlpha">0</strong></div>
+                    <div class="review-summary-item dispen"><span>Dispen</span><strong id="reviewDispen">0</strong></div>
                 </div>
             </div>
 
@@ -1055,148 +970,191 @@
 
 <script>
   /* =========================================================
-     STUDENT ATTENDANCE
+     ABSENT STUDENTS
   ========================================================= */
-  function setStudentStatus(button) {
-    const row = button.closest('.student-row');
-    if (!row) return;
+  const absenceStatuses = ['Sakit', 'Izin', 'Alpha'];
+  function getAbsenceRoster() { return window.journalStudentRoster || []; }
 
-    row.querySelectorAll('.attendance-btn').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
-
-    const status = button.dataset.status;
-    const hiddenInput = row.querySelector('.attendance-value');
-    if (hiddenInput) {
-      hiddenInput.value = status;
-    }
-
-    row.classList.add('visible-row');
-    updateMobileStatusBadge(row, status);
-    updateSummary();
-
-    const searchDesktop = document.getElementById('studentSearchDesktop');
-    const searchMobile = document.getElementById('studentSearchMobile');
-    const currentSearch = searchDesktop?.value || searchMobile?.value || '';
-    searchStudents(currentSearch);
-  }
-
-  function updateMobileStatusBadge(row, status) {
-    const badge = row.querySelector('.mobile-status-badge');
-    if (!badge) return;
-
-    if (status === 'Alpha') {
-      badge.textContent = 'Alpa';
-    } else if (status === 'Dispen') {
-      badge.textContent = 'Dispensasi';
-    } else {
-      badge.textContent = status;
-    }
-  }
-
-  /* =========================================================
-     SUMMARY
-  ========================================================= */
-  function updateSummary() {
-    const counts = { Hadir: 0, Sakit: 0, Izin: 0, Alpha: 0, Dispen: 0 };
-
-        document.querySelectorAll('.student-row').forEach(row => {
-      const input = row.querySelector('.attendance-value');
-      if (!input) return;
-
-      const status = input.value;
-      if (Object.prototype.hasOwnProperty.call(counts, status)) {
-        counts[status]++;
-      }
-
-    });
-
-    const hadir = document.getElementById('hadirCount');
-    const sakit = document.getElementById('sakitCount');
-    const izin = document.getElementById('izinCount');
-    const alpha = document.getElementById('alpaCount');
-
-    if (hadir) hadir.textContent = counts.Hadir;
-    if (sakit) sakit.textContent = counts.Sakit;
-    if (izin) izin.textContent = counts.Izin;
-    if (alpha) alpha.textContent = counts.Alpha;
-  }
-
-  /* =========================================================
-     SEARCH STUDENTS
-  ========================================================= */
-  function matchesSearch(row, keyword) {
-    const name = row.dataset.name || '';
-    const nis = row.dataset.nis || '';
-    return name.includes(keyword) || nis.includes(keyword);
-  }
-
-  function searchStudents(value) {
-    const keyword = (value || '').toLowerCase().trim();
-    const desktopInput = document.getElementById('studentSearchDesktop');
-    const mobileInput = document.getElementById('studentSearchMobile');
-    const emptyState = document.getElementById('studentSearchEmpty');
-
-    if (desktopInput && desktopInput.value !== value) desktopInput.value = value;
-    if (mobileInput && mobileInput.value !== value) mobileInput.value = value;
-
-    let visibleCount = 0;
-
-        document.querySelectorAll('.student-row').forEach((row, index) => {
-      const input = row.querySelector('.attendance-value');
-      if (!input) return;
-
-            const matches = keyword === '' || matchesSearch(row, keyword);
-            const withinLimit = showAllStudents || index < 5 || keyword !== '';
-            const shouldShow = matches && withinLimit;
-
-            row.classList.toggle('visible-row', shouldShow);
-            if (shouldShow) visibleCount++;
-    });
-
-        const listControls = document.getElementById('studentListControls');
-        const toggleButton = document.getElementById('toggleStudentList');
-        if (listControls) listControls.style.display = keyword ? 'none' : 'flex';
-        if (toggleButton) {
-            toggleButton.textContent = showAllStudents
-                ? 'Tampilkan 5 Siswa Pertama'
-                : `Lihat Semua (${document.querySelectorAll('.student-row').length} siswa)`;
-            toggleButton.setAttribute('aria-expanded', String(showAllStudents));
-        }
-
-    if (emptyState) {
-      emptyState.classList.toggle('show', keyword !== '' && visibleCount === 0);
-    }
-  }
-
-  function clearSearch() {
-    searchStudents('');
-  }
-
-    let showAllStudents = false;
-
-    function toggleStudentList() {
-        showAllStudents = !showAllStudents;
-        const desktopInput = document.getElementById('studentSearchDesktop');
-        const mobileInput = document.getElementById('studentSearchMobile');
-        searchStudents(desktopInput?.value || mobileInput?.value || '');
-    }
-
-  /* =========================================================
-     HTML ESCAPE
-  ========================================================= */
   function escapeHtml(value) {
     if (value === null || value === undefined) return '';
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
+    return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
-  /* =========================================================
-     REVIEW MODAL
-  ========================================================= */
+  function selectedStudentIds(exceptRow = null) {
+    return new Set([...document.querySelectorAll('.absence-row')]
+      .filter(row => row !== exceptRow && row.dataset.studentId)
+      .map(row => String(row.dataset.studentId)));
+  }
+
+  function renderStudentOptions(row, keyword = '') {
+    const list = row.querySelector('.absence-options');
+    const query = keyword.trim().toLocaleLowerCase('id');
+    const selected = selectedStudentIds(row);
+    const matches = getAbsenceRoster().filter(student => {
+      if (selected.has(String(student.id))) return false;
+      return !query || student.name.toLocaleLowerCase('id').includes(query);
+    });
+
+    list.innerHTML = matches.length
+      ? matches.map(student => `<button type="button" class="absence-option" data-student-id="${escapeHtml(student.id)}"><span>${escapeHtml(student.name)}</span></button>`).join('')
+      : '<span class="absence-option" aria-disabled="true">Siswa tidak ditemukan</span>';
+    list.classList.add('open');
+    list.querySelectorAll('[data-student-id]').forEach(option => {
+      option.addEventListener('mousedown', event => event.preventDefault());
+      option.addEventListener('click', () => chooseAbsenceStudent(row, option.dataset.studentId));
+    });
+  }
+
+  function chooseAbsenceStudent(row, id) {
+    const student = getAbsenceRoster().find(item => String(item.id) === String(id));
+    if (!student || selectedStudentIds(row).has(String(id))) return;
+
+    row.dataset.studentId = String(student.id);
+    row.dataset.studentName = student.name;
+    row.dataset.studentNis = student.nis || '';
+    row.querySelector('.absence-student-search').value = student.name;
+    row.querySelector('.absence-student-search').setCustomValidity('');
+    row.querySelector('.absence-options').classList.remove('open');
+    syncAbsenceInput(row);
+    refreshAbsenceOptions();
+    updateSummary();
+  }
+
+  function syncAbsenceInput(row) {
+    let hidden = row.querySelector('.absence-value');
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.className = 'absence-value';
+      row.appendChild(hidden);
+    }
+    if (row.dataset.studentId) {
+      hidden.name = `absensi[${row.dataset.studentId}]`;
+      hidden.value = row.querySelector('.absence-status').value;
+    } else {
+      hidden.removeAttribute('name');
+      hidden.value = '';
+    }
+  }
+
+  function addAbsenceRow(student = null) {
+    const list = document.getElementById('absenceRows');
+    if (!list || (student && selectedStudentIds().has(String(student.id)))) return;
+
+    const row = document.createElement('div');
+    row.className = 'absence-row';
+    row.dataset.studentId = student ? String(student.id) : '';
+    row.dataset.studentName = student?.name || '';
+    row.dataset.studentNis = student?.nis || '';
+    const locked = Boolean(student?.locked);
+    const status = student?.status || '';
+    const statusOptions = [
+      `<option value="">Pilih status</option>`,
+      ...absenceStatuses.map(item => `<option value="${item}" ${status === item ? 'selected' : ''}>${item === 'Alpha' ? 'Alpa' : item}</option>`),
+      ...(status === 'Dispen' ? ['<option value="Dispen" selected>Dispen</option>'] : []),
+    ].join('');
+
+    row.innerHTML = `
+      <span class="absence-index"></span>
+      <div class="absence-student-picker">
+        <input type="search" class="absence-student-search" placeholder="Ketik nama siswa..." autocomplete="off" aria-label="Cari nama siswa" required>
+        <div class="absence-options" role="listbox"></div>
+      </div>
+      <select class="absence-status" aria-label="Status ketidakhadiran" required ${locked ? 'disabled' : ''}>${statusOptions}</select>
+      <button type="button" class="absence-remove" aria-label="Hapus siswa tidak hadir" ${locked ? 'disabled title="Status dari Piket"' : ''}><span class="material-symbols-rounded">delete</span></button>
+      ${locked ? '<span class="absence-row-error" style="color:#64748b">Status tercatat otomatis oleh Piket</span>' : ''}
+    `;
+
+    const search = row.querySelector('.absence-student-search');
+    const options = row.querySelector('.absence-options');
+    const select = row.querySelector('.absence-status');
+    search.addEventListener('focus', () => renderStudentOptions(row, search.value));
+    search.addEventListener('input', () => {
+      row.dataset.studentId = '';
+      row.dataset.studentName = '';
+      row.dataset.studentNis = '';
+      syncAbsenceInput(row);
+      search.setCustomValidity('Pilih nama siswa dari daftar kelas.');
+      renderStudentOptions(row, search.value);
+      refreshAbsenceOptions();
+      updateSummary();
+    });
+    search.addEventListener('change', () => {
+      if (!row.dataset.studentId) search.setCustomValidity('Pilih nama siswa dari daftar kelas.');
+    });
+    select.addEventListener('change', () => { syncAbsenceInput(row); updateSummary(); });
+    row.querySelector('.absence-remove').addEventListener('click', () => {
+      row.remove();
+      refreshAbsenceOptions();
+      updateSummary();
+    });
+    document.addEventListener('click', event => {
+      if (!row.contains(event.target)) options.classList.remove('open');
+    });
+
+    list.appendChild(row);
+    if (student) {
+      search.value = student.name;
+      search.setCustomValidity('');
+      syncAbsenceInput(row);
+    } else {
+      search.focus();
+      renderStudentOptions(row, '');
+    }
+    updateAbsenceRows();
+    refreshAbsenceOptions();
+    updateSummary();
+  }
+
+  function updateAbsenceRows() {
+    const rows = [...document.querySelectorAll('.absence-row')];
+    rows.forEach((row, index) => { row.querySelector('.absence-index').textContent = index + 1; });
+    const empty = document.getElementById('absenceEmpty');
+    if (empty) empty.style.display = rows.length ? 'none' : 'flex';
+    const total = document.getElementById('absenceTotal');
+    if (total) total.textContent = `${rows.filter(row => row.dataset.studentId).length} siswa`;
+  }
+
+  function refreshAbsenceOptions() {
+    document.querySelectorAll('.absence-row').forEach(row => {
+      const search = row.querySelector('.absence-student-search');
+      if (document.activeElement === search && row.querySelector('.absence-options').classList.contains('open')) {
+        renderStudentOptions(row, search.value);
+      }
+    });
+  }
+
+  function validateAbsenceRows() {
+    let valid = true;
+    document.querySelectorAll('.absence-row').forEach(row => {
+      const search = row.querySelector('.absence-student-search');
+      if (!row.dataset.studentId) {
+        search.setCustomValidity('Pilih nama siswa dari daftar kelas.');
+        valid = false;
+      } else {
+        search.setCustomValidity('');
+      }
+      syncAbsenceInput(row);
+    });
+    return valid;
+  }
+
+  function updateSummary() {
+    const counts = { Sakit: 0, Izin: 0, Alpha: 0, Dispen: 0 };
+    document.querySelectorAll('.absence-row[data-student-id]').forEach(row => {
+      const status = row.querySelector('.absence-status').value;
+      if (Object.prototype.hasOwnProperty.call(counts, status)) counts[status]++;
+    });
+    const absent = Object.values(counts).reduce((sum, count) => sum + count, 0);
+    const classTotal = Number(document.getElementById('absenceRows')?.dataset.rosterCount || 0);
+    const values = { hadir: Math.max(0, classTotal - absent), sakit: counts.Sakit, izin: counts.Izin, alpa: counts.Alpha, dispen: counts.Dispen };
+    Object.entries(values).forEach(([key, value]) => {
+      const element = document.getElementById(`${key}Count`);
+      if (element) element.textContent = value;
+    });
+    updateAbsenceRows();
+  }
+
   function getStatusClass(status) {
     switch (status) {
       case 'Sakit': return 'sakit';
@@ -1210,42 +1168,25 @@
   function buildReviewStudentList() {
     const container = document.getElementById('reviewStudentList');
     if (!container) return;
-
     container.innerHTML = '';
     let count = 0;
-
-    document.querySelectorAll('.student-row').forEach(row => {
-      const input = row.querySelector('.attendance-value');
-      if (!input) return;
-
-      const status = input.value;
-      if (status === 'Hadir') return;
-
-      const nameElement = row.querySelector('.student-name-text');
-      const nisElement = row.querySelector('.student-nis');
-      const actualName = nameElement ? nameElement.textContent.trim() : row.dataset.name || '-';
-      const actualNis = nisElement ? nisElement.textContent.trim() : row.dataset.nis || '-';
-      const statusClass = getStatusClass(status);
+    document.querySelectorAll('.absence-row[data-student-id]').forEach(row => {
+      const status = row.querySelector('.absence-status').value;
+      if (!status) return;
+      const student = getAbsenceRoster().find(item => String(item.id) === row.dataset.studentId);
       const displayStatus = status === 'Alpha' ? 'Alpa' : status === 'Dispen' ? 'Dispensasi' : status;
-
       const item = document.createElement('div');
       item.className = 'review-student-item';
-      item.innerHTML = `
-        <div class="review-student-info">
-          <div class="review-student-name">${escapeHtml(actualName)}</div>
-          <div class="review-student-nis">NIS: ${escapeHtml(actualNis)}</div>
-        </div>
-        <span class="review-status ${statusClass}">${escapeHtml(displayStatus)}</span>
-      `;
+      item.innerHTML = `<div class="review-student-info"><div class="review-student-name">${escapeHtml(student?.name || row.dataset.studentName)}</div></div><span class="review-status ${getStatusClass(status)}">${escapeHtml(displayStatus)}</span>`;
       container.appendChild(item);
       count++;
     });
-
-    if (count === 0) {
-      container.innerHTML = `<div class="review-empty-attendance">Semua siswa hadir.</div>`;
-    }
+    if (!count) container.innerHTML = '<div class="review-empty-attendance">Semua siswa hadir.</div>';
   }
 
+  /* =========================================================
+     REVIEW MODAL
+  ========================================================= */
   function prepareReview() {
     const tanggalInput = document.querySelector('input[name="tanggal"]');
     const materiInput = document.querySelector('textarea[name="materi"]');
@@ -1266,11 +1207,13 @@
     const sakitCount = document.getElementById('sakitCount');
     const izinCount = document.getElementById('izinCount');
     const alphaCount = document.getElementById('alpaCount');
+    const dispenCount = document.getElementById('dispenCount');
 
     document.getElementById('reviewHadir').textContent = hadirCount?.textContent || '0';
     document.getElementById('reviewSakit').textContent = sakitCount?.textContent || '0';
     document.getElementById('reviewIzin').textContent = izinCount?.textContent || '0';
     document.getElementById('reviewAlpha').textContent = alphaCount?.textContent || '0';
+    document.getElementById('reviewDispen').textContent = dispenCount?.textContent || '0';
 
     buildReviewStudentList();
 
@@ -1322,9 +1265,10 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    // Initial State Setup
+    // Initial state: otomatis isi izin/sakit/dispen dari laporan Piket hari ini.
+    (window.initialJournalAbsences || []).forEach(addAbsenceRow);
+    document.getElementById('addAbsenceRow')?.addEventListener('click', () => addAbsenceRow());
     updateSummary();
-    searchStudents('');
 
     const activeDispenBerakhir = @json($activeDispenBerakhir ?? null);
     if (activeDispenBerakhir) {
@@ -1348,7 +1292,7 @@
     if (form) {
       form.addEventListener('submit', function (event) {
         event.preventDefault();
-        if (!form.checkValidity()) {
+        if (!validateAbsenceRows() || !form.checkValidity()) {
           form.reportValidity();
           return;
         }

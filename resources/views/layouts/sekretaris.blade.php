@@ -504,6 +504,7 @@
 
             .main {
                 margin-left: 0;
+                padding-top: 58px;
             }
 
             .desktop-header {
@@ -511,9 +512,13 @@
             }
 
             .mobile-header {
-                position: sticky;
+                position: fixed;
                 top: 0;
+                right: 0;
+                left: 0;
                 z-index: 900;
+                width: 100%;
+                box-sizing: border-box;
                 height: 58px;
                 display: flex;
                 align-items: center;

@@ -222,13 +222,13 @@
             <form action="{{ route('admin.kelas.destroy', $item) }}" method="POST" style="display: inline-block; margin: 0;">
                 @csrf
                 @method('DELETE')
-                <button type="submit"
+                <!-- <button type="submit"
                         onclick="return confirm('Apakah Anda yakin ingin menghapus kelas {{ addslashes($item->nama_kelas) }}?')"
                         class="action-btn"
                         title="Hapus Kelas"
                         style="color: #ef4444; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #fff1f2; border: none; border-radius: 50%; cursor: pointer;">
                     <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
-                </button>
+                </button> -->
             </form>
         </div>
     </td>

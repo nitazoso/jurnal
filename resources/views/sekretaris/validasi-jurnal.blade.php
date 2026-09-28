@@ -55,11 +55,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" />
                     </svg>
 
-                    <input id="search" class="input" name="search" value="{{ request('search') }}" placeholder="Cari nama guru atau kelas...">
+                    <input id="search" class="input" name="search" value="{{ request('search') }}" placeholder="Cari nama guru...">
                 </div>
             </div>
 
-            <div class="filter-item">
+            <!-- <div class="filter-item">
                 <label for="kelas_id">Kelas</label>
 
                 <select id="kelas_id" class="select" name="kelas_id">
@@ -71,7 +71,7 @@
                     </option>
                     @endforeach
                 </select>
-            </div>
+            </div> -->
 
             <div class="filter-item">
                 <label for="status">Status Jurnal</label>
@@ -441,7 +441,7 @@
 
     .filters {
         display: grid;
-        grid-template-columns: minmax(240px, 1.6fr) minmax(160px, 1fr) minmax(160px, 1fr) minmax(160px, 1fr) auto;
+        grid-template-columns: minmax(300px, 2fr) minmax(180px, 1fr) minmax(180px, 1fr) auto;
         align-items: end;
         gap: 16px;
         padding: 22px;
@@ -1060,11 +1060,12 @@
     /* MEDIA QUERIES */
     @media (max-width: 1150px) {
         .filters {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: minmax(180px, 1.6fr) minmax(125px, 1fr) minmax(140px, 1fr) auto;
+            gap: 12px;
         }
 
         .filter-search {
-            grid-column: 1 / -1;
+            grid-column: auto;
         }
     }
 
@@ -1074,7 +1075,8 @@
         }
 
         .filters {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 12px;
             padding: 18px;
         }
 

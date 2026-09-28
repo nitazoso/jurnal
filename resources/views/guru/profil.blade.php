@@ -35,41 +35,7 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
     </section>
 
     @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'profileRole' => $profileRole])
-
-    {{-- EDIT PROFILE FORM --}}
-    <section class="personal-card edit-card">
-        <div class="section-header">
-            <h4 class="section-title">Edit Profil</h4>
-        </div>
-
-        <form action="{{ route('guru.profil.update') }}" method="POST" class="profile-form">
-            @csrf
-            @method('PUT')
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required>
-                @error('username')
-                <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password Baru</label>
-                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password">
-                @error('password')
-                <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirmation">Konfirmasi Password</label>
-                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru">
-            </div>
-
-            <button type="submit" class="submit-btn">Simpan Perubahan</button>
-        </form>
-    </section>
+    @include('components.profile-edit-modal', ['action' => route('guru.profil.update'), 'user' => $user])
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">

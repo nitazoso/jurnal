@@ -20,7 +20,7 @@
         .nav a:hover, .nav a.active { background: #1e2945; }
         .logout { margin-top: 28px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 18px; }
         .main { flex: 1; min-width: 0; }
-        .topbar { padding: 22px 28px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+        .topbar { position: sticky; top: 0; z-index: 90; padding: 22px 28px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
         .topbar h1 { margin: 0; font-size: 22px; }
         .topbar-clock {
             display: flex; align-items: center; gap: 10px; background: #f5f7ff; border: 1px solid #dde5ff; border-radius: 10px; padding: 8px 12px; min-width: 220px; justify-content: flex-end;
