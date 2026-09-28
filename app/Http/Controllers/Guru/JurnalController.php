@@ -266,7 +266,10 @@ class JurnalController extends Controller
             $jadwal->id_kelas
         )->pluck('id_siswa');
 
-        $validated['absensi'] = $validated['absensi'] ?? [];
+        $validated['absensi'] = array_filter(
+            $validated['absensi'] ?? [],
+            fn ($status) => $status !== 'Hadir'
+        );
 
         $idSiswaDikirim = collect(
             array_keys($validated['absensi'])
@@ -298,16 +301,8 @@ class JurnalController extends Controller
             $validated['absensi'][$idSiswa] = 'Dispen';
         });
 
-        $jmlHadir = 0;
-        $jmlTidakHadir = 0;
-
-        foreach ($validated['absensi'] as $status) {
-            if ($status === 'Hadir') {
-                $jmlHadir++;
-            } else {
-                $jmlTidakHadir++;
-            }
-        }
+        $jmlTidakHadir = count($validated['absensi']);
+        $jmlHadir = max(0, $idSiswaKelas->count() - $jmlTidakHadir);
 
         try {
             DB::transaction(function () use ($validated, $jadwal, $user, $tanggal, $jmlHadir, $jmlTidakHadir, $activeSickReports, $activeDispenReports, $isPiketEntry) {

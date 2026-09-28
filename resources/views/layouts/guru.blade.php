@@ -442,6 +442,7 @@
 
             .desktop-main {
                 margin-left: 0;
+                padding-top: 58px;
             }
 
             .desktop-header {
@@ -449,6 +450,13 @@
             }
 
             .mobile-topbar {
+                position: fixed;
+                top: 0;
+                right: 0;
+                left: 0;
+                z-index: 150;
+                width: 100%;
+                box-sizing: border-box;
                 height: auto;
                 min-height: 58px;
                 background: #2D336B;

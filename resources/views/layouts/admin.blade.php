@@ -152,6 +152,9 @@
         }
 
         .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 90;
             height: 72px;
             background: #fff;
             border-bottom: 1px solid #eeeeee;

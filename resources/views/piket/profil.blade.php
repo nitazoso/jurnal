@@ -44,7 +44,7 @@
         </dl>
     </section>
 
-    <div class="piket-profile-actions">
+    <!-- <div class="piket-profile-actions">
         <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
             @csrf
             <button type="submit" class="piket-profile-logout">
@@ -52,7 +52,7 @@
                 Keluar
             </button>
         </form>
-    </div>
+    </div> -->
 </div>
 
 <style>

@@ -228,6 +228,9 @@
         }
 
         .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 90;
             height: 72px;
             background: #fff;
             border-bottom: 1px solid #eeeeee;
@@ -318,6 +321,13 @@
             .main { margin-left: 0; }
             .menu-toggle { display: flex; flex: 0 0 36px; }
             .topbar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 90;
+                background: #30366f;
+                color: #fff;
                 display: flex;
                 flex-wrap: nowrap;
                 height: 64px;
@@ -325,7 +335,14 @@
                 padding: 0 12px;
                 gap: 8px;
             }
+            .menu-toggle {
+                border-color: rgba(255,255,255,.25);
+                background: rgba(255,255,255,.12);
+                color: #fff;
+            }
+            .topbar-clock .material-symbols-outlined { color: rgba(255,255,255,.9); }
             .topbar h2 {
+                color: #fff;
                 flex: 1 1 auto;
                 min-width: 0;
                 overflow: hidden;
@@ -342,6 +359,9 @@
             .topbar-clock {
                 min-width: 0;
                 gap: 6px;
+                border-color: rgba(255,255,255,.24);
+                background: rgba(255,255,255,.12);
+                color: #fff;
                 padding: 6px 8px;
             }
             .topbar-clock > div {
@@ -351,11 +371,12 @@
                 white-space: nowrap;
             }
             .topbar-clock small {
+                color: rgba(255,255,255,.72);
                 font-size: 8px;
                 letter-spacing: 0;
             }
-            .topbar-clock strong { font-size: 11px; }
-            .content { padding: 20px 12px 24px; }
+            .topbar-clock strong { color: #fff; font-size: 11px; }
+            .content { padding: 84px 12px 24px; }
         }
 
         @media (max-width: 380px) {
