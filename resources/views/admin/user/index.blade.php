@@ -1078,14 +1078,14 @@
             </button>
 
             {{-- KESISWAAN --}}
-            <button
+            <!-- <button
                 type="submit"
                 name="role"
                 value="Kesiswaan"
                 class="role-filter {{ request('role') === 'Kesiswaan' ? 'active' : '' }}"
             >
                 Kesiswaan
-            </button>
+            </button> -->
 
             {{-- SEKRETARIS --}}
             <button

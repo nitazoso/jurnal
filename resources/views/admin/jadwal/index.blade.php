@@ -36,12 +36,6 @@
         backdrop-filter: blur(4px);
     }
 
-    .jadwal-modal-backdrop--top {
-        align-items: flex-start;
-        overflow-y: auto;
-        padding-top: 20px;
-    }
-
     .jadwal-modal-panel {
         position: relative;
         max-height: calc(100vh - 40px);
@@ -455,6 +449,7 @@
         </div>
 
 
+        <template x-teleport="body">
         <!-- MODAL EDIT / TAMBAH JADWAL -->
         <div
             x-show="showEditModal"
@@ -467,7 +462,7 @@
             x-transition:leave-start="opacity-100 scale-100"
             x-transition:leave-end="opacity-0 scale-95"
 
-            class="jadwal-modal-backdrop jadwal-modal-backdrop--top"
+            class="jadwal-modal-backdrop"
 
             x-cloak
         >
@@ -799,6 +794,10 @@
         </div>
 
 
+        </template>
+
+
+        <template x-teleport="body">
         <!-- MODAL HAPUS -->
         <div
             x-show="showDeleteModal"
@@ -908,6 +907,7 @@
             </div>
 
         </div>
+        </template>
 
     </div>
 

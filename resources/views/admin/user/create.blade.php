@@ -159,9 +159,9 @@
                                 Guru Mata Pelajaran
                             </option>
 
-                            <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>
+                            <!-- <option value="Kesiswaan" {{ old('role') === 'Kesiswaan' ? 'selected' : '' }}>
                                 Kesiswaan
-                            </option>
+                            </option> -->
 
                             <option value="Sekretaris" {{ old('role') === 'Sekretaris' ? 'selected' : '' }}>
                                 Sekretaris
