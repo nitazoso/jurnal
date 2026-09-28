@@ -43,6 +43,8 @@
     {{-- PERSONAL DETAILS --}}
     <section class="personal-card">
 
+    @include('components.profile-edit-modal', ['action' => route('admin.profil.update'), 'user' => $user])
+
         {{-- Nama Lengkap --}}
         <div class="personal-field">
             <p class="personal-label">
@@ -91,44 +93,6 @@
 
     </section>
 
-    {{-- EDIT PROFILE FORM --}}
-    <section class="personal-card edit-card" id="edit-profile">
-        <div class="section-header">
-            <h4 class="section-title">Edit Profil</h4>
-        </div>
-
-        @if(session('success'))
-            <p class="success-text">{{ session('success') }}</p>
-        @endif
-
-        <form action="{{ route('admin.profil.update') }}" method="POST" class="profile-form">
-            @csrf
-            @method('PUT')
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required autocomplete="username">
-                @error('username')
-                    <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password Baru</label>
-                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password" autocomplete="new-password">
-                @error('password')
-                    <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirmation">Konfirmasi Password</label>
-                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru" autocomplete="new-password">
-            </div>
-
-            <button type="submit" class="submit-btn">Simpan Perubahan</button>
-        </form>
-    </section>
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">

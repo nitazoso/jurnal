@@ -35,6 +35,8 @@ $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
 
     {{-- PERSONAL DETAILS --}}
     <section class="personal-card">
+
+    @include('components.profile-edit-modal', ['action' => route('guru.profil.update'), 'user' => $user])
         {{-- Nama --}}
         <div class="personal-field">
             <p class="personal-label">Nama Lengkap</p>
@@ -58,40 +60,6 @@ $profileName = $user->guru?->nama_guru ?? $user->nama_user ?? '-';
         </div>
     </section>
 
-    {{-- EDIT PROFILE FORM --}}
-    <section class="personal-card edit-card">
-        <div class="section-header">
-            <h4 class="section-title">Edit Profil</h4>
-        </div>
-
-        <form action="{{ route('guru.profil.update') }}" method="POST" class="profile-form">
-            @csrf
-            @method('PUT')
-
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input id="username" name="username" type="text" value="{{ old('username', $user->username ?? '') }}" required>
-                @error('username')
-                <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password">Password Baru</label>
-                <input id="password" name="password" type="password" placeholder="Kosongkan jika tidak ingin mengubah password">
-                @error('password')
-                <small class="error-text">{{ $message }}</small>
-                @enderror
-            </div>
-
-            <div class="form-group">
-                <label for="password_confirmation">Konfirmasi Password</label>
-                <input id="password_confirmation" name="password_confirmation" type="password" placeholder="Ulangi password baru">
-            </div>
-
-            <button type="submit" class="submit-btn">Simpan Perubahan</button>
-        </form>
-    </section>
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">
