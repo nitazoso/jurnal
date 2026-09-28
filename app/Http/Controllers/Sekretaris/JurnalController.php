@@ -32,11 +32,33 @@ class JurnalController extends Controller
         return view('sekretaris.dashboard', compact('jurnalsMenunggu', 'jurnalsTervalidasiHariIni', 'jurnalTerbaru'));
     }
 
+    public function history()
+    {
+        $user = auth()->user();
+
+        $jurnals = Jurnal::withTrashed()
+            ->with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai', 'validator'])
+            ->where('id_kelas', $user->id_kelas)
+            ->where('status_validasi_guru', 'Disetujui')
+            ->whereNotNull('validated_by')
+            ->orderByDesc('tanggal')
+            ->orderByDesc('validated_at')
+            ->get();
+
+        $riwayatPerHari = $jurnals->groupBy(fn (Jurnal $jurnal) => $jurnal->tanggal->toDateString());
+
+        return view('sekretaris.riwayat-jurnal', compact('riwayatPerHari'));
+    }
+
     public function index(Request $request)
     {
         $user = auth()->user();
+        $tanggalHariIni = now('Asia/Jakarta')->toDateString();
+        $tanggalDipilih = $request->filled('tanggal') ? $request->input('tanggal') : $tanggalHariIni;
+
         $query = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai', 'user'])
             ->whereHas('jadwal')
+            ->whereDate('tanggal', $tanggalDipilih)
             ->latest('tanggal');
 
         if ($user?->id_kelas) {
@@ -49,12 +71,11 @@ class JurnalController extends Controller
                 ->orWhereHas('kelas', fn ($kelas) => $kelas->where('nama_kelas', 'like', "%{$search}%")));
         }
         if ($request->filled('kelas_id')) $query->where('id_kelas', $request->integer('kelas_id'));
-        if ($request->filled('tanggal')) $query->whereDate('tanggal', $request->input('tanggal'));
         if ($request->filled('status')) $query->where('status_validasi_guru', $request->input('status'));
 
         $jurnals = $query->paginate(15)->withQueryString();
         $kelases = Kelas::orderBy('nama_kelas')->get();
-        return view('sekretaris.validasi-jurnal', compact('jurnals', 'kelases'));
+        return view('sekretaris.validasi-jurnal', compact('jurnals', 'kelases', 'tanggalDipilih'));
     }
 
     public function show(Jurnal $jurnal)

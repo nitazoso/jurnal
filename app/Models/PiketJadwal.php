@@ -42,6 +42,22 @@ class PiketJadwal extends Model
         'tanggal' => 'date',
     ];
 
+    public function scopeForGuru($query, ?int $guruId)
+    {
+        if ($guruId === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where(function ($query) use ($guruId) {
+            $query->where('id_guru', $guruId)
+                ->orWhere('petugas_kbm_pagi_id', $guruId)
+                ->orWhere('koordinator_kbm_pagi_id', $guruId)
+                ->orWhere('petugas_kbm_siang_id', $guruId)
+                ->orWhere('koordinator_kbm_siang_id', $guruId)
+                ->orWhere('piket_waka_id', $guruId);
+        });
+    }
+
     public function guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');

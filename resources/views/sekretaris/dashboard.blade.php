@@ -47,10 +47,10 @@
             </div>
         </div>
 
-        {{-- MENUNGGU VALIDASI --}}
-        <div class="metric-card pending">
+        {{-- JURNAL PERLU DIVALIDASI --}}
+        <a href="{{ route('sekretaris.validasi-jurnal') }}" class="metric-card pending">
             <div class="metric-top">
-                <span>Menunggu Validasi</span>
+            <span>Jurnal Perlu Divalidasi</span>
 
                 <div class="metric-icon">
                     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -62,9 +62,9 @@
 
             <div class="metric-bottom">
                 <strong>{{ $jurnalsMenunggu }}</strong>
-                <span>Segera validasi</span>
+                <span>Buka antrean validasi</span>
             </div>
-        </div>
+        </a>
 
     </section>
 
@@ -126,7 +126,7 @@
                     @php
                         $statusSekretaris = $jurnal->status_validasi_guru ?? 'Menunggu';
                         $statusLabel = match ($statusSekretaris) {
-                            'Menunggu' => 'Menunggu Validasi',
+                            'Menunggu' => 'Perlu Divalidasi',
                             'Disetujui' => 'Sudah Tervalidasi',
                             'Perlu Diperbaiki' => 'Perlu Diperbaiki',
                             'Ditolak' => 'Tidak Tervalidasi',
@@ -146,8 +146,8 @@
                         <strong>Materi:</strong> {{ $jurnal->materi ?? '-' }}
                     </span>
 
-                    <a href="{{ route('sekretaris.validasi-jurnal.show', $jurnal) }}">
-                        Detail
+                    <a href="{{ route('sekretaris.validasi-jurnal') }}">
+                        Buka Validasi
                         <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
                         </svg>
@@ -165,7 +165,7 @@
                     </svg>
                 </div>
 
-                <strong>Tidak ada jurnal yang menunggu validasi</strong>
+                <strong>Tidak ada jurnal yang perlu divalidasi</strong>
                 <p>Semua jurnal sudah diproses dengan baik.</p>
             </div>
 

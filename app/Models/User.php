@@ -54,14 +54,7 @@ class User extends Authenticatable implements PasskeyUser
             return false;
         }
 
-        return \App\Models\PiketJadwal::where(function ($query) {
-            $query->where('id_guru', $this->id_guru)
-                ->orWhere('petugas_kbm_pagi_id', $this->id_guru)
-                ->orWhere('koordinator_kbm_pagi_id', $this->id_guru)
-                ->orWhere('petugas_kbm_siang_id', $this->id_guru)
-                ->orWhere('koordinator_kbm_siang_id', $this->id_guru)
-                ->orWhere('piket_waka_id', $this->id_guru);
-        })
+        return \App\Models\PiketJadwal::forGuru($this->id_guru)
             ->whereDate('tanggal', now('Asia/Jakarta')->toDateString())
             ->exists();
     }

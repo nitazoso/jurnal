@@ -27,7 +27,7 @@ class DashboardController extends Controller
             return redirect()->route('guru.dashboard')->with('info', 'Anda tidak memiliki jadwal piket hari ini.');
         }
 
-        $today = now()->toDateString();
+        $today = now('Asia/Jakarta')->toDateString();
 
         $jurnals = Jurnal::with(['guru', 'kelas', 'jadwal.mapel', 'jamMulai', 'jamSelesai'])
             ->whereIn('status_validasi_guru', ['Menunggu', 'Disetujui'])
@@ -51,15 +51,8 @@ class DashboardController extends Controller
             ->get();
 
         $piketHariIni = PiketJadwal::with('guru')
-            ->where(function ($query) use ($user) {
-                $query->where('id_guru', $user->id_guru)
-                    ->orWhere('petugas_kbm_pagi_id', $user->id_guru)
-                    ->orWhere('koordinator_kbm_pagi_id', $user->id_guru)
-                    ->orWhere('petugas_kbm_siang_id', $user->id_guru)
-                    ->orWhere('koordinator_kbm_siang_id', $user->id_guru)
-                    ->orWhere('piket_waka_id', $user->id_guru);
-            })
-            ->where('tanggal', $today)
+            ->forGuru($user->id_guru)
+            ->whereDate('tanggal', $today)
             ->orderBy('jam_mulai')
             ->get();
 

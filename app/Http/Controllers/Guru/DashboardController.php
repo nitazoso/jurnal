@@ -35,15 +35,17 @@ class DashboardController extends Controller
         $totalJurnal = Jurnal::where('id_guru', $user->id_guru)
             ->count();
 
+        $today = now('Asia/Jakarta')->toDateString();
+
         $piketTerdekat = PiketJadwal::with('guru')
-            ->where('id_guru', $user->id_guru)
-            ->where('tanggal', '>=', now()->toDateString())
+            ->forGuru($user->id_guru)
+            ->whereDate('tanggal', '>=', $today)
             ->orderBy('tanggal')
             ->first();
 
         $piketHariIni = PiketJadwal::with('guru')
-            ->where('id_guru', $user->id_guru)
-            ->where('tanggal', now()->toDateString())
+            ->forGuru($user->id_guru)
+            ->whereDate('tanggal', $today)
             ->first();
 
         $tahunAjaran = '2026/2027 Ganjil';

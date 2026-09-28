@@ -66,6 +66,23 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('piket.dashboard'));
     }
 
+    public function test_guru_without_a_picket_today_is_redirected_to_the_guru_dashboard_after_login(): void
+    {
+        $guru = Guru::create(['nama_guru' => 'Guru Tanpa Piket']);
+        User::create([
+            'username' => 'guru.tanpa.piket',
+            'password' => bcrypt('password'),
+            'nama_user' => 'Guru Tanpa Piket',
+            'role' => 'Guru',
+            'id_guru' => $guru->id_guru,
+        ]);
+
+        $this->post(route('login'), [
+            'username' => 'guru.tanpa.piket',
+            'password' => 'password',
+        ])->assertRedirect(route('guru.dashboard'));
+    }
+
     public function test_guru_with_picket_on_jakarta_tomorrow_is_redirected_to_piket_dashboard(): void
     {
         Carbon::setTestNow(Carbon::parse('2026-09-26 23:30:00', 'UTC'));
@@ -97,6 +114,50 @@ class DashboardTest extends TestCase
                 'username' => 'badrus.guru',
                 'password' => 'password',
             ])->assertRedirect(route('piket.dashboard'));
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
+    public function test_guru_assigned_in_a_piket_role_slot_sees_the_schedule_on_jakarta_date(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-26 23:30:00', 'UTC'));
+
+        try {
+            $guru = Guru::create(['nama_guru' => 'Guru Piket']);
+            $guruLain = Guru::create(['nama_guru' => 'Guru Penanggung Jawab']);
+            $user = User::create([
+                'username' => 'guru.piket',
+                'password' => bcrypt('password'),
+                'nama_user' => 'Guru Piket',
+                'role' => 'Guru',
+                'id_guru' => $guru->id_guru,
+            ]);
+
+            PiketJadwal::create([
+                'id_guru' => $guruLain->id_guru,
+                'petugas_kbm_pagi_id' => $guru->id_guru,
+                'tanggal' => '2026-09-27',
+                'shift' => 'Pagi',
+                'jam_mulai' => '07:00',
+                'jam_selesai' => '08:00',
+                'jenis_tugas' => 'Piket KBM Pagi',
+                'created_by' => $user->id_user,
+            ]);
+
+            $this->post(route('login'), [
+                'username' => 'guru.piket',
+                'password' => 'password',
+            ])->assertRedirect(route('piket.dashboard'));
+
+            $this->get(route('piket.dashboard'))
+                ->assertOk()
+                ->assertViewHas('piketHariIni', fn ($jadwals) => $jadwals->count() === 1);
+
+            $this->actingAs($user)
+                ->get(route('guru.piket.index'))
+                ->assertOk()
+                ->assertViewHas('jadwals', fn ($jadwals) => $jadwals->count() === 1);
         } finally {
             Carbon::setTestNow();
         }
@@ -442,11 +503,29 @@ class DashboardTest extends TestCase
         $makeJournal($jadwalDihapus, 'Jurnal jadwal terhapus');
         $jadwalDihapus->delete();
 
-        $response = $this->actingAs($sekretaris)->get(route('sekretaris.dashboard'));
+        $response = $this->withSession(['success' => 'Kehadiran guru berhasil divalidasi.'])
+            ->actingAs($sekretaris)
+            ->get(route('sekretaris.dashboard'));
 
         $response->assertOk();
+        $response->assertSee('Kehadiran guru berhasil divalidasi.');
+        $response->assertSee('data-success-toast', false);
         $response->assertSee('Jurnal jadwal aktif');
+        $response->assertSee('Jurnal Perlu Divalidasi');
+        $response->assertSee('Perlu Divalidasi');
+        $response->assertSee('Buka Validasi');
+        $response->assertSee(route('sekretaris.validasi-jurnal'), false);
+        $response->assertDontSee('Menunggu Validasi');
         $response->assertDontSee('Jurnal jadwal terhapus');
+
+        $queueResponse = $this->actingAs($sekretaris)
+            ->get(route('sekretaris.validasi-jurnal', ['status' => 'Menunggu']));
+
+        $queueResponse->assertOk();
+        $queueResponse->assertSee('Perlu Divalidasi');
+        $queueResponse->assertDontSee('Menunggu Validasi');
+        $queueResponse->assertSee('Jurnal jadwal aktif');
+        $queueResponse->assertDontSee('Jurnal jadwal terhapus');
     }
 
     public function test_admin_jadwal_changes_remove_stale_journal_entries(): void
