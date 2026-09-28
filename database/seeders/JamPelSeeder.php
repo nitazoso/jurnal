@@ -9,7 +9,8 @@ class JamPelSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('jam_pels')->insert(array (
+        DB::table('jam_pels')->insert(
+array (
   0 => 
   array (
     'id_jam' => 1,
@@ -19,9 +20,9 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:00:00',
     'jam_selesai' => '07:45:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:11',
-    'updated_at' => '2026-09-17 07:44:34',
-    'deleted_at' => '2026-09-17 07:44:34',
+    'created_at' => '2026-09-27 04:02:36',
+    'updated_at' => '2026-09-28 00:40:31',
+    'deleted_at' => '2026-09-28 00:40:31',
   ),
   1 => 
   array (
@@ -32,9 +33,9 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:45:00',
     'jam_selesai' => '08:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:11',
-    'updated_at' => '2026-09-17 07:44:34',
-    'deleted_at' => '2026-09-17 07:44:34',
+    'created_at' => '2026-09-27 04:02:36',
+    'updated_at' => '2026-09-28 00:40:31',
+    'deleted_at' => '2026-09-28 00:40:31',
   ),
   2 => 
   array (
@@ -45,9 +46,9 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '08:30:00',
     'jam_selesai' => '09:15:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:11',
-    'updated_at' => '2026-09-17 07:44:34',
-    'deleted_at' => '2026-09-17 07:44:34',
+    'created_at' => '2026-09-27 04:02:36',
+    'updated_at' => '2026-09-28 00:40:31',
+    'deleted_at' => '2026-09-28 00:40:31',
   ),
   3 => 
   array (
@@ -58,9 +59,9 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '09:30:00',
     'jam_selesai' => '10:15:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:11',
-    'updated_at' => '2026-09-17 07:44:34',
-    'deleted_at' => '2026-09-17 07:44:34',
+    'created_at' => '2026-09-27 04:02:36',
+    'updated_at' => '2026-09-28 00:40:31',
+    'deleted_at' => '2026-09-28 00:40:31',
   ),
   4 => 
   array (
@@ -71,8 +72,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:00:00',
     'jam_selesai' => '07:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   5 => 
@@ -84,8 +85,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:30:00',
     'jam_selesai' => '08:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   6 => 
@@ -97,8 +98,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '08:00:00',
     'jam_selesai' => '08:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   7 => 
@@ -110,8 +111,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '08:30:00',
     'jam_selesai' => '09:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   8 => 
@@ -123,8 +124,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '09:00:00',
     'jam_selesai' => '09:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   9 => 
@@ -136,8 +137,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '09:30:00',
     'jam_selesai' => '10:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   10 => 
@@ -149,8 +150,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '10:00:00',
     'jam_selesai' => '10:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   11 => 
@@ -162,8 +163,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '10:30:00',
     'jam_selesai' => '11:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   12 => 
@@ -175,8 +176,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '11:00:00',
     'jam_selesai' => '11:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   13 => 
@@ -188,8 +189,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '11:30:00',
     'jam_selesai' => '12:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   14 => 
@@ -201,8 +202,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '12:00:00',
     'jam_selesai' => '12:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   15 => 
@@ -214,8 +215,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '12:30:00',
     'jam_selesai' => '13:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   16 => 
@@ -227,8 +228,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '13:00:00',
     'jam_selesai' => '13:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   17 => 
@@ -240,8 +241,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '13:30:00',
     'jam_selesai' => '14:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   18 => 
@@ -253,8 +254,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '14:00:00',
     'jam_selesai' => '14:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   19 => 
@@ -266,8 +267,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '14:30:00',
     'jam_selesai' => '15:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:46',
-    'updated_at' => '2026-09-17 07:44:46',
+    'created_at' => '2026-09-28 00:40:26',
+    'updated_at' => '2026-09-28 00:40:26',
     'deleted_at' => NULL,
   ),
   20 => 
@@ -279,8 +280,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:00:00',
     'jam_selesai' => '07:40:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   21 => 
@@ -292,8 +293,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '07:40:00',
     'jam_selesai' => '08:20:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   22 => 
@@ -305,8 +306,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '08:20:00',
     'jam_selesai' => '09:00:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   23 => 
@@ -318,8 +319,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '09:00:00',
     'jam_selesai' => '09:40:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   24 => 
@@ -331,8 +332,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '09:40:00',
     'jam_selesai' => '10:20:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   25 => 
@@ -344,8 +345,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '10:20:00',
     'jam_selesai' => '10:50:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   26 => 
@@ -357,8 +358,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '10:50:00',
     'jam_selesai' => '11:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   27 => 
@@ -370,8 +371,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '11:30:00',
     'jam_selesai' => '12:10:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   28 => 
@@ -383,8 +384,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '12:10:00',
     'jam_selesai' => '12:50:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   29 => 
@@ -396,8 +397,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '12:50:00',
     'jam_selesai' => '13:30:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   30 => 
@@ -409,8 +410,8 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '13:30:00',
     'jam_selesai' => '14:10:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
   31 => 
@@ -422,10 +423,11 @@ class JamPelSeeder extends Seeder
     'jam_mulai' => '14:10:00',
     'jam_selesai' => '14:50:00',
     'durasi_menit' => NULL,
-    'created_at' => '2026-09-17 07:44:54',
-    'updated_at' => '2026-09-17 07:44:54',
+    'created_at' => '2026-09-28 00:40:43',
+    'updated_at' => '2026-09-28 00:40:43',
     'deleted_at' => NULL,
   ),
-));
+)
+        );
     }
 }
