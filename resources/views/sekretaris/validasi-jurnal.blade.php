@@ -16,7 +16,7 @@
     <div class="page-heading">
         <div>
             <h2>Validasi Kehadiran Guru</h2>
-            <p>Daftar jurnal pembelajaran yang perlu diperiksa kehadiran gurunya.</p>
+            <p>Jurnal pembelajaran {{ \Illuminate\Support\Carbon::parse($tanggalDipilih)->locale('id')->translatedFormat('l, d F Y') }}.</p>
         </div>
     </div>
 
@@ -90,7 +90,7 @@
             <div class="filter-item">
                 <label for="tanggal">Tanggal</label>
 
-                <input id="tanggal" class="select date-input" name="tanggal" type="date" value="{{ request('tanggal') }}">
+                <input id="tanggal" class="select date-input" name="tanggal" type="date" value="{{ $tanggalDipilih }}">
             </div>
 
             <div class="filter-action">
@@ -143,7 +143,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </span>
-                    <span>Menunggu Validasi</span>
+                    <span>Perlu Divalidasi</span>
                     @else
                     <span>Jurnal #{{ $jurnals->firstItem() + $index }}</span>
                     @endif

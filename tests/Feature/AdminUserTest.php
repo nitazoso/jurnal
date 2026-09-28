@@ -54,4 +54,22 @@ class AdminUserTest extends TestCase
             'role' => 'Admin',
         ]);
     }
+
+    public function test_guru_account_requires_a_linked_teacher_record(): void
+    {
+        $admin = User::create([
+            'username' => 'admin',
+            'password' => 'password123',
+            'nama_user' => 'Admin Utama',
+            'role' => 'Admin',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.user.store'), [
+                'username' => 'guru.tanpa.relasi',
+                'password' => 'password123',
+                'role' => 'Guru',
+            ])
+            ->assertSessionHasErrors('id_guru');
+    }
 }

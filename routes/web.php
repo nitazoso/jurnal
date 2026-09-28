@@ -422,6 +422,7 @@ Route::middleware(['auth', 'role:Kesiswaan'])->prefix('kesiswaan')->name('kesisw
 */
 Route::middleware(['auth', 'role:Sekretaris'])->prefix('sekretaris')->name('sekretaris.')->group(function () {
     Route::get('/dashboard', [SekretarisJurnalController::class, 'dashboard'])->name('dashboard');
+    Route::get('/riwayat-jurnal', [SekretarisJurnalController::class, 'history'])->name('riwayat-jurnal');
     Route::get('/validasi-jurnal', [SekretarisJurnalController::class, 'index'])->name('validasi-jurnal');
     Route::get('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'show'])->name('validasi-jurnal.show');
     Route::patch('/validasi-jurnal/{jurnal}', [SekretarisJurnalController::class, 'validateJurnal'])->name('validasi-jurnal.update');

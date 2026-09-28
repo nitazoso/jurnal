@@ -18,6 +18,21 @@ class StaffPiketJurnalTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_staff_piket_profile_renders_account_details_with_profile_heading(): void
+    {
+        $staff = $this->createStaffPiket();
+
+        $this->actingAs($staff)
+            ->get(route('piket.profil'))
+            ->assertOk()
+            ->assertSee('Profil')
+            ->assertSee('Informasi Akun')
+            ->assertSee('Petugas Piket')
+            ->assertSee($staff->username)
+            ->assertSee('Staff Piket')
+            ->assertSee('piket-profile-page');
+    }
+
     public function test_staff_piket_sees_all_current_teacher_schedules_for_the_selected_class(): void
     {
         $kelas = Kelas::create(['nama_kelas' => 'X-Test']);

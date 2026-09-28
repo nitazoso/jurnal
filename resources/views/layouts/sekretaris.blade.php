@@ -404,6 +404,44 @@
             color: #245C49;
         }
 
+        .success-toast {
+            position: fixed;
+            top: 88px;
+            right: 24px;
+            z-index: 1000;
+            width: min(440px, calc(100vw - 32px));
+            align-items: center;
+            margin: 0;
+            box-shadow: 0 12px 32px rgba(15, 23, 42, .16);
+        }
+
+        .success-toast__message {
+            flex: 1;
+        }
+
+        .success-toast__close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            border: 0;
+            border-radius: 6px;
+            background: transparent;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .success-toast__close:hover {
+            background: rgba(36, 92, 73, .1);
+        }
+
+        .success-toast__close svg {
+            width: 16px;
+            height: 16px;
+        }
+
         .alert-error {
             border: 1px solid #F0C5C0;
             background: #FFF4F2;
@@ -615,6 +653,17 @@
                 <span>Validasi Kehadiran Guru</span>
             </a>
 
+            <a href="{{ route('sekretaris.riwayat-jurnal') }}"
+                class="nav-link {{ request()->routeIs('sekretaris.riwayat-jurnal') ? 'active' : '' }}">
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8">
+                        <path d="M7 3h8l4 4v14H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+                        <path d="M15 3v5h5M9 12h6M9 16h6" />
+                    </svg>
+                </span>
+                <span>Riwayat Jurnal</span>
+            </a>
+
             <a href="{{ route('sekretaris.profil') }}"
                 class="nav-link {{ request()->routeIs('sekretaris.profil') ? 'active' : '' }}">
                 <span class="nav-icon">
@@ -689,9 +738,14 @@
         <div class="content">
 
             @if(session('success'))
-            <div class="alert alert-success">
+            <div class="alert alert-success success-toast" role="status" aria-live="polite" data-success-toast>
                 <span>✓</span>
-                <span>{{ session('success') }}</span>
+                <span class="success-toast__message">{{ session('success') }}</span>
+                <button type="button" class="success-toast__close" aria-label="Tutup notifikasi" data-toast-close>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="m18 6-12 12M6 6l12 12" stroke-linecap="round" />
+                    </svg>
+                </button>
             </div>
             @endif
 
@@ -747,6 +801,17 @@
 
         updateDashboardClock();
         setInterval(updateDashboardClock, 1000);
+
+        document.querySelectorAll('[data-success-toast]').forEach(toast => {
+            const dismiss = () => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(-5px)';
+                window.setTimeout(() => toast.remove(), 250);
+            };
+
+            toast.querySelector('[data-toast-close]')?.addEventListener('click', dismiss);
+            window.setTimeout(dismiss, 6000);
+        });
 
         (() => {
             const sidebar = document.getElementById('sekretarisSidebar');

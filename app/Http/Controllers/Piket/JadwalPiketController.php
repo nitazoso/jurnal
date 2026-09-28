@@ -11,15 +11,7 @@ class JadwalPiketController extends Controller
     public function index(Request $request)
     {
         $query = PiketJadwal::with(['guru', 'pembuat'])
-            ->where(function ($query) {
-                $guruId = auth()->user()->id_guru;
-                $query->where('id_guru', $guruId)
-                    ->orWhere('petugas_kbm_pagi_id', $guruId)
-                    ->orWhere('koordinator_kbm_pagi_id', $guruId)
-                    ->orWhere('petugas_kbm_siang_id', $guruId)
-                    ->orWhere('koordinator_kbm_siang_id', $guruId)
-                    ->orWhere('piket_waka_id', $guruId);
-            })
+            ->forGuru(auth()->user()->id_guru)
             ->orderBy('tanggal', 'asc');
 
         if ($request->filled('search')) {
