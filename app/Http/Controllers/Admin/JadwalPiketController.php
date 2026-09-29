@@ -1584,7 +1584,7 @@ class JadwalPiketController extends Controller
             'jam_mulai_pagi' => '07:00',
             'jam_selesai_pagi' => '11:00',
             'jam_mulai_siang' => '11:00',
-            'jam_selesai_siang' => '23:00',
+            'jam_selesai_siang' => '15:00',
         ];
 
         if (!Schema::hasTable('app_settings')) {
