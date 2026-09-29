@@ -40,8 +40,9 @@ class DispenController extends Controller
         ]);
 
         $jenisDefault = in_array($request->query('jenis'), ['izin', 'sakit'], true) ? $request->query('jenis') : 'izin';
+        $dispen = null;
 
-        return view('piket.izin-sakit.create', compact('kelases', 'siswaPerKelas', 'jenisDefault'));
+        return view('piket.izin-sakit.create', compact('dispen', 'kelases', 'siswaPerKelas', 'jenisDefault'));
     }
 
     public function izinSakitStore(Request $request)
