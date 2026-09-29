@@ -223,6 +223,93 @@ class DashboardTest extends TestCase
         $response->assertSessionHas('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
     }
 
+    public function test_guru_create_page_only_shows_current_or_missed_slots_for_today(): void
+    {
+        config(['app.jurnal_bebas_testing' => false]);
+        Carbon::setTestNow(Carbon::create(2026, 9, 28, 7, 15, 0));
+
+        try {
+            $guru = Guru::create(['nama_guru' => 'Budi Guru']);
+            $mapel = Mapel::create(['nama_mapel' => 'Bahasa Inggris']);
+            $kelasSaatIni = Kelas::create(['nama_kelas' => 'XI-RPL-1', 'wali_kelas' => $guru->id_guru]);
+            $kelasLewat = Kelas::create(['nama_kelas' => 'XI-RPL-2', 'wali_kelas' => $guru->id_guru]);
+            $kelasMasaDepan = Kelas::create(['nama_kelas' => 'XI-RPL-3', 'wali_kelas' => $guru->id_guru]);
+            $user = User::create([
+                'username' => 'budi.guru.jurnal',
+                'password' => bcrypt('password'),
+                'nama_user' => 'Budi Guru',
+                'role' => 'Guru',
+                'id_guru' => $guru->id_guru,
+            ]);
+
+            $jamNow = JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => 1,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '07:00:00',
+                'jam_selesai' => '07:45:00',
+            ]);
+
+            $jamLewat = JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => 2,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '06:00:00',
+                'jam_selesai' => '06:45:00',
+            ]);
+
+            $jamMasaDepan = JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => 3,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '08:00:00',
+                'jam_selesai' => '08:45:00',
+            ]);
+
+            Jadwal::create([
+                'id_guru' => $guru->id_guru,
+                'id_mapel' => $mapel->id_mapel,
+                'id_kelas' => $kelasSaatIni->id_kelas,
+                'id_jam_mulai' => $jamNow->id_jam,
+                'id_jam_selesai' => $jamNow->id_jam,
+                'hari' => 'Senin',
+                'semester' => 'Ganjil',
+                'tahun_ajaran' => '2026/2027',
+            ]);
+
+            Jadwal::create([
+                'id_guru' => $guru->id_guru,
+                'id_mapel' => $mapel->id_mapel,
+                'id_kelas' => $kelasLewat->id_kelas,
+                'id_jam_mulai' => $jamLewat->id_jam,
+                'id_jam_selesai' => $jamLewat->id_jam,
+                'hari' => 'Senin',
+                'semester' => 'Ganjil',
+                'tahun_ajaran' => '2026/2027',
+            ]);
+
+            Jadwal::create([
+                'id_guru' => $guru->id_guru,
+                'id_mapel' => $mapel->id_mapel,
+                'id_kelas' => $kelasMasaDepan->id_kelas,
+                'id_jam_mulai' => $jamMasaDepan->id_jam,
+                'id_jam_selesai' => $jamMasaDepan->id_jam,
+                'hari' => 'Senin',
+                'semester' => 'Ganjil',
+                'tahun_ajaran' => '2026/2027',
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('guru.jurnal.create'))
+                ->assertOk()
+                ->assertSee('XI-RPL-1')
+                ->assertSee('XI-RPL-2')
+                ->assertDontSee('XI-RPL-3');
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_guru_can_submit_journal_outside_schedule_in_testing_mode(): void
     {
         config(['app.jurnal_bebas_testing' => true]);
