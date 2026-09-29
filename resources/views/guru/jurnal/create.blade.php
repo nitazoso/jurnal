@@ -607,7 +607,11 @@
 
                     <tbody>
 
-                        @forelse($jadwals as $jadwal)
+                        @php
+                            $allSlots = $jadwalsSaatIni->merge($jadwalsTertinggal);
+                        @endphp
+
+                        @forelse($allSlots as $jadwal)
 
                             <tr>
 
@@ -664,7 +668,7 @@
                                             <path d="M12 5v14M5 12h14" stroke-linecap="round" />
                                         </svg>
 
-                                        Isi Jurnal
+                                        {{ $jadwal->jamSelesai && now()->gt(now()->copy()->setTimeFromTimeString($jadwal->jamSelesai->jam_selesai)) ? 'Isi Jurnal Terlambat' : 'Isi Jurnal' }}
 
                                     </a>
                                 </td>
@@ -716,6 +720,80 @@
 
     @endif
 
+    @if(!empty($jadwalsTertinggal) && $jadwalsTertinggal->isNotEmpty())
+        <section class="schedule-card">
+            <div class="schedule-card-header">
+                <div class="schedule-card-title">
+                    <div class="schedule-icon">
+                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M12 8v4l3 2" stroke-linecap="round" stroke-linejoin="round" />
+                            <circle cx="12" cy="12" r="9" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h2>JURNAL TERLAMBAT</h2>
+                        <span class="schedule-today">Jadwal yang lewat waktu tetapi belum diisi</span>
+                    </div>
+                </div>
+            </div>
+            <div class="schedule-content">
+                <div class="schedule-table-wrapper">
+                    <table class="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Hari</th>
+                                <th>Kelas</th>
+                                <th>Mata Pelajaran</th>
+                                <th>Jam Pelajaran</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($jadwalsTertinggal as $jadwal)
+                                <tr>
+                                    <td><div class="schedule-number">{{ $loop->iteration }}</div></td>
+                                    <td><span class="schedule-day">{{ $jadwal->hari }}</span></td>
+                                    <td><span class="schedule-class">{{ $jadwal->kelas->nama_kelas ?? '-' }}</span></td>
+                                    <td><span class="schedule-subject">{{ $jadwal->mapel->nama_mapel ?? '-' }}</span></td>
+                                    <td><span class="schedule-time">
+                                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="9" />
+                                            <path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        Jam Ke {{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}
+                                    </span></td>
+                                    <td>
+                                        <a href="{{ route('guru.jurnal.form', ['jadwal' => $jadwal->id_jadwal]) }}" class="journal-action">
+                                            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                                <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+                                            </svg>
+                                            Isi Jurnal Terlambat
+                                        </a>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    @endif
+
 </div>
+
+<script>
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            window.location.reload();
+        }
+    });
+
+    window.setInterval(function () {
+        if (!document.hidden) {
+            window.location.reload();
+        }
+    }, 60000);
+</script>
 
 @endsection
