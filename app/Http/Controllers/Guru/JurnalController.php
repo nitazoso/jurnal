@@ -108,13 +108,13 @@ class JurnalController extends Controller
             return view('guru.jurnal.create', [
                 'jadwals' => collect(),
                 'hariIni' => 'Pelajaran dinonaktifkan',
-                'today' => Carbon::today(),
+                'today' => now('Asia/Jakarta'),
                 'allDisabled' => $allDisabled,
             ]);
         }
 
         $user = auth()->user();
-        $today = Carbon::today();
+        $today = now('Asia/Jakarta');
 
         $hariIndonesia = [
             'Sunday'    => 'Minggu',
@@ -133,6 +133,7 @@ class JurnalController extends Controller
             'mapel',
             'jamMulai',
             'jamSelesai',
+            'jurnals',
         ])
             ->where('id_guru', $user->id_guru)
             ->when(! config('app.jurnal_bebas_testing'), fn ($query) =>
@@ -142,17 +143,30 @@ class JurnalController extends Controller
             ->whereNotNull('id_jam_selesai')
             ->whereHas('jamMulai')
             ->whereHas('jamSelesai')
-            ->whereDoesntHave('jurnals', function ($query) use ($today) {
-                $query->whereDate('tanggal', $today);
-            })
             ->get()
             ->sortBy(function ($jadwal) {
                 return $jadwal->jamMulai->jam_mulai ?? '';
             })
             ->values();
 
+        $jadwalsSaatIni = $jadwals
+            ->filter(fn ($jadwal) => ! $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty()
+                && $this->isScheduleWindowOpen($jadwal))
+            ->values();
+
+        $jadwalsTertinggal = $jadwals
+            ->filter(fn ($jadwal) => ! $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty()
+                && $this->isScheduleTimePassed($jadwal))
+            ->values();
+
+        $jadwalsSudahDiisi = $jadwals
+            ->filter(fn ($jadwal) => $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty())
+            ->values();
+
         return view('guru.jurnal.create', compact(
-            'jadwals',
+            'jadwalsSaatIni',
+            'jadwalsTertinggal',
+            'jadwalsSudahDiisi',
             'hariIni',
             'today',
             'allDisabled'
@@ -166,7 +180,7 @@ class JurnalController extends Controller
         }
 
         $user = auth()->user();
-        $today = Carbon::today();
+        $today = now('Asia/Jakarta');
 
         if ($jadwal->id_guru != $user->id_guru) {
             abort(403);
@@ -184,7 +198,9 @@ class JurnalController extends Controller
                 ->with('info', 'Jurnal untuk jadwal ini hari ini sudah tersimpan di riwayat.');
         }
 
-        if (! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
+        if (! config('app.jurnal_bebas_testing')
+            && ! $this->isScheduleWindowOpen($jadwal)
+            && ! $this->isScheduleTimePassed($jadwal)) {
             return redirect()
                 ->route('guru.jurnal.create')
                 ->with('error', 'Jurnal hanya dapat diisi saat jadwal mengajar sedang berlangsung.');
@@ -243,7 +259,7 @@ class JurnalController extends Controller
             403
         );
 
-        $today = Carbon::today();
+        $today = now('Asia/Jakarta');
 
         if (! $jadwal->jamMulai || ! $jadwal->jamSelesai) {
             return redirect()
@@ -317,7 +333,7 @@ class JurnalController extends Controller
 
         // Tanggal jurnal selalu hari ini di server.
         // Jangan percaya tanggal dari browser.
-        $today = Carbon::today();
+        $today = now('Asia/Jakarta');
         $tanggal = $today->toDateString();
 
         $jadwal = Jadwal::findOrFail(
@@ -335,7 +351,10 @@ class JurnalController extends Controller
                 ->with('error', 'Jurnal untuk jadwal ini hari ini sudah dibuat.');
         }
 
-        if (! $isPiketEntry && ! config('app.jurnal_bebas_testing') && ! $this->isScheduleWindowOpen($jadwal)) {
+        if (! $isPiketEntry
+            && ! config('app.jurnal_bebas_testing')
+            && ! $this->isScheduleWindowOpen($jadwal)
+            && ! $this->isScheduleTimePassed($jadwal)) {
             return back()
                 ->withErrors([
                     'id_jadwal' =>
@@ -524,17 +543,39 @@ class JurnalController extends Controller
             return false;
         }
 
-        $todayName = now()->locale('id')->isoFormat('dddd');
+        $todayName = now('Asia/Jakarta')->locale('id')->isoFormat('dddd');
 
         if (strtolower((string) $jadwal->hari) !== strtolower((string) $todayName)) {
             return false;
         }
 
-        $now = now();
+        $now = now('Asia/Jakarta');
         $startAt = $now->copy()->setTimeFromTimeString($start);
         $endAt = $now->copy()->setTimeFromTimeString($end);
 
         return $now->gte($startAt) && $now->lt($endAt);
+    }
+
+    private function isScheduleTimePassed(Jadwal $jadwal): bool
+    {
+        $jadwal->loadMissing(['jamMulai', 'jamSelesai']);
+
+        $end = $jadwal->jamSelesai?->jam_selesai;
+
+        if (! $end) {
+            return false;
+        }
+
+        $todayName = now('Asia/Jakarta')->locale('id')->isoFormat('dddd');
+
+        if (strtolower((string) $jadwal->hari) !== strtolower((string) $todayName)) {
+            return false;
+        }
+
+        $now = now('Asia/Jakarta');
+        $endAt = $now->copy()->setTimeFromTimeString($end);
+
+        return $now->gt($endAt);
     }
 
     private function activeDispenSiswa(
@@ -583,12 +624,12 @@ class JurnalController extends Controller
         int $idKelas,
         string $tanggal
     ) {
-        if ($tanggal !== today()->toDateString()) {
+        if ($tanggal !== now('Asia/Jakarta')->toDateString()) {
             return Dispen::query()
                 ->whereRaw('1 = 0');
         }
 
-        $waktuSekarang = now()->format('H:i:s');
+        $waktuSekarang = now('Asia/Jakarta')->format('H:i:s');
 
         return Dispen::query()
             ->where('jenis', 'dispen')
