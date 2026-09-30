@@ -113,11 +113,18 @@
             <table class="dispen-table">
                 <thead>
                     <tr>
-                        <th>No</th><th>Siswa</th><th>Kelas</th><th>Tanggal</th><th>Jam</th><th>Alasan</th><th>Waka Bertugas</th><th>Status</th><th>Dikonfirmasi Oleh</th><th>Catatan</th><th style="text-align:center">Aksi</th>
+                        <th>No</th><th>Siswa</th><th>Kelas</th><th>Tanggal</th><th>Jam</th><th>Alasan</th><th>Waka Bertugas</th><th>Status</th><th>Catatan</th><th style="text-align:center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($dispens as $dispen)
+                        @php
+                            $wakaTerjadwal = $dispen->tanggal
+                                ? $jadwalWakaByTanggal->get($dispen->tanggal->toDateString())?->guru
+                                : null;
+                            $wakaGuru = $wakaTerjadwal ?? $dispen->petugasKesiswaan?->guru;
+                            $wakaNama = $wakaGuru?->nama_guru ?? $dispen->petugasKesiswaan?->nama_user;
+                        @endphp
                         <tr>
                             <td class="cell-number">{{ $dispens->firstItem() + $loop->index }}</td>
                             <td class="cell-student">{{ $dispen->siswa->nama_siswa ?? '-' }}</td>
@@ -126,23 +133,21 @@
                             <td class="cell-time">Jam ke-{{ $dispen->jamMulai->jam_ke ?? '?' }} - ke-{{ $dispen->jamSelesai->jam_ke ?? '?' }}<br><span class="dispen-muted">({{ substr($dispen->jamMulai->jam_mulai ?? '', 0, 5) }} - {{ substr($dispen->jamSelesai->jam_selesai ?? '', 0, 5) }})</span></td>
                             <td class="cell-reason" title="{{ $dispen->alasan }}">{{ $dispen->alasan }}</td>
                             <td>
-                                @if($dispen->petugasKesiswaan)
-                                    <div>{{ $dispen->petugasKesiswaan->guru->nama_guru ?? $dispen->petugasKesiswaan->nama_user }}</div>
-                                    @if($dispen->petugasKesiswaan->guru?->no_hp)
-                                        <span class="dispen-phone">{{ $dispen->petugasKesiswaan->guru?->no_hp }}</span>
+                                @if($wakaNama)
+                                    <div>{{ $wakaNama }}</div>
+                                    @if($wakaGuru?->no_hp)
+                                        <span class="dispen-phone">{{ $wakaGuru->no_hp }}</span>
                                     @else
                                         <span class="dispen-no-phone">No. HP belum ada</span>
                                     @endif
                                 @else
-                                    <span class="dispen-muted">Sesuai jadwal</span>
+                                    <span class="dispen-muted">Jadwal belum tersedia</span>
                                 @endif
                             </td>
-                            <td><span class="dispen-status dispen-status--{{ $dispen->status }}">{{ ucfirst($dispen->status) }}</span></td>
                             <td>
-                                @if($dispen->disetujui_oleh)
-                                    <div>{{ $dispen->approver->nama_user ?? '-' }}</div><span class="dispen-muted">{{ $dispen->disetujui_pada?->format('d-m-Y H:i') ?? '' }}</span>
-                                @else
-                                    <span class="dispen-muted">Belum dikonfirmasi</span>
+                                <span class="dispen-status dispen-status--{{ $dispen->status }}">{{ ucfirst($dispen->status) }}</span>
+                                @if($dispen->disetujui_pada)
+                                    <span class="dispen-muted" style="display:block;margin-top:4px">{{ $dispen->disetujui_pada->format('d-m-Y H:i') }}</span>
                                 @endif
                             </td>
                             <td class="cell-notes" title="{{ $dispen->catatan_persetujuan }}">{{ $dispen->catatan_persetujuan ?: '-' }}</td>
@@ -165,7 +170,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="11" class="dispen-empty">
+                        <tr><td colspan="10" class="dispen-empty">
                             @if($filterStatus === 'menunggu')
                                 Belum ada dispen yang menunggu persetujuan.
                             @elseif($filterStatus === 'riwayat')

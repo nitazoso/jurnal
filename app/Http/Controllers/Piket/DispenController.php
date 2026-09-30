@@ -164,7 +164,6 @@ class DispenController extends Controller
             'siswa.kelas',
             'jamMulai',
             'jamSelesai',
-            'approver',
             'petugasKesiswaan.guru',
         ])->where('jenis', 'dispen');
 
@@ -180,13 +179,28 @@ class DispenController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $tanggalDispen = $dispens->getCollection()
+            ->pluck('tanggal')
+            ->filter()
+            ->map(fn ($tanggal) => $tanggal->toDateString())
+            ->unique()
+            ->values();
+
+        $jadwalWakaByTanggal = PiketJadwal::with('guru')
+            ->whereIn('tanggal', $tanggalDispen)
+            ->where('jenis_tugas', 'Piket Waka')
+            ->orderBy('id_piket_jadwal')
+            ->get()
+            ->groupBy(fn ($jadwal) => $jadwal->tanggal->toDateString())
+            ->map(fn ($jadwals) => $jadwals->first());
+
         $counts = [
             'menunggu' => (int) ($statusCounts['menunggu'] ?? 0),
             'riwayat' => (int) ($statusCounts['disetujui'] ?? 0) + (int) ($statusCounts['ditolak'] ?? 0),
             'semua' => (int) $statusCounts->sum(),
         ];
 
-        return view('piket.dispen.index', compact('dispens', 'filterStatus', 'counts'));
+        return view('piket.dispen.index', compact('dispens', 'filterStatus', 'counts', 'jadwalWakaByTanggal'));
     }
 
     /**
@@ -533,6 +547,7 @@ class DispenController extends Controller
         $jadwal = PiketJadwal::with('guru')
             ->whereDate('tanggal', $tanggal)
             ->where('jenis_tugas', 'Piket Waka')
+            ->orderBy('id_piket_jadwal')
             ->first();
 
         return $jadwal?->guru;
