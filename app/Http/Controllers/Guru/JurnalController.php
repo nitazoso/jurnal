@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DetailAbsensi;
 use App\Models\Dispen;
 use App\Models\Jadwal;
+use App\Models\JamPel;
 use App\Models\Jurnal;
 use App\Models\Siswa;
 use Carbon\Carbon;
@@ -212,6 +213,7 @@ class JurnalController extends Controller
             'jamMulai',
             'jamSelesai',
         ]);
+        [$jamMulaiDisplay, $jamSelesaiDisplay] = $this->displayedJamPeriods($jadwal);
 
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)
             ->orderBy('nama_siswa')
@@ -226,11 +228,6 @@ class JurnalController extends Controller
             $today->toDateString()
         );
 
-        $activeDispenBerakhir = $this->activeDispenBerakhir(
-            $jadwal->id_kelas,
-            $today->toDateString()
-        );
-
         // Daftar siswa dengan dispen aktif, dipakai untuk notice
         // "Siswa Dispensasi" di Blade.
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
@@ -241,9 +238,10 @@ class JurnalController extends Controller
             'siswa',
             'activeDispenSiswa',
             'activeSickReports',
-            'activeDispenBerakhir',
             'siswaDispen',
-            'isPiketEntry'
+            'isPiketEntry',
+            'jamMulaiDisplay',
+            'jamSelesaiDisplay'
         ));
     }
 
@@ -260,6 +258,13 @@ class JurnalController extends Controller
         );
 
         $today = now('Asia/Jakarta');
+        $hariIni = $today->locale('id')->isoFormat('dddd');
+
+        if (mb_strtolower((string) $jadwal->hari) !== mb_strtolower($hariIni)) {
+            return redirect()
+                ->route('piket.jurnal.create', ['id_kelas' => $jadwal->id_kelas])
+                ->with('info', "Jurnal hanya dapat diisi untuk jadwal hari ini ({$hariIni}). Jadwal {$jadwal->hari} tidak bisa diisi hari ini.");
+        }
 
         if (! $jadwal->jamMulai || ! $jadwal->jamSelesai) {
             return redirect()
@@ -274,10 +279,10 @@ class JurnalController extends Controller
         }
 
         $jadwal->load(['kelas', 'mapel', 'guru', 'jamMulai', 'jamSelesai']);
+        [$jamMulaiDisplay, $jamSelesaiDisplay] = $this->displayedJamPeriods($jadwal);
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)->orderBy('nama_siswa')->get();
         $activeDispenSiswa = $this->activeDispenSiswa($jadwal->id_kelas, $today->toDateString());
         $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $today->toDateString());
-        $activeDispenBerakhir = $this->activeDispenBerakhir($jadwal->id_kelas, $today->toDateString());
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
         $isPiketEntry = true;
 
@@ -286,9 +291,10 @@ class JurnalController extends Controller
             'siswa',
             'activeDispenSiswa',
             'activeSickReports',
-            'activeDispenBerakhir',
             'siswaDispen',
-            'isPiketEntry'
+            'isPiketEntry',
+            'jamMulaiDisplay',
+            'jamSelesaiDisplay'
         ));
     }
 
@@ -339,6 +345,13 @@ class JurnalController extends Controller
         $jadwal = Jadwal::findOrFail(
             $validated['id_jadwal']
         );
+
+        $hariIni = $today->locale('id')->isoFormat('dddd');
+        if ($isPiketEntry && mb_strtolower((string) $jadwal->hari) !== mb_strtolower($hariIni)) {
+            return redirect()
+                ->route('piket.jurnal.create', ['id_kelas' => $jadwal->id_kelas])
+                ->with('info', "Jurnal hanya dapat diisi untuk jadwal hari ini ({$hariIni}). Jadwal {$jadwal->hari} tidak bisa diisi hari ini.");
+        }
 
         if (! $isPiketEntry && $jadwal->id_guru != $user->id_guru) {
             abort(403);
@@ -511,6 +524,8 @@ class JurnalController extends Controller
             'guru',
             'kelas',
             'jadwal.mapel',
+            'jadwal.jamMulai',
+            'jadwal.jamSelesai',
             'jamMulai',
             'jamSelesai',
             'detailAbsensis.siswa',
@@ -518,6 +533,7 @@ class JurnalController extends Controller
             'validator',
             'user',
         ]);
+        [$jamMulaiDisplay, $jamSelesaiDisplay] = $this->displayedJamPeriods($jurnal->jadwal);
 
         $siswaKelas = Siswa::where('id_kelas', $jurnal->id_kelas)
             ->orderBy('no_presensi')
@@ -528,16 +544,48 @@ class JurnalController extends Controller
 
         return view(
             'guru.jurnal.show',
-            compact('jurnal', 'siswaKelas', 'absensiBySiswa', 'detailAbsensiLengkap', 'backUrl', 'fromWaliKelasRekap')
+            compact('jurnal', 'siswaKelas', 'absensiBySiswa', 'detailAbsensiLengkap', 'backUrl', 'fromWaliKelasRekap', 'jamMulaiDisplay', 'jamSelesaiDisplay')
         );
+    }
+
+    /**
+     * Apply the admin's special Monday/Friday slot shift to displayed clock times.
+     */
+    private function displayedJamPeriods(Jadwal $jadwal): array
+    {
+        $jadwal->loadMissing(['jamMulai', 'jamSelesai']);
+        $jamMulai = $jadwal->jamMulai;
+        $jamSelesai = $jadwal->jamSelesai;
+
+        if (! Cache::get('jadwal_shift_senin_jumat', false)
+            || ! in_array($jadwal->hari, ['Senin', 'Jumat'], true)
+            || ! $jamMulai
+            || ! $jamSelesai) {
+            return [$jamMulai, $jamSelesai];
+        }
+
+        $klpHari = $jadwal->hari === 'Jumat' ? 'Jumat' : 'Senin-Kamis';
+        $jamKeMulai = (int) $jamMulai->jam_ke - 1;
+        $jamKeSelesai = (int) $jamSelesai->jam_ke - 1;
+        $shiftedPeriods = JamPel::query()
+            ->where('klp_hari', $klpHari)
+            ->whereIn('jam_ke', array_values(array_unique(array_filter([$jamKeMulai, $jamKeSelesai], fn ($jamKe) => $jamKe > 0))))
+            ->get()
+            ->keyBy('jam_ke');
+
+        return [
+            $shiftedPeriods->get($jamKeMulai, $jamMulai),
+            $shiftedPeriods->get($jamKeSelesai, $jamSelesai),
+        ];
     }
 
     private function isScheduleWindowOpen(Jadwal $jadwal): bool
     {
         $jadwal->loadMissing(['jamMulai', 'jamSelesai']);
 
-        $start = $jadwal->jamMulai?->jam_mulai;
-        $end = $jadwal->jamSelesai?->jam_selesai;
+        [$jamMulai, $jamSelesai] = $this->displayedJamPeriods($jadwal);
+        $start = $jamMulai?->jam_mulai;
+        $end = $jamSelesai?->jam_selesai;
 
         if (! $start || ! $end) {
             return false;
@@ -560,7 +608,8 @@ class JurnalController extends Controller
     {
         $jadwal->loadMissing(['jamMulai', 'jamSelesai']);
 
-        $end = $jadwal->jamSelesai?->jam_selesai;
+        [, $jamSelesai] = $this->displayedJamPeriods($jadwal);
+        $end = $jamSelesai?->jam_selesai;
 
         if (! $end) {
             return false;
@@ -600,26 +649,6 @@ class JurnalController extends Controller
             ->keyBy('id_siswa');
     }
 
-    private function activeDispenBerakhir(
-        int $idKelas,
-        string $tanggal
-    ): ?string {
-        return $this->activeDispenQuery(
-            $idKelas,
-            $tanggal
-        )
-            ->with(
-                'jamSelesai:id_jam,jam_selesai'
-            )
-            ->get()
-            ->map(
-                fn (Dispen $dispen) =>
-                    $dispen->jamSelesai?->jam_selesai
-            )
-            ->filter()
-            ->min();
-    }
-
     private function activeDispenQuery(
         int $idKelas,
         string $tanggal
@@ -629,37 +658,13 @@ class JurnalController extends Controller
                 ->whereRaw('1 = 0');
         }
 
-        $waktuSekarang = now('Asia/Jakarta')->format('H:i:s');
-
         return Dispen::query()
             ->where('jenis', 'dispen')
             ->whereDate('tanggal', $tanggal)
             ->where('status', 'disetujui')
             ->whereHas(
                 'siswa',
-                fn ($query) =>
-                    $query->where(
-                        'id_kelas',
-                        $idKelas
-                    )
-            )
-            ->whereHas(
-                'jamMulai',
-                fn ($query) =>
-                    $query->where(
-                        'jam_mulai',
-                        '<=',
-                        $waktuSekarang
-                    )
-            )
-            ->whereHas(
-                'jamSelesai',
-                fn ($query) =>
-                    $query->where(
-                        'jam_selesai',
-                        '>=',
-                        $waktuSekarang
-                    )
+                fn ($query) => $query->where('id_kelas', $idKelas)
             );
     }
 }

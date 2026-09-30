@@ -715,7 +715,7 @@
                     @endif
                     <div class="field-group">
                         <label class="field-label">Jam Pelajaran</label>
-                        <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}</div>
+                        <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai?->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai?->jam_ke ?? '-' }} <span>({{ substr($jamMulaiDisplay?->jam_mulai ?? '', 0, 5) }}–{{ substr($jamSelesaiDisplay?->jam_selesai ?? '', 0, 5) }})</span></div>
                     </div>
                 </div>
 
@@ -922,7 +922,7 @@
                     </div>
                     <div class="review-info-item">
                         <div class="review-info-label">Jam Pelajaran</div>
-                        <div class="review-info-value" id="reviewJam">Jam Ke-{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}</div>
+                        <div class="review-info-value" id="reviewJam">Jam Ke-{{ $jadwal->jamMulai?->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai?->jam_ke ?? '-' }} ({{ substr($jamMulaiDisplay?->jam_mulai ?? '', 0, 5) }}–{{ substr($jamSelesaiDisplay?->jam_selesai ?? '', 0, 5) }})</div>
                     </div>
                 </div>
             </div>
@@ -1270,22 +1270,7 @@
     document.getElementById('addAbsenceRow')?.addEventListener('click', () => addAbsenceRow());
     updateSummary();
 
-    const activeDispenBerakhir = @json($activeDispenBerakhir ?? null);
-    if (activeDispenBerakhir) {
-      const parts = activeDispenBerakhir.split(':').map(Number);
-      const hour = parts[0] || 0;
-      const minute = parts[1] || 0;
-      const second = parts[2] || 0;
-
-      const waktuSelesai = new Date();
-      waktuSelesai.setHours(hour, minute, second, 0);
-
-      const delay = waktuSelesai.getTime() - Date.now();
-      if (delay > 0) {
-        // Reload halaman saat masa dispensasi berakhir
-        window.setTimeout(() => window.location.reload(), delay + 1000);
-      }
-    }
+    // Dispen yang sudah disetujui pada tanggal ini selalu dicatat otomatis.
 
     // Intercept Form Submit -> Open Review Modal
     const form = document.getElementById('journalForm');

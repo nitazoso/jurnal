@@ -12,6 +12,7 @@ class Dispen extends Model
 
     protected $fillable = [
         'id_siswa',
+        'batch_token',
         'jenis',
         'id_kesiswaan',
         'submitted_by',

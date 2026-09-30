@@ -416,6 +416,7 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::post('/piket/dispen/sakit', [PiketDispenController::class, 'sickStore'])->name('piket.dispen.sakit.store');
     Route::post('/piket/dispen', [PiketDispenController::class, 'store'])->name('piket.dispen.store');
     Route::get('/piket/dispen/{dispen}/ringkasan', [PiketDispenController::class, 'summary'])->name('piket.dispen.summary');
+    Route::get('/piket/dispen/{dispen}/detail', [PiketDispenController::class, 'detail'])->name('piket.dispen.detail');
     Route::get('/piket/dispen/{dispen}/whatsapp', [PiketDispenController::class, 'whatsapp'])->name('piket.dispen.whatsapp');
     Route::get('/piket/dispen/{dispen}/edit', [PiketDispenController::class, 'edit'])->name('piket.dispen.edit');
     Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');

@@ -85,7 +85,7 @@
                     <span class="info-label">Jam Ke</span>
                     <div class="info-val">
                         Jam {{ $jurnal->jamMulai->jam_ke ?? '-' }}-{{ $jurnal->jamSelesai->jam_ke ?? '-' }}
-                        <span class="time-sub">({{ $jurnal->jamMulai->jam ?? '-' }} - {{ $jurnal->jamSelesai->jam ?? '-' }})</span>
+                        <span class="time-sub">({{ $jamMulaiDisplay?->jam_mulai ? substr($jamMulaiDisplay->jam_mulai, 0, 5) : '-' }}–{{ $jamSelesaiDisplay?->jam_selesai ? substr($jamSelesaiDisplay->jam_selesai, 0, 5) : '-' }})</span>
                     </div>
                 </div>
 
