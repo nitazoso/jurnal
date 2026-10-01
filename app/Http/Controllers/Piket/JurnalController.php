@@ -14,6 +14,94 @@ use ZipArchive;
 
 class JurnalController extends Controller
 {
+    public function harian(Request $request)
+    {
+        $tanggal = $request->input('tanggal', now('Asia/Jakarta')->toDateString());
+        $tanggal = validator(['tanggal' => $tanggal], [
+            'tanggal' => ['required', 'date_format:Y-m-d'],
+        ])->validate()['tanggal'];
+
+        $jumlahPerKelas = Jurnal::query()
+            ->whereDate('tanggal', $tanggal)
+            ->selectRaw('id_kelas, COUNT(*) as total, SUM(CASE WHEN status_validasi_guru = ? THEN 1 ELSE 0 END) as layak_approve, SUM(CASE WHEN status_validasi_guru = ? AND piket_approved_at IS NOT NULL THEN 1 ELSE 0 END) as sudah_diapprove', ['Disetujui', 'Disetujui'])
+            ->groupBy('id_kelas')
+            ->get()
+            ->keyBy('id_kelas');
+
+        $kelases = Kelas::orderBy('nama_kelas')->get()->map(function ($kelas) use ($jumlahPerKelas) {
+            $ringkasan = $jumlahPerKelas->get($kelas->id_kelas);
+            $kelas->jumlah_jurnal_harian = (int) ($ringkasan->total ?? 0);
+            $kelas->jumlah_layak_approve_harian = (int) ($ringkasan->layak_approve ?? 0);
+            $kelas->jumlah_sudah_diapprove_harian = (int) ($ringkasan->sudah_diapprove ?? 0);
+            return $kelas;
+        });
+
+        return view('piket.jurnal-harian.index', compact('tanggal', 'kelases'));
+    }
+
+    public function harianKelas(Request $request, Kelas $kelas)
+    {
+        $tanggal = $request->input('tanggal', now('Asia/Jakarta')->toDateString());
+        $tanggal = validator(['tanggal' => $tanggal], [
+            'tanggal' => ['required', 'date_format:Y-m-d'],
+        ])->validate()['tanggal'];
+
+        $jurnalHariIni = Jurnal::query()
+            ->where('id_kelas', $kelas->id_kelas)
+            ->whereDate('tanggal', $tanggal);
+
+        $adaMenungguVerifikasi = (clone $jurnalHariIni)
+            ->where('status_validasi_guru', 'Menunggu')
+            ->exists();
+
+        $jurnals = (clone $jurnalHariIni)
+            ->with([
+                'guru',
+                'jadwal.mapel',
+                'jamMulai',
+                'jamSelesai',
+                'detailAbsensis',
+                'piketApprover',
+            ])
+            ->whereIn('status_validasi_guru', ['Disetujui', 'Ditolak', 'Perlu Diperbaiki'])
+            ->get()
+            ->sortBy(fn ($jurnal) => $jurnal->jamMulai?->jam_mulai ?? '99:99:99')
+            ->values();
+
+        return view('piket.jurnal-harian.show', compact('kelas', 'tanggal', 'jurnals', 'adaMenungguVerifikasi'));
+    }
+
+    public function approveHarian(Request $request, Kelas $kelas)
+    {
+        $user = $request->user();
+        abort_unless(
+            $user?->role === 'Staff Piket' || ($user?->role === 'Guru' && $user->hasPiketToday()),
+            403
+        );
+
+        $validated = $request->validate([
+            'tanggal' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $waktuApprove = now('Asia/Jakarta');
+        $jumlahDiapprove = Jurnal::query()
+            ->where('id_kelas', $kelas->id_kelas)
+            ->whereDate('tanggal', $validated['tanggal'])
+            ->where('status_validasi_guru', 'Disetujui')
+            ->whereNull('piket_approved_at')
+            ->update([
+                'piket_approved_by' => $user->id_user,
+                'piket_approved_at' => $waktuApprove,
+                'updated_at' => $waktuApprove,
+            ]);
+
+        if ($jumlahDiapprove === 0) {
+            return back()->with('info', 'Tidak ada jurnal baru yang perlu di-approve.');
+        }
+
+        return back()->with('success', $jumlahDiapprove.' jurnal berhasil di-approve.');
+    }
+
     public function docxPreview(Request $request)
     {
         return view('piket.jurnal.docx-preview', $this->docxReportData($request));
@@ -217,6 +305,10 @@ class JurnalController extends Controller
                 'tanggal',
                 $request->integer('tahun')
             );
+        }
+
+        if ($request->filled('tanggal')) {
+            $jurnalQuery->whereDate('tanggal', $request->input('tanggal'));
         }
 
         // =========================

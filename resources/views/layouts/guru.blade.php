@@ -478,7 +478,6 @@
 
             .desktop-main {
                 margin-left: 0;
-                padding-top: 58px;
             }
 
             .desktop-header {

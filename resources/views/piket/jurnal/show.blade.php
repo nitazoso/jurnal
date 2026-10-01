@@ -50,18 +50,19 @@
     .show-no-absence { padding:15px; border:1px solid #bbebcd; border-radius:12px; background:#effaf3; color:#187548; font-size:12px; font-weight:700; }
     .show-no-detail { margin-top:10px; color:#9a5723; font-size:11px; line-height:1.6; }
     .show-validation-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
-    @media(max-width:850px) { .show-info-grid,.show-validation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+    .show-author-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    @media(max-width:850px) { .show-info-grid,.show-validation-grid,.show-author-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
     @media(max-width:650px) {
         .jurnal-show { gap:12px; padding:14px 11px; }
         .show-header { flex-direction:column; gap:13px; padding:17px; }
         .show-header-actions { width:100%; flex-wrap:wrap; }
         .show-title { font-size:20px; }
         .show-panel { padding:15px; }
-        .show-info-grid,.show-validation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+        .show-info-grid,.show-validation-grid,.show-author-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
         .show-absence-list { grid-template-columns:1fr; }
     }
     @media(max-width:400px) {
-        .show-info-grid,.show-validation-grid { grid-template-columns:1fr; }
+        .show-info-grid,.show-validation-grid,.show-author-grid { grid-template-columns:1fr; }
         .show-attendance-summary { gap:7px; }
         .show-attendance-count { padding:11px; }
         .show-status { font-size:10px; }
@@ -173,15 +174,13 @@
         </section>
     @endif
 
-    <section class="journal-detail-panel">
-        <h2>Diisi Oleh</h2>
-        <dl class="journal-detail-info">
-            <div class="journal-detail-info-item"><dt>Nama</dt><dd>{{ $jurnal->user?->nama_user ?? '-' }}</dd></div>
-            <div class="journal-detail-info-item"><dt>Username</dt><dd>{{ $jurnal->user?->username ?? '-' }}</dd></div>
-            <div class="journal-detail-info-item"><dt>Peran</dt><dd>{{ $jurnal->user?->role ?? '-' }}</dd></div>
-            <div class="journal-detail-info-item"><dt>Nomor WhatsApp</dt><dd>{{ $jurnal->user?->no_wa ?: '-' }}</dd></div>
-            <div class="journal-detail-info-item"><dt>ID Pengisi</dt><dd>{{ $jurnal->id_user }}</dd></div>
-            <div class="journal-detail-info-item"><dt>Waktu Input</dt><dd>{{ $jurnal->created_at?->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') ?? '-' }}</dd></div>
+    <section class="show-panel">
+        <h2 class="show-panel-heading"><span class="material-symbols-outlined">account_circle</span>Diisi Oleh</h2>
+        <dl class="show-author-grid">
+            <div class="show-info-item"><dt>Nama</dt><dd>{{ $jurnal->user?->nama_user ?? '-' }}</dd></div>
+            <div class="show-info-item"><dt>Username</dt><dd>{{ $jurnal->user?->username ?? '-' }}</dd></div>
+            <div class="show-info-item"><dt>Peran</dt><dd>{{ $jurnal->user?->role ?? '-' }}</dd></div>
+            <div class="show-info-item"><dt>Waktu Input</dt><dd>{{ $jurnal->created_at?->copy()->timezone('Asia/Jakarta')->translatedFormat('d F Y, H:i') ?? '-' }}</dd></div>
         </dl>
     </section>
 </main>

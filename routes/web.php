@@ -377,6 +377,15 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::get('/piket/dashboard', [PiketDashboardController::class, 'index'])
         ->name('piket.dashboard');
 
+    Route::get('/piket/jurnal-harian', [PiketJurnalController::class, 'harian'])
+        ->name('piket.jurnal-harian.index');
+
+    Route::get('/piket/jurnal-harian/{kelas}', [PiketJurnalController::class, 'harianKelas'])
+        ->name('piket.jurnal-harian.kelas');
+
+    Route::post('/piket/jurnal-harian/{kelas}/approve', [PiketJurnalController::class, 'approveHarian'])
+        ->name('piket.jurnal-harian.approve');
+
     Route::get('/piket/jurnal/rekap', [PiketJurnalController::class, 'rekap'])
         ->name('piket.jurnal.rekap');
 

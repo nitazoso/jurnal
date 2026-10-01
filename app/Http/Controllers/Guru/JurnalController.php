@@ -95,11 +95,8 @@ class JurnalController extends Controller
     /**
      * Halaman pilih jadwal untuk mengisi jurnal.
      *
-     * Hanya menampilkan:
-     * - jadwal milik guru yang login
-     * - jadwal hari ini
-     * - jadwal yang jurnal HARI INI belum dibuat (bukan sepanjang masa,
-     *   karena jadwal berulang tiap minggu)
+     * Menampilkan seluruh jadwal guru untuk hari ini, termasuk jadwal
+     * yang sudah diisi dan yang waktu pengisiannya belum tiba.
      */
     public function create()
     {
@@ -150,24 +147,19 @@ class JurnalController extends Controller
             })
             ->values();
 
-        $jadwalsSaatIni = $jadwals
-            ->filter(fn ($jadwal) => ! $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty()
-                && $this->isScheduleWindowOpen($jadwal))
-            ->values();
-
-        $jadwalsTertinggal = $jadwals
-            ->filter(fn ($jadwal) => ! $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty()
-                && $this->isScheduleTimePassed($jadwal))
-            ->values();
-
-        $jadwalsSudahDiisi = $jadwals
-            ->filter(fn ($jadwal) => $jadwal->jurnals->where('tanggal', $today->toDateString())->isNotEmpty())
-            ->values();
+        $jadwals->each(function ($jadwal) use ($today) {
+            $sudahDiisi = $jadwal->jurnals->contains(
+                fn ($jurnal) => $jurnal->tanggal?->toDateString() === $today->toDateString()
+            );
+            $jadwal->setAttribute('jurnal_sudah_diisi_hari_ini', $sudahDiisi);
+            $jadwal->setAttribute('bisa_diisi_sekarang',
+                $this->isScheduleWindowOpen($jadwal) || $this->isScheduleTimePassed($jadwal)
+            );
+            $jadwal->setAttribute('jurnal_terlambat', $this->isScheduleTimePassed($jadwal));
+        });
 
         return view('guru.jurnal.create', compact(
-            'jadwalsSaatIni',
-            'jadwalsTertinggal',
-            'jadwalsSudahDiisi',
+            'jadwals',
             'hariIni',
             'today',
             'allDisabled'
@@ -204,8 +196,7 @@ class JurnalController extends Controller
                 ->with('info', 'Jurnal untuk jadwal ini hari ini sudah tersimpan di riwayat.');
         }
 
-        if (! config('app.jurnal_bebas_testing')
-            && ! $this->isScheduleWindowOpen($jadwal)
+        if (! $this->isScheduleWindowOpen($jadwal)
             && ! $this->isScheduleTimePassed($jadwal)) {
             return redirect()
                 ->route('guru.jurnal.create')
@@ -386,7 +377,6 @@ class JurnalController extends Controller
         }
 
         if (! $isPiketEntry
-            && ! config('app.jurnal_bebas_testing')
             && ! $this->isScheduleWindowOpen($jadwal)
             && ! $this->isScheduleTimePassed($jadwal)) {
             return back()

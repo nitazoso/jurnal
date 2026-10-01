@@ -200,6 +200,82 @@
     .table-wrapper tbody tr {
         animation: rowFadeIn 0.3s ease-out forwards;
     }
+
+    .siswa-pagination {
+        margin-top: 20px;
+        padding: 14px 16px;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+    }
+
+    .siswa-pagination nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .siswa-pagination nav > div:last-child {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .siswa-pagination nav > div:last-child a,
+    .siswa-pagination nav > div:last-child span {
+        display: inline-flex;
+        min-width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 9px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #fff;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+        text-decoration: none;
+        transition: all .18s ease;
+    }
+
+    .siswa-pagination nav > div:last-child a:hover {
+        border-color: #4f6df5;
+        background: #f5f7ff;
+        color: #3446a5;
+    }
+
+    .siswa-pagination nav > div:last-child span[aria-current="page"] {
+        border-color: #30366f;
+        background: #30366f;
+        color: #fff;
+    }
+
+    .siswa-pagination nav > div:last-child span[aria-disabled="true"] {
+        background: #f8fafc;
+        color: #cbd5e1;
+    }
+
+    .siswa-pagination svg {
+        width: 16px;
+        height: 16px;
+    }
+
+    @media (max-width: 600px) {
+        .siswa-pagination nav {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .siswa-pagination nav > div:last-child {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+    }
 </style>
 
 
@@ -523,7 +599,7 @@
     <!-- Pagination -->
     @if($siswas->hasPages())
 
-        <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+        <div class="siswa-pagination">
             {{ $siswas->appends(request()->query())->links() }}
         </div>
 

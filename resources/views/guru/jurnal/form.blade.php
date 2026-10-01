@@ -552,7 +552,11 @@
         .hero-title { font-size: 20px; }
         .hero-description { font-size: 11.5px; }
         .form-card { margin-bottom: 14px; padding: 16px; border-radius: 14px; }
-        .schedule-grid { grid-template-columns: 1fr !important; gap: 12px; }
+        .schedule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px; }
+        .schedule-grid .field-group { min-width: 0; }
+        .schedule-grid .field-group--full { grid-column: 1 / -1; }
+        .schedule-grid .readonly-field { min-width: 0; flex-wrap: wrap; gap: 5px; padding: 8px; font-size: 10.5px; }
+        .schedule-grid .readonly-field .material-symbols-rounded { flex: 0 0 auto; font-size: 16px; }
 
         .teacher-status { align-items: flex-start; flex-direction: column; gap: 14px; }
         .teacher-status-info { width: 100%; }
@@ -720,10 +724,7 @@
                         <label class="field-label">Jam Pelajaran</label>
                         <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai?->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai?->jam_ke ?? '-' }} <span>({{ substr($jamMulaiDisplay?->jam_mulai ?? '', 0, 5) }}–{{ substr($jamSelesaiDisplay?->jam_selesai ?? '', 0, 5) }})</span></div>
                     </div>
-                </div>
-
-                <div style="margin-top:16px;">
-                    <div class="field-group">
+                    <div class="field-group field-group--full">
                         <label class="field-label">Mata Pelajaran</label>
                         <div class="readonly-field"><span class="material-symbols-rounded">menu_book</span>{{ $jadwal->mapel->nama_mapel ?? '-' }}</div>
                     </div>
@@ -842,7 +843,7 @@
                 <div class="section-header">
                     <div class="section-icon"><span class="material-symbols-rounded">assignment</span></div>
                     <div>
-                        <h3 class="section-title">Tugas & Catatan</h3>
+                        <h3 class="section-title">Tugas</h3>
                         <p class="section-subtitle">Tambahkan tugas atau catatan pembelajaran jika diperlukan</p>
                     </div>
                 </div>

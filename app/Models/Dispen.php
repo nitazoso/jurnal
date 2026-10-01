@@ -64,7 +64,7 @@ class Dispen extends Model
             JamPel::class,
             'id_jam_mulai',
             'id_jam'
-        );
+        )->withTrashed();
     }
 
 
@@ -78,7 +78,7 @@ class Dispen extends Model
             JamPel::class,
             'id_jam_selesai',
             'id_jam'
-        );
+        )->withTrashed();
     }
 
 

@@ -411,6 +411,10 @@
                     <span class="material-symbols-outlined">summarize</span>
                     <span>Rekap Aktivitas Jurnal</span>
                 </a>
+                <a href="{{ route('piket.jurnal-harian.index') }}" class="nav-item {{ request()->routeIs('piket.jurnal-harian.*') ? 'active' : '' }}">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <span>Jurnal Harian</span>
+                </a>
                 @unless(cache('jadwal_all_disabled', false))
                 <a href="{{ route('piket.jurnal.create') }}" class="nav-item {{ request()->routeIs('piket.jurnal.create', 'piket.jurnal.form') ? 'active' : '' }}">
                     <span class="material-symbols-outlined">edit_note</span>

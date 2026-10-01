@@ -13,7 +13,7 @@
     .class-picker { display: flex; align-items: end; flex-wrap: wrap; gap: 10px; }
     .class-picker label { display: grid; flex: 1 1 240px; gap: 6px; color: #475569; font-size: 12px; font-weight: 700; }
     .class-picker select { min-height: 42px; padding: 8px 11px; border: 1px solid #d7deeb; border-radius: 7px; background: #fff; color: #1f2937; font: inherit; }
-    .class-picker button, .schedule-action { min-height: 40px; padding: 9px 14px; border: 0; border-radius: 7px; background: #30366f; color: #fff; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
+    .schedule-action { min-height: 40px; padding: 9px 14px; border: 0; border-radius: 7px; background: #30366f; color: #fff; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; }
     .schedule-days { display: grid; gap: 20px; }
     .schedule-day-group { display: grid; gap: 9px; }
     .schedule-day-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 0 8px; border-bottom: 1px solid #dbe3ef; }
@@ -67,9 +67,13 @@
                     @endforeach
                 </select>
             </label>
-            <button type="submit">Tampilkan Jadwal</button>
         </form>
     </section>
+    <script>
+        document.getElementById('id_kelas')?.addEventListener('change', event => {
+            event.currentTarget.form?.requestSubmit();
+        });
+    </script>
 
     @if($selectedKelas)
         <section class="journal-entry-section">
