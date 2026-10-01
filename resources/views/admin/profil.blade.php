@@ -38,8 +38,8 @@
 
     </section>
 
-    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName])
-    @include('components.profile-edit-modal', ['action' => route('admin.profil.update'), 'user' => $user])
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'showEditButton' => true])
+    @include('components.profile-edit-modal', ['action' => route('admin.profil.update'), 'user' => $user, 'hideTrigger' => true])
 
     {{-- LOGOUT --}}
     <div class="logout-wrapper">

@@ -93,9 +93,9 @@
     /* Stats Grid */
     .stats-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr 1fr;
-        gap: 20px;
-        margin-bottom: 32px;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 16px;
     }
 
     .stat-card-main {
@@ -147,6 +147,87 @@
         font-weight: 500;
         color: #94a3b8;
     }
+
+    .trend-panel {
+        margin-bottom: 32px;
+        padding: 20px 22px 14px;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: linear-gradient(145deg, #fff, #f7fbfa);
+    }
+
+    .trend-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .trend-heading h3 {
+        margin: 0;
+        color: var(--text-dark);
+        font-size: 16px;
+        font-weight: 750;
+    }
+
+    .trend-heading p {
+        margin: 4px 0 0;
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .trend-total {
+        padding: 6px 10px;
+        border: 1px solid #cce8df;
+        border-radius: 8px;
+        background: #eff8f4;
+        color: #176d5d;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+    }
+
+    .trend-chart {
+        display: block;
+        width: 100%;
+        height: 145px;
+        margin-top: 8px;
+        overflow: visible;
+    }
+
+    .trend-gridline {
+        stroke: #e3ece9;
+        stroke-width: 1;
+        stroke-dasharray: 3 5;
+    }
+
+    .trend-line {
+        stroke: #168b74;
+        stroke-width: 3.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 3px 3px rgba(22, 139, 116, .16));
+    }
+
+    .trend-point { fill: #168b74; stroke: #fff; stroke-width: 2; }
+    .trend-point.current { fill: #0f6659; }
+    .trend-halo { fill: rgba(22, 139, 116, .16); }
+
+    .trend-labels {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 4px;
+        text-align: center;
+    }
+
+    .trend-labels span {
+        display: grid;
+        gap: 3px;
+        color: #738191;
+        font-size: 10px;
+    }
+
+    .trend-labels strong { color: #243744; font-size: 11px; }
 
     /* Section Header */
     .section-header {
@@ -365,6 +446,14 @@
         padding: 16px; /* Padding sedikit diperkecil agar muat di layar HP */
     }
 
+        .trend-panel {
+            padding: 16px 12px 12px;
+        }
+
+        .trend-chart {
+            height: 125px;
+        }
+
     .stat-title-sm {
         font-size: 10px; /* Ukuran judul diperkecil sedikit */
     }
@@ -424,16 +513,28 @@
         <!-- Card Jurnal -->
         <div class="stat-card-main">
             <div class="stat-title-sm">JURNAL HARI INI</div>
-            <div class="stat-value-lg">{{ $jurnals->count() }} <span>Jurnal Terisi</span></div>
+            <div class="stat-value-lg">{{ number_format($totalJurnalHariIni) }} <span>Jurnal Terisi</span></div>
             <div style="margin-top: 20px; font-size: 12px; color: #34d399; display: flex; align-items: center; gap: 4px;">
-             Terdata di sistem piket
+             {{ number_format($totalHadir) }} siswa hadir hari ini
             </div>
+        </div>
+
+        <div class="stat-card-light">
+            <div class="stat-title-sm">SISWA HADIR</div>
+            <div class="stat-value-lg" style="color: #137333;">{{ number_format($totalHadir) }}</div>
+            <div style="margin-top: 10px; font-size: 12px; color: #64748b;">Dari jurnal hari ini</div>
+        </div>
+
+        <div class="stat-card-light">
+            <div class="stat-title-sm">SISWA TIDAK HADIR</div>
+            <div class="stat-value-lg" style="color: #c5221f;">{{ number_format($totalAbsen) }}</div>
+            <div style="margin-top: 10px; font-size: 12px; color: #64748b;">Dari jurnal hari ini</div>
         </div>
 
         <!-- Card Dispen -->
         <div class="stat-card-light" style="background: #eefbe8; border-color: #d2f4c2;">
             <div class="stat-title-sm" style="color: #2e7d32;">DISPEN HARI INI</div>
-            <div class="stat-value-lg" style="color: #1b5e20;">{{ $dispens->count() }}</div>
+            <div class="stat-value-lg" style="color: #1b5e20;">{{ number_format($totalDispenHariIni) }}</div>
             <div style="margin-top: 10px; font-size: 12px; color: #388e3c; font-weight: 500;">
                 Siswa Dispensasi
             </div>
@@ -448,6 +549,66 @@
             </div>
         </div>
     </div>
+
+    @php
+        $chartWidth = 600;
+        $chartHeight = 150;
+        $chartTop = 14;
+        $chartBottom = 20;
+        $chartSide = 10;
+        $chartMax = max($monthlyTrend->pluck('total')->all() ?: [0]);
+        $chartPlotMax = max($chartMax, 1);
+        $chartPlotWidth = $chartWidth - ($chartSide * 2);
+        $chartPlotHeight = $chartHeight - $chartTop - $chartBottom;
+        $chartPoints = $monthlyTrend->map(function ($item, $index) use ($monthlyTrend, $chartWidth, $chartHeight, $chartBottom, $chartTop, $chartSide, $chartPlotWidth, $chartPlotHeight, $chartPlotMax) {
+            $count = $monthlyTrend->count();
+            $x = $count > 1 ? $chartSide + ($index * ($chartPlotWidth / ($count - 1))) : $chartWidth / 2;
+            $y = $chartHeight - $chartBottom - (($item['total'] / $chartPlotMax) * $chartPlotHeight);
+
+            return ['x' => $x, 'y' => $y, 'label' => $item['label'], 'total' => $item['total']];
+        });
+        $chartLine = $chartPoints->map(fn ($point) => $point['x'] . ',' . $point['y'])->implode(' ');
+        $chartArea = $chartPoints->isNotEmpty()
+            ? 'M ' . $chartPoints->first()['x'] . ',' . ($chartHeight - $chartBottom) . ' L ' . $chartLine . ' L ' . $chartPoints->last()['x'] . ',' . ($chartHeight - $chartBottom) . ' Z'
+            : '';
+    @endphp
+
+    <section class="trend-panel" aria-labelledby="piket-trend-title">
+        <div class="trend-heading">
+            <div>
+                <h3 id="piket-trend-title">Perkembangan Jurnal</h3>
+                <p>Jurnal masuk dalam enam bulan terakhir</p>
+            </div>
+            <span class="trend-total">{{ number_format($monthlyTrend->sum('total')) }} jurnal</span>
+        </div>
+        <svg class="trend-chart" viewBox="0 0 {{ $chartWidth }} {{ $chartHeight }}" preserveAspectRatio="none" role="img" aria-label="Grafik jurnal masuk enam bulan terakhir">
+            <defs>
+                <linearGradient id="piketTrendFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#168b74" stop-opacity=".22"></stop>
+                    <stop offset="100%" stop-color="#168b74" stop-opacity=".015"></stop>
+                </linearGradient>
+            </defs>
+            @foreach([0, 1, 2, 3] as $gridIndex)
+                @php $gridY = $chartTop + ($gridIndex * ($chartPlotHeight / 3)); @endphp
+                <line x1="0" y1="{{ $gridY }}" x2="{{ $chartWidth }}" y2="{{ $gridY }}" class="trend-gridline"></line>
+            @endforeach
+            @if($chartPoints->isNotEmpty())
+                <path d="{{ $chartArea }}" fill="url(#piketTrendFill)"></path>
+            @endif
+            <polyline points="{{ $chartLine }}" fill="none" class="trend-line"></polyline>
+            @foreach($chartPoints as $point)
+                @if($loop->last)
+                    <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="8" class="trend-halo"></circle>
+                @endif
+                <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="{{ $loop->last ? 5 : 3.5 }}" class="trend-point {{ $loop->last ? 'current' : '' }}"></circle>
+            @endforeach
+        </svg>
+        <div class="trend-labels">
+            @foreach($chartPoints as $point)
+                <span><strong>{{ $point['total'] }}</strong>{{ $point['label'] }}</span>
+            @endforeach
+        </div>
+    </section>
 
     <!-- Jurnal Terbaru Section -->
     <div class="section-header">

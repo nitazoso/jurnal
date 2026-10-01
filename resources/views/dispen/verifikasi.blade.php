@@ -96,28 +96,26 @@
                 </div>
             @endif
             
-            <!-- Detail Informasi Siswa -->
-            <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div>
-                    <span class="text-xs font-medium text-slate-400 block mb-0.5">Siswa</span>
-                    <p class="text-sm font-bold text-slate-800">{{ $dispen->siswa->nama_siswa ?? '-' }}</p>
+            <!-- Daftar Siswa dalam Satu Pengajuan -->
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-slate-800">Daftar Siswa</h2>
+                    <span class="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">{{ $dispens->count() }} siswa</span>
                 </div>
-                <div>
-                    <span class="text-xs font-medium text-slate-400 block mb-0.5">Kelas</span>
-                    <p class="text-sm font-bold text-slate-800">{{ $dispen->siswa->kelas->nama_kelas ?? '-' }}</p>
-                </div>
-                <div>
-                    <span class="text-xs font-medium text-slate-400 block mb-0.5">Tanggal</span>
-                    <p class="text-sm font-bold text-slate-800">{{ $dispen->tanggal ? $dispen->tanggal->format('d-m-Y') : '-' }}</p>
-                </div>
-                <div>
-                    <span class="text-xs font-medium text-slate-400 block mb-0.5">Jam Ke-</span>
-                    <p class="text-sm font-bold text-slate-800">
-                        {{ $dispen->jamMulai ? substr($dispen->jamMulai->jam_mulai, 0, 5) : '-' }} - {{ $dispen->jamSelesai ? substr($dispen->jamSelesai->jam_selesai, 0, 5) : '-' }}
-                    </p>
+                <div class="space-y-2">
+                    @foreach($dispens as $item)
+                        <div class="grid grid-cols-[28px_1fr_1fr] gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                            <span class="flex h-7 w-7 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">{{ $loop->iteration }}</span>
+                            <div><span class="mb-0.5 block text-[10px] text-slate-400">Siswa</span><p class="text-sm font-bold text-slate-800">{{ $item->siswa->nama_siswa ?? '-' }}</p></div>
+                            <div><span class="mb-0.5 block text-[10px] text-slate-400">Kelas</span><p class="text-sm font-bold text-slate-800">{{ $item->siswa->kelas->nama_kelas ?? '-' }}</p></div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-
+            <div class="grid grid-cols-2 gap-4 rounded-xl border border-slate-100 bg-slate-50 p-4">
+                <div><span class="mb-0.5 block text-xs font-medium text-slate-400">Tanggal</span><p class="text-sm font-bold text-slate-800">{{ $dispen->tanggal?->format('d-m-Y') ?? '-' }}</p></div>
+                <div><span class="mb-0.5 block text-xs font-medium text-slate-400">Jam</span><p class="text-sm font-bold text-slate-800">{{ $dispen->jamMulai ? substr($dispen->jamMulai->jam_mulai, 0, 5) : '-' }} - {{ $dispen->jamSelesai ? substr($dispen->jamSelesai->jam_selesai, 0, 5) : '-' }}</p></div>
+            </div>
             <!-- Alasan -->
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <span class="text-xs font-medium text-slate-400 block mb-1">Alasan Dispensasi</span>

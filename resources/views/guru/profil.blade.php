@@ -34,18 +34,8 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
         </span>
     </section>
 
-    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'profileRole' => $profileRole])
-    @include('components.profile-edit-modal', ['action' => route('guru.profil.update'), 'user' => $user])
-
-    {{-- LOGOUT --}}
-    <div class="logout-wrapper">
-        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
-            @csrf
-            <button class="logout-button" type="submit">
-                Logout
-            </button>
-        </form>
-    </div>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'profileRole' => $profileRole, 'showEditButton' => true])
+    @include('components.profile-edit-modal', ['action' => route('guru.profil.update'), 'user' => $user, 'hideTrigger' => true])
 
 </div>
 
@@ -306,42 +296,9 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
         font-size: 0.8rem;
     }
 
-    /* LOGOUT ACTION */
-    .logout-wrapper {
-        padding-top: 0;
-    }
-
-    .logout-button {
-        width: 100%;
-        padding: 15px 20px;
-        border: 1px solid rgba(201, 74, 43, 0.15);
-        border-radius: 16px;
-        background: #FEE2E2;
-        color: #DC2626;
-        font-size: 15px;
-        font-weight: 700;
-        text-align: center;
-        cursor: pointer;
-        transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-    }
-
-    .logout-button:hover {
-        background: #FCA5A5;
-        border-color: rgba(220, 38, 38, 0.2);
-        color: #B91C1C;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(220, 38, 38, 0.12);
-    }
-
-    .logout-button:active {
-        transform: translateY(0) scale(0.99);
-        box-shadow: none;
-    }
-
     /* ANIMATIONS */
     .profile-hero,
-    .personal-card,
-    .logout-wrapper {
+    .personal-card {
         animation: profileFadeUp 0.45s cubic-bezier(.16, 1, .3, 1) both;
     }
 
@@ -349,9 +306,6 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
         animation-delay: 0.06s;
     }
 
-    .logout-wrapper {
-        animation-delay: 0.12s;
-    }
 
     @keyframes profileFadeUp {
         from {
@@ -431,11 +385,6 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
             margin: 14px 0;
         }
 
-        .logout-button {
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 14px;
-        }
     }
 
     @media (max-width: 420px) {
@@ -469,8 +418,7 @@ $profileRole = $user->role === 'Guru' && $user->hasPiketToday() ? 'Guru Piket' :
         .profile-avatar,
         .profile-role,
         .personal-card,
-        .personal-field,
-        .logout-button {
+        .personal-field {
             transition: none;
             animation: none;
         }

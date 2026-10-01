@@ -25,6 +25,68 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
+    public function test_guru_dashboard_shows_only_the_authenticated_gurus_journal_statistics(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-09-30 12:00:00', 'Asia/Jakarta'));
+
+        try {
+            $guru = Guru::create(['nama_guru' => 'Guru Statistik']);
+            $guruLain = Guru::create(['nama_guru' => 'Guru Lain']);
+            $user = User::create([
+                'username' => 'guru.statistik', 'password' => bcrypt('password'),
+                'nama_user' => 'Guru Statistik', 'role' => 'Guru', 'id_guru' => $guru->id_guru,
+            ]);
+            $userLain = User::create([
+                'username' => 'guru.lain', 'password' => bcrypt('password'),
+                'nama_user' => 'Guru Lain', 'role' => 'Guru', 'id_guru' => $guruLain->id_guru,
+            ]);
+            $kelas = Kelas::create(['nama_kelas' => 'VII-A', 'wali_kelas' => $guru->id_guru]);
+            $mapel = Mapel::create(['nama_mapel' => 'Matematika']);
+            $jamMulai = JamPel::create([
+                'klp_hari' => 'Senin-Kamis', 'jam_ke' => 1, 'jenis' => 'pelajaran',
+                'jam_mulai' => '07:00:00', 'jam_selesai' => '07:45:00',
+            ]);
+            $jamSelesai = JamPel::create([
+                'klp_hari' => 'Senin-Kamis', 'jam_ke' => 2, 'jenis' => 'pelajaran',
+                'jam_mulai' => '07:45:00', 'jam_selesai' => '08:30:00',
+            ]);
+
+            $makeJournal = function (Guru $journalGuru, User $journalUser, string $status) use ($kelas, $mapel, $jamMulai, $jamSelesai) {
+                $jadwal = Jadwal::create([
+                    'id_guru' => $journalGuru->id_guru, 'id_mapel' => $mapel->id_mapel,
+                    'id_kelas' => $kelas->id_kelas, 'id_jam_mulai' => $jamMulai->id_jam,
+                    'id_jam_selesai' => $jamSelesai->id_jam, 'hari' => 'Senin',
+                    'semester' => 'Ganjil', 'tahun_ajaran' => '2026/2027',
+                ]);
+
+                Jurnal::create([
+                    'id_jadwal' => $jadwal->id_jadwal, 'id_kelas' => $kelas->id_kelas,
+                    'id_guru' => $journalGuru->id_guru, 'id_user' => $journalUser->id_user,
+                    'id_jam_mulai' => $jamMulai->id_jam, 'id_jam_selesai' => $jamSelesai->id_jam,
+                    'tanggal' => '2026-09-15', 'materi' => 'Materi statistik',
+                    'status_guru' => 'Hadir', 'ada_tugas' => 'Tidak',
+                    'jml_hadir' => 30, 'jml_tidak_hadir' => 0,
+                    'status_validasi_guru' => $status,
+                ]);
+            };
+
+            $makeJournal($guru, $user, 'Disetujui');
+            $makeJournal($guru, $user, 'Menunggu');
+            $makeJournal($guruLain, $userLain, 'Disetujui');
+
+            $this->actingAs($user)
+                ->get(route('guru.dashboard'))
+                ->assertOk()
+                ->assertViewHas('totalJurnal', 2)
+                ->assertViewHas('jurnalBulanIni', 2)
+                ->assertViewHas('totalDisetujui', 1)
+                ->assertViewHas('totalMenunggu', 1)
+                ->assertViewHas('monthlyTrend', fn ($trend) => $trend->count() === 6 && $trend->last()['total'] === 2);
+        } finally {
+            Carbon::setTestNow();
+        }
+    }
+
     public function test_authenticated_users_can_visit_the_dashboard(): void
     {
         $user = User::factory()->create();
@@ -370,7 +432,7 @@ class DashboardTest extends TestCase
                 'keterangan' => 'Pengujian bebas jam dan hari',
                 'ada_tugas' => 'Tidak',
                 'absensi' => [],
-            ])->assertRedirect(route('guru.jurnal.index'));
+            ])->assertRedirect(route('guru.jurnal.show', Jurnal::where('id_jadwal', $jadwal->id_jadwal)->firstOrFail()));
 
             $this->assertDatabaseHas('jurnals', [
                 'id_jadwal' => $jadwal->id_jadwal,

@@ -659,8 +659,8 @@
         <section class="journal-hero">
             <div class="hero-content">
                 <div class="hero-badge"><span class="hero-badge-dot"></span><span>Jurnal Pembelajaran</span></div>
-                <h1 class="hero-title">Isi Jurnal Mengajar</h1>
-                <p class="hero-description">{{ $isPiketEntry ? 'Lengkapi jurnal untuk guru yang berhalangan hadir.' : 'Lengkapi data pembelajaran, materi, dan kehadiran siswa untuk mencatat kegiatan belajar mengajar hari ini.' }}</p>
+                <h1 class="hero-title">{{ !empty($jurnal) ? 'Perbarui Jurnal Mengajar' : 'Isi Jurnal Mengajar' }}</h1>
+                <p class="hero-description">{{ !empty($jurnal) ? 'Perbarui materi atau kehadiran siswa selama jadwal mengajar masih berlangsung.' : ($isPiketEntry ? 'Lengkapi jurnal untuk guru yang berhalangan hadir.' : 'Lengkapi data pembelajaran, materi, dan kehadiran siswa untuk mencatat kegiatan belajar mengajar hari ini.') }}</p>
             </div>
         </section>
 
@@ -680,8 +680,11 @@
                 ✓ {{ session('success') }}
             </div>
         @endif
-        <form action="{{ route($isPiketEntry ? 'piket.jurnal.store' : 'guru.jurnal.store') }}" method="POST" id="journalForm">
+        <form action="{{ !empty($jurnal) ? route('guru.jurnal.update', $jurnal) : route($isPiketEntry ? 'piket.jurnal.store' : 'guru.jurnal.store') }}" method="POST" id="journalForm">
             @csrf
+            @if(!empty($jurnal))
+                @method('PUT')
+            @endif
             <input type="hidden" name="id_jadwal" value="{{ $jadwal->id_jadwal }}">
 
             {{-- JADWAL --}}
@@ -701,7 +704,7 @@
                     </div>
                     <div class="field-group">
                         <label class="field-label">Tanggal</label>
-                        <input type="date" name="tanggal" value="{{ date('Y-m-d') }}" class="field-input" readonly required>
+                        <input type="date" name="tanggal" value="{{ $jurnal?->tanggal?->format('Y-m-d') ?? date('Y-m-d') }}" class="field-input" readonly required>
                     </div>
                     <div class="field-group">
                         <label class="field-label">Kelas</label>
@@ -715,7 +718,7 @@
                     @endif
                     <div class="field-group">
                         <label class="field-label">Jam Pelajaran</label>
-                        <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}</div>
+                        <div class="readonly-field"><span class="material-symbols-rounded">schedule</span>Jam Ke-{{ $jadwal->jamMulai?->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai?->jam_ke ?? '-' }} <span>({{ substr($jamMulaiDisplay?->jam_mulai ?? '', 0, 5) }}–{{ substr($jamSelesaiDisplay?->jam_selesai ?? '', 0, 5) }})</span></div>
                     </div>
                 </div>
 
@@ -757,7 +760,7 @@
                         <p class="section-subtitle">Tuliskan materi yang disampaikan</p>
                     </div>
                 </div>
-                <textarea name="materi" class="field-textarea" placeholder="Contoh: Pengenalan HTML dan struktur dasar halaman web" required>{{ old('materi') }}</textarea>
+                <textarea name="materi" class="field-textarea" placeholder="Contoh: Pengenalan HTML dan struktur dasar halaman web" required>{{ old('materi', $jurnal?->materi ?? '') }}</textarea>
             </section>
 
             {{-- KETERANGAN --}}
@@ -769,12 +772,12 @@
                         <p class="section-subtitle">Tambahkan keterangan pembelajaran</p>
                     </div>
                 </div>
-                <textarea name="keterangan" class="field-textarea" placeholder="Contoh: Kelas kondusif, ulangan harian, dan lain-lain." required>{{ old('keterangan') }}</textarea>
+                <textarea name="keterangan" class="field-textarea" placeholder="Contoh: Kelas kondusif, ulangan harian, dan lain-lain." required>{{ old('keterangan', $jurnal?->keterangan ?? '') }}</textarea>
             </section>
 
             {{-- KEHADIRAN SISWA --}}
             @php
-                $submittedAbsences = old('absensi', []);
+                $submittedAbsences = old('absensi', $savedAbsences ?? []);
                 $initialAttendanceAbsences = [];
                 $journalStudentRoster = $siswa->map(fn ($student) => [
                     'id' => $student->id_siswa,
@@ -848,13 +851,13 @@
                     <div class="field-group">
                         <label class="field-label">Ada Tugas?</label>
                         <select name="ada_tugas" id="adaTugas" class="field-select">
-                            <option value="Tidak" {{ old('ada_tugas', 'Tidak') === 'Tidak' ? 'selected' : '' }}>Tidak</option>
-                            <option value="Ya" {{ old('ada_tugas') === 'Ya' ? 'selected' : '' }}>Ya</option>
+                            <option value="Tidak" {{ old('ada_tugas', $jurnal?->ada_tugas ?? 'Tidak') === 'Tidak' ? 'selected' : '' }}>Tidak</option>
+                            <option value="Ya" {{ old('ada_tugas', $jurnal?->ada_tugas) === 'Ya' ? 'selected' : '' }}>Ya</option>
                         </select>
                     </div>
                     <div class="field-group">
                         <label class="field-label">Deskripsi Tugas</label>
-                        <textarea name="deskripsi_tugas" class="field-textarea" placeholder="Tuliskan deskripsi tugas jika ada...">{{ old('deskripsi_tugas') }}</textarea>
+                        <textarea name="deskripsi_tugas" class="field-textarea" placeholder="Tuliskan deskripsi tugas jika ada...">{{ old('deskripsi_tugas', $jurnal?->deskripsi_tugas ?? '') }}</textarea>
                     </div>
                 </div>
 
@@ -879,11 +882,11 @@
 
             {{-- ACTION --}}
             <div class="action-buttons">
-                <a href="{{ route($isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.create', $isPiketEntry ? ['id_kelas' => $jadwal->id_kelas] : []) }}" class="btn btn-secondary">
+                <a href="{{ !empty($jurnal) ? route('guru.jurnal.show', $jurnal) : route($isPiketEntry ? 'piket.jurnal.create' : 'guru.jurnal.create', $isPiketEntry ? ['id_kelas' => $jadwal->id_kelas] : []) }}" class="btn btn-secondary">
                     <span class="material-symbols-rounded">arrow_back</span> Batal
                 </a>
                 <button type="submit" class="btn btn-primary" id="reviewButton">
-                    <span class="material-symbols-rounded">visibility</span> Review Jurnal
+                    <span class="material-symbols-rounded">visibility</span> {{ !empty($jurnal) ? 'Review Perubahan' : 'Review Jurnal' }}
                 </button>
             </div>
         </form>
@@ -922,7 +925,7 @@
                     </div>
                     <div class="review-info-item">
                         <div class="review-info-label">Jam Pelajaran</div>
-                        <div class="review-info-value" id="reviewJam">Jam Ke-{{ $jadwal->jamMulai->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai->jam_ke ?? '-' }}</div>
+                        <div class="review-info-value" id="reviewJam">Jam Ke-{{ $jadwal->jamMulai?->jam_ke ?? '-' }} - {{ $jadwal->jamSelesai?->jam_ke ?? '-' }} ({{ substr($jamMulaiDisplay?->jam_mulai ?? '', 0, 5) }}–{{ substr($jamSelesaiDisplay?->jam_selesai ?? '', 0, 5) }})</div>
                     </div>
                 </div>
             </div>
@@ -1270,22 +1273,7 @@
     document.getElementById('addAbsenceRow')?.addEventListener('click', () => addAbsenceRow());
     updateSummary();
 
-    const activeDispenBerakhir = @json($activeDispenBerakhir ?? null);
-    if (activeDispenBerakhir) {
-      const parts = activeDispenBerakhir.split(':').map(Number);
-      const hour = parts[0] || 0;
-      const minute = parts[1] || 0;
-      const second = parts[2] || 0;
-
-      const waktuSelesai = new Date();
-      waktuSelesai.setHours(hour, minute, second, 0);
-
-      const delay = waktuSelesai.getTime() - Date.now();
-      if (delay > 0) {
-        // Reload halaman saat masa dispensasi berakhir
-        window.setTimeout(() => window.location.reload(), delay + 1000);
-      }
-    }
+    // Dispen yang sudah disetujui pada tanggal ini selalu dicatat otomatis.
 
     // Intercept Form Submit -> Open Review Modal
     const form = document.getElementById('journalForm');

@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('title', 'Daftar Jurnal - Jurnify')
-@section('page-title', 'Daftar Jurnal')
+@section('title', 'Statistik Jurnal - Jurnify')
+@section('page-title', 'Statistik Jurnal')
 
 @section('content')
 
@@ -16,9 +16,9 @@
     {{-- HEADER --}}
     <div class="jurnal-header jurnal-header-top">
         <div>
-            <h3 class="jurnal-title">Daftar Jurnal</h3>
+            <h3 class="jurnal-title">Statistik Jurnal</h3>
             <p class="jurnal-description">
-                Pilih kelas atau guru untuk melihat jurnal pembelajaran.
+                Ringkasan performa jurnal dan daftar pembelajaran yang tersusun sesuai filter yang dipilih.
             </p>
         </div>
 
@@ -65,6 +65,134 @@
                         @endforeach
                     </select>
                 @endif
+            @endif
+        </div>
+    </div>
+
+    <section class="stats-summary">
+        <div class="summary-card primary">
+            <span class="summary-label">Total Jurnal</span>
+            <strong>{{ number_format($totalJurnal ?? 0) }}</strong>
+            <small>Data yang sesuai filter</small>
+        </div>
+        <div class="summary-card success">
+            <span class="summary-label">Hari Ini</span>
+            <strong>{{ number_format($jurnalHariIni ?? 0) }}</strong>
+            <small>{{ now('Asia/Jakarta')->translatedFormat('d M Y') }}</small>
+        </div>
+        <div class="summary-card warning">
+            <span class="summary-label">Hadir</span>
+            <strong>{{ number_format($totalHadir ?? 0) }}</strong>
+            <small>Jumlah siswa hadir</small>
+        </div>
+        <div class="summary-card danger">
+            <span class="summary-label">Persentase Valid</span>
+            <strong>{{ number_format($validPercentage ?? 0, 1) }}%</strong>
+            <small>{{ number_format($totalDisetujui ?? 0) }} disetujui</small>
+        </div>
+    </section>
+
+    <div class="stats-panel">
+        <div class="stats-panel-box">
+            <h4>Distribusi Validasi</h4>
+            @foreach(['Disetujui', 'Menunggu', 'Ditolak', 'Perlu Diperbaiki'] as $status)
+                @php
+                    $count = $statusSummary[$status] ?? 0;
+                    $max = max($statusSummary->values()->all() ?: [1]);
+                    $width = $max > 0 ? ($count / $max) * 100 : 0;
+                @endphp
+                <div class="progress-row">
+                    <div class="progress-header">
+                        <span>{{ $status }}</span>
+                        <strong>{{ number_format($count) }}</strong>
+                    </div>
+                    <div class="progress-track">
+                        <span class="progress-fill {{ strtolower(str_replace(' ', '-', $status)) }}" style="width: {{ $width }}%"></span>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <div class="stats-panel-box">
+            <h4>Perkembangan 6 Bulan Terakhir</h4>
+            @php
+                $trendValues = $monthlyTrend->pluck('total')->all();
+                $chartMax = max($trendValues ?: [1]);
+                $chartMin = 0;
+                $chartHeight = 170;
+                $chartPaddingTop = 18;
+                $chartPaddingBottom = 22;
+                $chartPaddingLeft = 12;
+                $chartPaddingRight = 12;
+                $chartInnerWidth = 260;
+                $chartInnerHeight = $chartHeight - $chartPaddingTop - $chartPaddingBottom;
+                $plotPoints = [];
+                $count = $monthlyTrend->count();
+
+                foreach ($monthlyTrend as $index => $item) {
+                    $x = $chartPaddingLeft + ($count > 1 ? ($index * ($chartInnerWidth / ($count - 1))) : 0);
+                    $y = $chartHeight - $chartPaddingBottom - (($item['total'] - $chartMin) / max($chartMax - $chartMin, 1)) * $chartInnerHeight;
+                    $plotPoints[] = ['x' => $x, 'y' => $y, 'label' => $item['label'], 'total' => $item['total']];
+                }
+
+                $linePoints = implode(' ', array_map(fn ($point) => $point['x'] . ',' . $point['y'], $plotPoints));
+            @endphp
+            <div class="trend-chart-line">
+                <svg class="trend-svg" viewBox="0 0 280 {{ $chartHeight }}" preserveAspectRatio="none" aria-label="Grafik perkembangan 6 bulan terakhir">
+                    <polyline
+                        points="{{ $linePoints }}"
+                        fill="none"
+                        stroke="#4f46e5"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    ></polyline>
+
+                    @foreach($plotPoints as $point)
+                        <circle
+                            cx="{{ $point['x'] }}"
+                            cy="{{ $point['y'] }}"
+                            r="{{ $point['total'] === $chartMax && $chartMax > 0 ? 5 : 4 }}"
+                            fill="{{ $point['total'] === $chartMax && $chartMax > 0 ? '#10b981' : '#4f46e5' }}"
+                            stroke="#ffffff"
+                            stroke-width="2"
+                        ></circle>
+                    @endforeach
+                </svg>
+
+                <div class="trend-labels">
+                    @foreach($monthlyTrend as $item)
+                        <span>{{ $item['label'] }}</span>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mini-grid">
+        <div class="mini-panel">
+            <h4>Kelas Teraktif</h4>
+            @if(!empty($kelasTop) && $kelasTop->isNotEmpty())
+                <ul class="leaderboard">
+                    @foreach($kelasTop as $item)
+                        <li><span>{{ $item['nama'] }}</span><strong>{{ $item['total'] }}</strong></li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="empty-text">Belum ada data.</p>
+            @endif
+        </div>
+
+        <div class="mini-panel">
+            <h4>Guru Teraktif</h4>
+            @if(!empty($guruTop) && $guruTop->isNotEmpty())
+                <ul class="leaderboard">
+                    @foreach($guruTop as $item)
+                        <li><span>{{ $item['nama'] }}</span><strong>{{ $item['total'] }}</strong></li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="empty-text">Belum ada data.</p>
             @endif
         </div>
     </div>
@@ -440,6 +568,219 @@
 
     .jurnal-page {
         width: 100%;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(180px, 1fr));
+        gap: 16px;
+        padding: 0 28px 22px;
+    }
+
+    .summary-card {
+        border-radius: 16px;
+        padding: 18px 16px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        background: #fff;
+    }
+
+    .summary-card.primary { background: linear-gradient(135deg, #eef2ff, #e0e7ff); }
+    .summary-card.success { background: linear-gradient(135deg, #ecfdf5, #d1fae5); }
+    .summary-card.warning { background: linear-gradient(135deg, #fff7ed, #ffedd5); }
+    .summary-card.danger { background: linear-gradient(135deg, #fef2f2, #fee2e2); }
+
+    .summary-label {
+        display: block;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: #475569;
+    }
+
+    .summary-card strong {
+        display: block;
+        margin-top: 12px;
+        font-size: 30px;
+        line-height: 1;
+        color: #0f172a;
+    }
+
+    .summary-card small {
+        display: block;
+        margin-top: 8px;
+        color: #475569;
+        font-size: 12px;
+    }
+
+    .stats-panel {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 16px;
+        padding: 0 28px 22px;
+    }
+
+    .stats-panel-box,
+    .mini-panel {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 18px;
+    }
+
+    .stats-panel-box h4,
+    .mini-panel h4 {
+        margin: 0 0 16px;
+        color: #1e293b;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+    .progress-row {
+        margin-bottom: 14px;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 7px;
+    }
+
+    .progress-track {
+        width: 100%;
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+    }
+
+    .progress-fill.disetujui { background: linear-gradient(90deg, #16a34a, #4ade80); }
+    .progress-fill.menunggu { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .progress-fill.ditolak { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .progress-fill.perlu-diperbaiki { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+    .trend-chart {
+        height: 180px;
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .trend-chart-line {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .trend-svg {
+        display: block;
+        width: 100%;
+        height: 170px;
+        background: linear-gradient(180deg, rgba(79, 70, 229, 0.04), rgba(79, 70, 229, 0.01));
+        border-radius: 12px;
+        border: 1px solid #eef2ff;
+    }
+
+    .trend-labels {
+        display: grid;
+        grid-template-columns: repeat({{ max($monthlyTrend->count(), 1) }}, minmax(0, 1fr));
+        gap: 6px;
+        font-size: 11px;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .trend-labels span {
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .trend-item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        justify-content: end;
+        min-height: 100%;
+    }
+
+    .trend-bar {
+        display: block;
+        width: 100%;
+        min-height: 12px;
+        background: linear-gradient(180deg, #818cf8, #4f46e5);
+        border-radius: 10px 10px 0 0;
+        transition: height 0.25s ease;
+    }
+
+    .trend-item.is-top .trend-bar {
+        background: linear-gradient(180deg, #34d399, #10b981);
+        box-shadow: 0 8px 18px rgba(16, 185, 129, 0.24);
+    }
+
+    .trend-item small {
+        color: #64748b;
+        font-size: 11px;
+    }
+
+    .trend-item strong {
+        font-size: 12px;
+        color: #0f172a;
+    }
+
+    .mini-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 0 28px 24px;
+    }
+
+    .leaderboard {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .leaderboard li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 12px;
+        border-radius: 12px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .leaderboard span {
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .leaderboard strong {
+        color: #1d4ed8;
+        font-size: 14px;
+    }
+
+    .empty-text {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
     }
 
 
