@@ -16,9 +16,12 @@ class DispenVerificationController extends Controller
     public function show(string $token)
     {
         $dispen = $this->findDispen($token);
-        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai', 'approver', 'petugasKesiswaan']);
+        $dispens = $this->batchQuery($dispen)
+            ->with(['siswa.kelas', 'jamMulai', 'jamSelesai', 'approver', 'petugasKesiswaan'])
+            ->get();
+        $dispen = $dispens->first();
 
-        return view('dispen.verifikasi', compact('dispen'));
+        return view('dispen.verifikasi', compact('dispen', 'dispens'));
     }
 
     /**
@@ -35,7 +38,7 @@ class DispenVerificationController extends Controller
         }
 
         $approverId = $this->scheduledApproverId($dispen);
-        $updated = Dispen::whereKey($dispen->getKey())
+        $updated = $this->batchQuery($dispen)
             ->where("status", "menunggu")
             ->update([
                 "status" => "disetujui",
@@ -49,7 +52,7 @@ class DispenVerificationController extends Controller
         }
 
         return redirect()->route('dispen.verifikasi', $dispen->token_verifikasi)
-            ->with('success', 'Dispensasi siswa berhasil disetujui.');
+            ->with('success', 'Permohonan dispensasi berhasil disetujui untuk seluruh siswa.');
     }
 
     /**
@@ -73,7 +76,7 @@ class DispenVerificationController extends Controller
         ]);
 
         $approverId = $this->scheduledApproverId($dispen);
-        $updated = Dispen::whereKey($dispen->getKey())
+        $updated = $this->batchQuery($dispen)
             ->where("status", "menunggu")
             ->update([
                 "status" => "ditolak",
@@ -88,7 +91,7 @@ class DispenVerificationController extends Controller
         }
 
         return redirect()->route('dispen.verifikasi', $dispen->token_verifikasi)
-            ->with('success', 'Dispensasi siswa telah ditolak.');
+            ->with('success', 'Permohonan dispensasi telah ditolak untuk seluruh siswa.');
     }
 
     /**
@@ -97,6 +100,13 @@ class DispenVerificationController extends Controller
     private function findDispen(string $token): Dispen
     {
         return Dispen::where('token_verifikasi', $token)->firstOrFail();
+    }
+
+    private function batchQuery(Dispen $dispen)
+    {
+        return $dispen->batch_token
+            ? Dispen::where('batch_token', $dispen->batch_token)
+            : Dispen::whereKey($dispen->id_dispen);
     }
 
     private function scheduledApproverId(Dispen $dispen): ?int

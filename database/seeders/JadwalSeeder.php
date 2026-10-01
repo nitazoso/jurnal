@@ -11,36 +11,6 @@ class JadwalSeeder extends Seeder
     {
         DB::table('jadwals')->insert(
 array (
-  0 => 
-  array (
-    'id_jadwal' => 1,
-    'id_guru' => 87,
-    'id_mapel' => 1,
-    'id_kelas' => 1,
-    'id_jam_mulai' => 1,
-    'id_jam_selesai' => 2,
-    'hari' => 'Senin',
-    'semester' => 'Ganjil',
-    'tahun_ajaran' => '2026/2027',
-    'created_at' => '2026-09-27 04:02:36',
-    'updated_at' => '2026-09-27 04:02:36',
-    'deleted_at' => NULL,
-  ),
-  1 => 
-  array (
-    'id_jadwal' => 2,
-    'id_guru' => 87,
-    'id_mapel' => 2,
-    'id_kelas' => 1,
-    'id_jam_mulai' => 3,
-    'id_jam_selesai' => 4,
-    'hari' => 'Rabu',
-    'semester' => 'Ganjil',
-    'tahun_ajaran' => '2026/2027',
-    'created_at' => '2026-09-27 04:02:36',
-    'updated_at' => '2026-09-27 04:02:36',
-    'deleted_at' => NULL,
-  ),
   2 => 
   array (
     'id_jadwal' => 3,

@@ -54,12 +54,15 @@ class JurnalController extends Controller
     }
     public function create(Request $request)
     {
+        $hariIni = now('Asia/Jakarta')->locale('id')->isoFormat('dddd');
+
         if (Cache::get('jadwal_all_disabled', false)) {
             return view('piket.jurnal.create', [
                 'kelases' => collect(),
                 'selectedKelas' => null,
                 'jadwals' => collect(),
                 'allDisabled' => true,
+                'hariIni' => $hariIni,
             ]);
         }
 
@@ -82,12 +85,13 @@ class JurnalController extends Controller
             ? Jadwal::with(['guru', 'kelas', 'mapel', 'jamMulai', 'jamSelesai'])
                 ->withCount(['jurnals as jurnal_hari_ini_count' => fn ($query) => $query->whereDate('tanggal', today())])
                 ->where('id_kelas', $selectedKelas->id_kelas)
+                ->orderByRaw('CASE WHEN hari = ? THEN 0 ELSE 1 END', [$hariIni])
                 ->orderByRaw("CASE hari WHEN 'Senin' THEN 1 WHEN 'Selasa' THEN 2 WHEN 'Rabu' THEN 3 WHEN 'Kamis' THEN 4 WHEN 'Jumat' THEN 5 ELSE 6 END")
                 ->orderBy('id_jam_mulai')
                 ->get()
             : collect();
 
-        return view('piket.jurnal.create', compact('kelases', 'selectedKelas', 'jadwals') + ['allDisabled' => false]);
+        return view('piket.jurnal.create', compact('kelases', 'selectedKelas', 'jadwals', 'hariIni') + ['allDisabled' => false]);
     }
 
     public function show(Jurnal $jurnal)

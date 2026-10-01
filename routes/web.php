@@ -64,6 +64,9 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
     // JURNAL ADMIN
     // ====================
 
+    Route::get('/admin/jurnal/statistik', [JurnalController::class, 'statistics'])
+        ->name('admin.jurnal.statistik');
+
     Route::get('/admin/jurnal', [JurnalController::class, 'index'])
         ->name('admin.jurnal.index');
 
@@ -321,6 +324,12 @@ Route::middleware(['auth', 'role:Guru'])->group(function () {
     Route::post('/guru/jurnal', [GuruJurnalController::class, 'store'])
         ->name('guru.jurnal.store');
 
+    Route::get('/guru/jurnal/{jurnal}/edit', [GuruJurnalController::class, 'edit'])
+        ->name('guru.jurnal.edit');
+
+    Route::put('/guru/jurnal/{jurnal}', [GuruJurnalController::class, 'update'])
+        ->name('guru.jurnal.update');
+
     Route::get('/guru/jurnal/{jurnal}', [GuruJurnalController::class, 'show'])
         ->name('guru.jurnal.show');
 
@@ -416,6 +425,7 @@ Route::middleware(['auth', 'role:Guru|Staff Piket'])->group(function () {
     Route::post('/piket/dispen/sakit', [PiketDispenController::class, 'sickStore'])->name('piket.dispen.sakit.store');
     Route::post('/piket/dispen', [PiketDispenController::class, 'store'])->name('piket.dispen.store');
     Route::get('/piket/dispen/{dispen}/ringkasan', [PiketDispenController::class, 'summary'])->name('piket.dispen.summary');
+    Route::get('/piket/dispen/{dispen}/detail', [PiketDispenController::class, 'detail'])->name('piket.dispen.detail');
     Route::get('/piket/dispen/{dispen}/whatsapp', [PiketDispenController::class, 'whatsapp'])->name('piket.dispen.whatsapp');
     Route::get('/piket/dispen/{dispen}/edit', [PiketDispenController::class, 'edit'])->name('piket.dispen.edit');
     Route::put('/piket/dispen/{dispen}', [PiketDispenController::class, 'update'])->name('piket.dispen.update');

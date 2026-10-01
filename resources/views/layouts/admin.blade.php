@@ -778,7 +778,7 @@
             </a>
 
 
-            {{-- DAFTAR JURNAL --}}
+            {{-- JURNAL --}}
             <a href="{{ route('admin.jurnal.index') }}"
                class="nav-item {{ request()->routeIs('admin.jurnal.*') ? 'active' : '' }}">
 
@@ -786,7 +786,7 @@
                     menu_book
                 </span>
 
-                <span>Daftar Jurnal</span>
+                <span>Jurnal</span>
 
             </a>
 

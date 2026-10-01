@@ -431,6 +431,16 @@
                 </a>
             </nav>
 
+            <div class="logout-wrap">
+                <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
+                    @csrf
+                    <button type="submit">
+                        <span class="material-symbols-outlined">logout</span>
+                        <span>Keluar</span>
+                    </button>
+                </form>
+            </div>
+
         </aside>
 
         <!-- Content Area -->

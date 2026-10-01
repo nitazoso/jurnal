@@ -38,6 +38,71 @@ class RoleKesiswaanTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
+    public function test_admin_can_view_journal_statistics_page(): void
+    {
+        $admin = User::create([
+            'username' => 'admin_statistik',
+            'password' => bcrypt('password123'),
+            'nama_user' => 'Admin Statistik',
+            'role' => 'Admin',
+        ]);
+
+        $guru = Guru::create(['nama_guru' => 'Guru Statistik']);
+        $kelas = Kelas::create(['nama_kelas' => 'XI-Statistik', 'wali_kelas' => $guru->id_guru]);
+        $mapel = Mapel::create(['nama_mapel' => 'Bahasa Indonesia']);
+
+        $jamMulai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $jamSelesai = \App\Models\JamPel::create([
+            'klp_hari' => 'Senin-Kamis',
+            'jam_ke' => 1,
+            'jenis' => 'pelajaran',
+            'jam_mulai' => '07:00:00',
+            'jam_selesai' => '07:45:00',
+        ]);
+
+        $jadwal = \App\Models\Jadwal::create([
+            'id_guru' => $guru->id_guru,
+            'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'hari' => 'Senin',
+            'semester' => 'Ganjil',
+            'tahun_ajaran' => '2026/2027',
+        ]);
+
+        Jurnal::create([
+            'id_jadwal' => $jadwal->id_jadwal,
+            'id_kelas' => $kelas->id_kelas,
+            'id_guru' => $guru->id_guru,
+            'id_user' => $admin->id_user,
+            'id_jam_mulai' => $jamMulai->id_jam,
+            'id_jam_selesai' => $jamSelesai->id_jam,
+            'tanggal' => now('Asia/Jakarta')->toDateString(),
+            'materi' => 'Statistik pembelajaran',
+            'status_guru' => 'Hadir',
+            'ada_tugas' => 'Tidak',
+            'jml_hadir' => 28,
+            'jml_tidak_hadir' => 2,
+            'status_validasi_guru' => 'Disetujui',
+        ]);
+
+        $response = $this->actingAs($admin)
+            ->get(route('admin.jurnal.statistik'));
+
+        $response->assertOk()
+            ->assertSee('Statistik Jurnal')
+            ->assertSee('Total Jurnal')
+            ->assertSee('Disetujui');
+    }
+
     public function test_all_role_profiles_render_the_same_account_information_fields(): void
     {
         $profiles = [

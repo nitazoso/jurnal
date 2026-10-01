@@ -37,6 +37,19 @@ class StaffPiketJurnalTest extends TestCase
             ->assertSee('name="password"', false);
     }
 
+    public function test_staff_piket_dashboard_shows_operational_statistics(): void
+    {
+        $this->actingAs($this->createStaffPiket())
+            ->get(route('piket.dashboard'))
+            ->assertOk()
+            ->assertSee('SISWA HADIR')
+            ->assertSee('SISWA TIDAK HADIR')
+            ->assertSee('Perkembangan Jurnal')
+            ->assertViewHas('totalJurnalHariIni', 0)
+            ->assertViewHas('totalDispenHariIni', 0)
+            ->assertViewHas('monthlyTrend', fn ($trend) => $trend->count() === 6);
+    }
+
     public function test_staff_piket_can_update_username_and_password_from_profile(): void
     {
         $staff = $this->createStaffPiket();

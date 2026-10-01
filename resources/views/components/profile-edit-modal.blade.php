@@ -1,6 +1,8 @@
-<div class="profile-modal-actions">
-    <button type="button" class="profile-modal-trigger" data-profile-edit-open>✎ Edit Profil</button>
-</div>
+@unless($hideTrigger ?? false)
+    <div class="profile-modal-actions">
+        <button type="button" class="profile-modal-trigger" data-profile-edit-open>✎ Edit Profil</button>
+    </div>
+@endunless
 
 <dialog class="profile-modal" data-profile-edit-dialog aria-labelledby="profile-edit-title">
     <form action="{{ $action }}" method="POST" class="profile-modal-form">
