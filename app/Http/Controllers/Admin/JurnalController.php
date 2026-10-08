@@ -205,8 +205,8 @@ class JurnalController extends Controller
         | Load relasi jurnal
         |--------------------------------------------------------------------------
         |
-        | detailAbsensis.siswa dipakai untuk menampilkan nama siswa
-        | ketika kotak "Hadir" / "Tidak Hadir" diklik.
+        | Relasi siswa dipakai untuk menampilkan daftar nama hadir dan tidak hadir
+        | langsung pada halaman detail jurnal.
         |
         */
         $jurnal->load([

@@ -95,7 +95,7 @@
     <div class="stats-panel">
         <div class="stats-panel-box">
             <h4>Distribusi Validasi</h4>
-            @foreach(['Disetujui', 'Menunggu', 'Ditolak', 'Perlu Diperbaiki'] as $status)
+            @foreach(['Disetujui', 'Menunggu', 'Ditolak'] as $status)
                 @php
                     $count = $statusSummary[$status] ?? 0;
                     $max = max($statusSummary->values()->all() ?: [1]);

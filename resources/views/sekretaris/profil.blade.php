@@ -371,16 +371,8 @@
         </span>
     </section>
 
-    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName])
-    @include('components.profile-edit-modal', ['action' => route('sekretaris.profil.update'), 'user' => $user])
-
-    {{-- LOGOUT --}}
-    <div class="logout-wrapper">
-        <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
-            @csrf
-            <button class="logout-button" type="submit">Logout</button>
-        </form>
-    </div>
+    @include('components.profile-account-info', ['user' => $user, 'profileName' => $profileName, 'showEditButton' => true])
+    @include('components.profile-edit-modal', ['action' => route('sekretaris.profil.update'), 'user' => $user, 'hideTrigger' => true])
 
 </div>
 

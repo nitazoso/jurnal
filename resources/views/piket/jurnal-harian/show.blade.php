@@ -49,6 +49,15 @@
     .daily-approve-button { display:inline-flex; min-height:42px; flex:0 0 auto; align-items:center; justify-content:center; gap:8px; padding:8px 18px; border:0; border-radius:10px; background:#30366f; color:#fff; font:inherit; font-size:12px; font-weight:850; cursor:pointer; transition:background .18s ease; }
     .daily-approve-button:hover { background:#252b5d; }
     .daily-approve-button .material-symbols-outlined { font-size:19px; }
+    .approval-confirm-overlay { position:fixed; z-index:300; inset:0; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(15,23,42,.52); }
+    .approval-confirm-overlay.is-open { display:flex; }
+    .approval-confirm-dialog { width:min(100%,420px); padding:22px; border:1px solid #e2e8f0; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(15,23,42,.25); }
+    .approval-confirm-icon { display:grid; width:42px; height:42px; place-items:center; margin-bottom:13px; border-radius:13px; background:#fff7ed; color:#c2410c; }
+    .approval-confirm-dialog h2 { margin:0; color:#1e293b; font-size:17px; font-weight:850; }
+    .approval-confirm-dialog p { margin:8px 0 20px; color:#64748b; font-size:13px; line-height:1.6; }
+    .approval-confirm-actions { display:flex; justify-content:flex-end; gap:9px; }
+    .approval-confirm-actions button { min-height:40px; padding:0 14px; border:1px solid #cbd5e1; border-radius:9px; background:#fff; color:#334155; font:inherit; font-size:12px; font-weight:800; cursor:pointer; }
+    .approval-confirm-actions .approval-confirm-submit { border-color:#30366f; background:#30366f; color:#fff; }
     .daily-empty { padding:32px 20px; border:1px dashed #cbd5e1; border-radius:14px; background:#fff; color:#64748b; text-align:center; }
     @media(max-width:1100px) { .daily-approval-dock { left:230px; } }
     @media(max-width:800px) { .daily-approval-dock { left:200px; } }
@@ -173,7 +182,10 @@
                     <strong>{{ $jurnalsBelumDiapprove->count() }} jurnal menunggu approve piket</strong>
                     <p>Hanya jurnal yang sudah disetujui sekretaris yang akan di-approve.</p>
                 </div>
-                <form method="POST" action="{{ route('piket.jurnal-harian.approve', ['kelas' => $kelas->id_kelas]) }}">
+                <form method="POST" action="{{ route('piket.jurnal-harian.approve', ['kelas' => $kelas->id_kelas]) }}"
+                    @if($jumlahJurnalTerisi < $jumlahJurnalWajib)
+                        data-approve-confirm="Pengisian jurnal belum lengkap: {{ $jumlahJurnalTerisi }} dari {{ $jumlahJurnalWajib }} jadwal telah diisi. Apakah Anda yakin tetap menyetujui jurnal yang tersedia?"
+                    @endif>
                     @csrf
                     <input type="hidden" name="tanggal" value="{{ $tanggal }}">
                     <button class="daily-approve-button" type="submit">
@@ -192,5 +204,54 @@
             @endif
         </div>
     </aside>
+@endif
+
+@if($jumlahJurnalTerisi < $jumlahJurnalWajib)
+    <div class="approval-confirm-overlay" id="approvalConfirmOverlay" aria-hidden="true">
+        <section class="approval-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="approvalConfirmTitle" aria-describedby="approvalConfirmMessage">
+            <div class="approval-confirm-icon"><span class="material-symbols-outlined">warning</span></div>
+            <h2 id="approvalConfirmTitle">Pengisian Jurnal Belum Lengkap</h2>
+            <p id="approvalConfirmMessage">Pengisian jurnal baru {{ $jumlahJurnalTerisi }} dari {{ $jumlahJurnalWajib }} jadwal. Apakah Anda yakin tetap menyetujui jurnal yang tersedia?</p>
+            <div class="approval-confirm-actions">
+                <button type="button" id="cancelJournalApproval">Kembali</button>
+                <button type="button" class="approval-confirm-submit" id="confirmJournalApproval">Ya, Approve</button>
+            </div>
+        </section>
+    </div>
+    <script>
+        (() => {
+            const overlay = document.getElementById('approvalConfirmOverlay');
+            const form = document.querySelector('form[data-approve-confirm]');
+            const cancelButton = document.getElementById('cancelJournalApproval');
+            const approveButton = document.getElementById('confirmJournalApproval');
+
+            if (!overlay || !form) return;
+
+            form.addEventListener('submit', (event) => {
+                if (form.dataset.confirmed === 'true') return;
+                event.preventDefault();
+                overlay.classList.add('is-open');
+                overlay.setAttribute('aria-hidden', 'false');
+                approveButton.focus();
+            });
+
+            const closeDialog = () => {
+                overlay.classList.remove('is-open');
+                overlay.setAttribute('aria-hidden', 'true');
+            };
+
+            cancelButton.addEventListener('click', closeDialog);
+            overlay.addEventListener('click', (event) => {
+                if (event.target === overlay) closeDialog();
+            });
+            approveButton.addEventListener('click', () => {
+                form.dataset.confirmed = 'true';
+                form.requestSubmit();
+            });
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && overlay.classList.contains('is-open')) closeDialog();
+            });
+        })();
+    </script>
 @endif
 @endsection

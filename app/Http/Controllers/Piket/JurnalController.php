@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Piket;
 
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
+use App\Models\AcademicPeriod;
 use App\Models\Jadwal;
 use App\Models\Jurnal;
 use App\Models\Kelas;
@@ -28,9 +29,22 @@ class JurnalController extends Controller
             ->get()
             ->keyBy('id_kelas');
 
-        $kelases = Kelas::orderBy('nama_kelas')->get()->map(function ($kelas) use ($jumlahPerKelas) {
+        $hariDipilih = \Illuminate\Support\Carbon::parse($tanggal)
+            ->locale('id')
+            ->isoFormat('dddd');
+        $periodeAktif = AcademicPeriod::current() ?? Jadwal::latestAcademicPeriod();
+        $jumlahJadwalPerKelas = Jadwal::query()
+            ->where('hari', $hariDipilih)
+            ->when($periodeAktif?->semester, fn ($query, $semester) => $query->where('semester', $semester))
+            ->when($periodeAktif?->tahun_ajaran, fn ($query, $tahunAjaran) => $query->where('tahun_ajaran', $tahunAjaran))
+            ->selectRaw('id_kelas, COUNT(*) as total')
+            ->groupBy('id_kelas')
+            ->pluck('total', 'id_kelas');
+
+        $kelases = Kelas::orderBy('nama_kelas')->get()->map(function ($kelas) use ($jumlahPerKelas, $jumlahJadwalPerKelas) {
             $ringkasan = $jumlahPerKelas->get($kelas->id_kelas);
             $kelas->jumlah_jurnal_harian = (int) ($ringkasan->total ?? 0);
+            $kelas->jumlah_jurnal_wajib_harian = (int) ($jumlahJadwalPerKelas->get($kelas->id_kelas) ?? 0);
             $kelas->jumlah_layak_approve_harian = (int) ($ringkasan->layak_approve ?? 0);
             $kelas->jumlah_sudah_diapprove_harian = (int) ($ringkasan->sudah_diapprove ?? 0);
             return $kelas;
@@ -50,6 +64,18 @@ class JurnalController extends Controller
             ->where('id_kelas', $kelas->id_kelas)
             ->whereDate('tanggal', $tanggal);
 
+        $jumlahJurnalTerisi = (clone $jurnalHariIni)->count();
+        $hariDipilih = \Illuminate\Support\Carbon::parse($tanggal)
+            ->locale('id')
+            ->isoFormat('dddd');
+        $periodeAktif = AcademicPeriod::current() ?? Jadwal::latestAcademicPeriod();
+        $jumlahJurnalWajib = Jadwal::query()
+            ->where('id_kelas', $kelas->id_kelas)
+            ->where('hari', $hariDipilih)
+            ->when($periodeAktif?->semester, fn ($query, $semester) => $query->where('semester', $semester))
+            ->when($periodeAktif?->tahun_ajaran, fn ($query, $tahunAjaran) => $query->where('tahun_ajaran', $tahunAjaran))
+            ->count();
+
         $adaMenungguVerifikasi = (clone $jurnalHariIni)
             ->where('status_validasi_guru', 'Menunggu')
             ->exists();
@@ -68,7 +94,14 @@ class JurnalController extends Controller
             ->sortBy(fn ($jurnal) => $jurnal->jamMulai?->jam_mulai ?? '99:99:99')
             ->values();
 
-        return view('piket.jurnal-harian.show', compact('kelas', 'tanggal', 'jurnals', 'adaMenungguVerifikasi'));
+        return view('piket.jurnal-harian.show', compact(
+            'kelas',
+            'tanggal',
+            'jurnals',
+            'adaMenungguVerifikasi',
+            'jumlahJurnalTerisi',
+            'jumlahJurnalWajib'
+        ));
     }
 
     public function approveHarian(Request $request, Kelas $kelas)

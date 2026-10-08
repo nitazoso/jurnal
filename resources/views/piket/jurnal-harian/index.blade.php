@@ -62,7 +62,7 @@
                         <span class="daily-icon material-symbols-outlined">school</span>
                         <h2>{{ $kelas->nama_kelas }}</h2>
                     </div>
-                    <p class="daily-count">{{ $kelas->jumlah_jurnal_harian }} <small>jurnal</small></p>
+                    <p class="daily-count">{{ $kelas->jumlah_jurnal_harian }} / {{ $kelas->jumlah_jurnal_wajib_harian }} <small>jurnal</small></p>
                     <p class="daily-status {{ $sudahDiapprove ? 'done' : '' }}">
                         <span class="material-symbols-outlined">{{ $sudahDiapprove ? 'task_alt' : 'pending' }}</span>
                         {{ $sudahDiapprove ? 'Sudah di-approve' : 'Belum di-approve' }}

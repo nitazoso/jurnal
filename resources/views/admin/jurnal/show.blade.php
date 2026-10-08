@@ -94,22 +94,44 @@
                 <div class="info-item border-none">
                     <span class="info-label">Rekap Kehadiran Siswa</span>
 
-                    <div class="attendance-box">
+                    @php
+                        $detailAbsensi = collect($jurnal->detailAbsensis ?? []);
+                        $siswaTidakHadir = $detailAbsensi
+                            ->filter(fn ($detail) => strtolower((string) ($detail->status ?? '')) !== 'hadir'
+                                && strtolower((string) ($detail->keterangan ?? '')) !== 'hadir')
+                            ->sortBy(fn ($detail) => $detail->siswa->nama_siswa ?? '')
+                            ->values();
+                    @endphp
 
-                        {{-- HADIR --}}
-                        <button type="button" class="att-item att-hadir attendance-button" onclick="openAttendanceModal('hadir')">
+                    <div class="attendance-box">
+                        <div class="att-item att-hadir">
                             <span class="att-num">{{ $jurnal->jml_hadir ?? 0 }}</span>
                             <span class="att-label">Hadir</span>
-                            <span class="att-click">Lihat siswa</span>
-                        </button>
+                        </div>
 
-                        {{-- ABSEN --}}
-                        <button type="button" class="att-item att-absen attendance-button" onclick="openAttendanceModal('absen')">
+                        <div class="att-item att-absen">
                             <span class="att-num">{{ $jurnal->jml_tidak_hadir ?? 0 }}</span>
                             <span class="att-label">Tidak Hadir</span>
-                            <span class="att-click">Lihat siswa</span>
-                        </button>
+                        </div>
 
+                    </div>
+
+                    <div class="attendance-name-groups">
+                        <section class="attendance-name-group is-absent">
+                            <h4>Nama siswa tidak hadir</h4>
+                            @if($siswaTidakHadir->isNotEmpty())
+                                <ol>
+                                    @foreach($siswaTidakHadir as $detail)
+                                        <li>
+                                            {{ $detail->siswa->nama_siswa ?? 'Nama siswa tidak tersedia' }}
+                                            <span>{{ $detail->status ?? $detail->keterangan ?? 'Tidak Hadir' }}</span>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            @else
+                                <p>Tidak ada siswa yang tercatat tidak hadir.</p>
+                            @endif
+                        </section>
                     </div>
                 </div>
 
@@ -183,83 +205,6 @@
             @endif
 
         </div>
-    </div>
-</div>
-
-{{-- =====================================================
-     MODAL DAFTAR SISWA
-===================================================== --}}
-<div id="attendanceModal" class="attendance-modal" onclick="closeAttendanceModal(event)">
-    <div class="attendance-modal-card" onclick="event.stopPropagation()">
-
-        {{-- HEADER MODAL --}}
-        <div class="modal-header">
-            <div class="modal-header-left">
-                <div id="modalIcon" class="modal-icon">
-                    <span class="material-symbols-outlined">groups</span>
-                </div>
-                <div>
-                    <h2 id="modalTitle">Daftar Siswa</h2>
-                    <p id="modalSubtitle">Daftar siswa</p>
-                </div>
-            </div>
-
-            <button type="button" class="modal-close" onclick="closeAttendanceModal()">
-                <span class="material-symbols-outlined">close</span>
-            </button>
-        </div>
-
-        {{-- SEARCH SISWA --}}
-        <div class="modal-search">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" id="studentSearch" placeholder="Cari nama siswa..." oninput="searchStudent()">
-        </div>
-
-        {{-- LIST SISWA --}}
-        <div id="studentList" class="student-list">
-
-            {{-- HADIR --}}
-            @foreach($jurnal->detailAbsensis ?? [] as $detail)
-                @if(strtolower($detail->status ?? '') === 'hadir' || strtolower($detail->keterangan ?? '') === 'hadir')
-                    <div class="student-item student-hadir" data-status="hadir" data-name="{{ strtolower($detail->siswa->nama_siswa ?? '') }}">
-                        <div class="student-number">{{ $loop->iteration }}</div>
-                        <div class="student-avatar">{{ strtoupper(substr($detail->siswa->nama_siswa ?? '?', 0, 1)) }}</div>
-                        <div class="student-info">
-                            <span class="student-name">{{ $detail->siswa->nama_siswa ?? 'Nama siswa tidak tersedia' }}</span>
-                            <span class="student-status hadir">Hadir</span>
-                        </div>
-                    </div>
-                @endif
-            @endforeach
-
-            {{-- ABSEN --}}
-            @foreach($jurnal->detailAbsensis ?? [] as $detail)
-                @if(strtolower($detail->status ?? '') !== 'hadir' && strtolower($detail->keterangan ?? '') !== 'hadir')
-                    <div class="student-item student-absen" data-status="absen" data-name="{{ strtolower($detail->siswa->nama_siswa ?? '') }}">
-                        <div class="student-number">{{ $loop->iteration }}</div>
-                        <div class="student-avatar">{{ strtoupper(substr($detail->siswa->nama_siswa ?? '?', 0, 1)) }}</div>
-                        <div class="student-info">
-                            <span class="student-name">{{ $detail->siswa->nama_siswa ?? 'Nama siswa tidak tersedia' }}</span>
-                            <span class="student-status absen">{{ $detail->status ?? $detail->keterangan ?? 'Tidak Hadir' }}</span>
-                        </div>
-                    </div>
-                @endif
-            @endforeach
-
-        </div>
-
-        {{-- EMPTY --}}
-        <div id="studentEmpty" class="student-empty">
-            <span class="material-symbols-outlined">person_off</span>
-            <p>Tidak ada data siswa.</p>
-        </div>
-
-        {{-- FOOTER --}}
-        <div class="modal-footer">
-            <span id="modalCount">0 siswa</span>
-            <button type="button" class="btn-modal-close" onclick="closeAttendanceModal()">Tutup</button>
-        </div>
-
     </div>
 </div>
 
@@ -589,6 +534,16 @@
     color: #64748B;
 }
 
+.attendance-name-groups { display:grid; gap:12px; margin-top:14px; }
+.attendance-name-group { padding:13px 14px; border:1px solid #BBF7D0; border-radius:12px; background:#F8FFF9; }
+.attendance-name-group.is-absent { border-color:#FECACA; background:#FFFAFA; }
+.attendance-name-group h4 { margin:0 0 8px; color:#166534; font-size:11px; font-weight:850; }
+.attendance-name-group.is-absent h4 { color:#991B1B; }
+.attendance-name-group ol { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 18px; margin:0; padding-left:20px; color:#334155; font-size:11px; }
+.attendance-name-group li { min-width:0; padding-left:2px; overflow-wrap:anywhere; }
+.attendance-name-group li span { display:inline-block; margin-left:4px; color:#b91c1c; font-size:10px; font-weight:750; }
+.attendance-name-group p { margin:0; color:#64748B; font-size:11px; }
+
 /* =====================================================
    CONTENT
 ===================================================== */
@@ -623,262 +578,11 @@
 .text-red-body { color: #7F1D1D; }
 
 /* =====================================================
-   MODAL
-===================================================== */
-.attendance-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(15, 23, 42, 0.45);
-    backdrop-filter: blur(4px);
-}
-
-.attendance-modal.show {
-    display: flex;
-    animation: modalFade 0.2s ease both;
-}
-
-.attendance-modal-card {
-    width: 100%;
-    max-width: 520px;
-    max-height: 80vh;
-    background: #FFFFFF;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
-    animation: modalUp 0.25s cubic-bezier(.16, 1, .3, 1) both;
-}
-
-/* =====================================================
-   MODAL HEADER
-===================================================== */
-.modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 22px;
-    border-bottom: 1px solid #E2E8F0;
-}
-
-.modal-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.modal-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: #EEF2FF;
-    color: #4F46E5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-icon.absen {
-    background: #FEF2F2;
-    color: #DC2626;
-}
-
-.modal-header h2 {
-    margin: 0;
-    color: #1E293B;
-    font-size: 16px;
-    font-weight: 800;
-}
-
-.modal-header p {
-    margin: 2px 0 0;
-    color: #64748B;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.modal-close {
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 10px;
-    background: #F1F5F9;
-    color: #64748B;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.modal-close:hover {
-    background: #E2E8F0;
-    color: #0F172A;
-}
-
-/* =====================================================
-   SEARCH
-===================================================== */
-.modal-search {
-    margin: 16px 20px;
-    height: 42px;
-    padding: 0 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border: 1px solid #CBD5E1;
-    border-radius: 11px;
-}
-
-.modal-search .material-symbols-outlined {
-    color: #94A3B8;
-}
-
-.modal-search input {
-    width: 100%;
-    border: none;
-    outline: none;
-    background: transparent;
-    color: #0F172A;
-    font-size: 13px;
-    font-family: inherit;
-}
-
-/* =====================================================
-   STUDENT LIST
-===================================================== */
-.student-list {
-    max-height: 360px;
-    overflow-y: auto;
-    padding: 0 20px;
-}
-
-.student-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 11px 4px;
-    border-bottom: 1px solid #F1F5F9;
-}
-
-.student-number {
-    width: 24px;
-    color: #94A3B8;
-    font-size: 11px;
-    font-weight: 700;
-    text-align: center;
-}
-
-.student-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #EEF2FF;
-    color: #4F46E5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 800;
-    flex-shrink: 0;
-}
-
-.student-absen .student-avatar {
-    background: #FEF2F2;
-    color: #DC2626;
-}
-
-.student-info {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-.student-name {
-    color: #1E293B;
-    font-size: 13.5px;
-    font-weight: 700;
-}
-
-.student-status {
-    font-size: 10.5px;
-    font-weight: 700;
-}
-
-.student-status.hadir { color: #15803D; }
-.student-status.absen { color: #DC2626; }
-
-/* =====================================================
-   EMPTY
-===================================================== */
-.student-empty {
-    display: none;
-    padding: 40px 20px;
-    text-align: center;
-    color: #94A3B8;
-}
-
-.student-empty .material-symbols-outlined {
-    font-size: 40px;
-}
-
-.student-empty p {
-    margin: 8px 0 0;
-    font-size: 13px;
-    font-weight: 600;
-}
-
-/* =====================================================
-   MODAL FOOTER
-===================================================== */
-.modal-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-top: 1px solid #E2E8F0;
-}
-
-.modal-footer span {
-    color: #64748B;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.btn-modal-close {
-    border: none;
-    background: #2D336B;
-    color: #FFFFFF;
-    padding: 9px 18px;
-    border-radius: 10px;
-    font-family: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.btn-modal-close:hover {
-    background: #1B234A;
-}
-
-/* =====================================================
    ANIMATION
 ===================================================== */
 @keyframes pageIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes modalFade {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-@keyframes modalUp {
-    from { opacity: 0; transform: translateY(15px) scale(.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* =====================================================
@@ -917,107 +621,9 @@
         grid-template-columns: 1fr;
     }
 
-    .attendance-modal {
-        padding: 12px;
-    }
-
-    .attendance-modal-card {
-        max-height: 90vh;
-    }
 }
 </style>
 
-<script>
-function openAttendanceModal(type) {
-    const modal = document.getElementById('attendanceModal');
-    const title = document.getElementById('modalTitle');
-    const subtitle = document.getElementById('modalSubtitle');
-    const icon = document.getElementById('modalIcon');
-    const students = document.querySelectorAll('.student-item');
-    const search = document.getElementById('studentSearch');
-    const empty = document.getElementById('studentEmpty');
-    const count = document.getElementById('modalCount');
 
-    /* Reset search */
-    search.value = '';
-
-    let visibleCount = 0;
-
-    students.forEach(student => {
-        const status = student.dataset.status;
-        if (status === type) {
-            student.style.display = 'flex';
-            visibleCount++;
-        } else {
-            student.style.display = 'none';
-        }
-    });
-
-    /* Header */
-    if (type === 'hadir') {
-        title.textContent = 'Siswa Hadir';
-        subtitle.textContent = 'Daftar siswa yang hadir dalam pembelajaran';
-        icon.classList.remove('absen');
-    } else {
-        title.textContent = 'Siswa Tidak Hadir';
-        subtitle.textContent = 'Daftar siswa yang tidak hadir dalam pembelajaran';
-        icon.classList.add('absen');
-    }
-
-    /* Count */
-    count.textContent = visibleCount + ' siswa';
-
-    /* Empty */
-    empty.style.display = visibleCount === 0 ? 'block' : 'none';
-
-    /* Show modal */
-    modal.classList.add('show');
-
-    /* Focus search */
-    setTimeout(() => {
-        search.focus();
-    }, 100);
-}
-
-function closeAttendanceModal(event) {
-    if (event && event.target !== event.currentTarget) {
-        return;
-    }
-
-    const modal = document.getElementById('attendanceModal');
-    modal.classList.remove('show');
-}
-
-function searchStudent() {
-    const searchInput = document.getElementById('studentSearch');
-    const keyword = searchInput.value.toLowerCase().trim();
-    const students = document.querySelectorAll('.student-item');
-
-    let visibleCount = 0;
-
-    students.forEach(student => {
-        if (student.dataset.status && student.style.display !== 'none') {
-            const name = student.dataset.name || '';
-
-            if (name.includes(keyword)) {
-                student.style.display = 'flex';
-                visibleCount++;
-            } else {
-                student.style.display = 'none';
-            }
-        }
-    });
-
-    document.getElementById('modalCount').textContent = visibleCount + ' siswa';
-    document.getElementById('studentEmpty').style.display = visibleCount === 0 ? 'block' : 'none';
-}
-
-/* ESC untuk menutup */
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        closeAttendanceModal();
-    }
-});
-</script>
 
 @endsection
