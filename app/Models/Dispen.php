@@ -14,9 +14,12 @@ class Dispen extends Model
         'id_siswa',
         'batch_token',
         'jenis',
+        'jenis_dispen',
+        'jenis_surat_sakit',
         'id_kesiswaan',
         'submitted_by',
         'tanggal',
+        'tanggal_selesai',
         'id_jam_mulai',
         'id_jam_selesai',
         'alasan',
@@ -30,6 +33,7 @@ class Dispen extends Model
 
     protected $casts = [
         'tanggal' => 'date',
+        'tanggal_selesai' => 'date',
         'disetujui_pada' => 'datetime',
     ];
 

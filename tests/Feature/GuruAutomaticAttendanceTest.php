@@ -50,7 +50,7 @@ class GuruAutomaticAttendanceTest extends TestCase
             'id_kelas' => $kelas->id_kelas,
             'id_jam_mulai' => $jamMulai->id_jam,
             'id_jam_selesai' => $jamSelesai->id_jam,
-            'hari' => 'Senin',
+            'hari' => today()->locale('id')->isoFormat('dddd'),
             'semester' => 'Ganjil',
             'tahun_ajaran' => '2026/2027',
         ]);
@@ -89,12 +89,32 @@ class GuruAutomaticAttendanceTest extends TestCase
             'role' => 'Guru',
             'id_guru' => $guru->id_guru,
         ]);
+        $futureJournals = collect();
+        foreach ([1, 2, 3] as $dayOffset) {
+            $futureJournals->push(Jurnal::create([
+                'id_jadwal' => $jadwal->id_jadwal,
+                'id_kelas' => $kelas->id_kelas,
+                'id_guru' => $guru->id_guru,
+                'id_user' => $userGuru->id_user,
+                'id_jam_mulai' => $jamMulai->id_jam,
+                'id_jam_selesai' => $jamSelesai->id_jam,
+                'tanggal' => today()->addDays($dayOffset)->toDateString(),
+                'materi' => 'Materi hari berikutnya',
+                'keterangan' => 'Catatan jurnal',
+                'status_guru' => 'Hadir',
+                'ada_tugas' => 'Tidak',
+                'jml_hadir' => 3,
+                'jml_tidak_hadir' => 0,
+                'status_validasi_guru' => 'Disetujui',
+            ]));
+        }
 
         $this->actingAs($piket)
             ->post(route('piket.dispen.sakit.store'), [
                 'id_kelas' => $kelas->id_kelas,
                 'id_siswa' => $siswaSakit->id_siswa,
                 'tanggal' => today()->toDateString(),
+                'jenis_surat_sakit' => 'dokter',
                 'alasan' => 'Sakit demam',
                 'surat' => UploadedFile::fake()->image('surat-sakit.jpg'),
             ])
@@ -105,6 +125,21 @@ class GuruAutomaticAttendanceTest extends TestCase
             ->where('jenis', 'sakit')
             ->firstOrFail();
         Storage::disk('public')->assertExists($laporanSakit->surat_path);
+        $this->assertSame('dokter', $laporanSakit->jenis_surat_sakit);
+        $this->assertSame(today()->addDays(2)->toDateString(), $laporanSakit->tanggal_selesai->toDateString());
+        foreach ($futureJournals->take(2) as $futureJournal) {
+            $this->assertDatabaseHas('detail_absensi', [
+                'id_jurnal' => $futureJournal->id_jurnal,
+                'id_siswa' => $siswaSakit->id_siswa,
+                'id_dispen' => $laporanSakit->id_dispen,
+                'status' => 'Sakit',
+            ]);
+        }
+        $this->assertDatabaseMissing('detail_absensi', [
+            'id_jurnal' => $futureJournals[2]->id_jurnal,
+            'id_siswa' => $siswaSakit->id_siswa,
+            'id_dispen' => $laporanSakit->id_dispen,
+        ]);
 
         $laporanDispen = Dispen::create([
             'id_siswa' => $siswaDispen->id_siswa,
@@ -119,10 +154,8 @@ class GuruAutomaticAttendanceTest extends TestCase
         $this->actingAs($userGuru)
             ->get(route('guru.jurnal.form', $jadwal))
             ->assertOk()
-            ->assertSee('Sakit · Terkonfirmasi')
-            ->assertSee('Dispen · Terkonfirmasi')
-            ->assertSee('Lihat foto surat')
-            ->assertSee($laporanSakit->surat_path);
+            ->assertSee('Sakit <strong id="sakitCount">1</strong>', false)
+            ->assertSee('Dispen <strong id="dispenCount">1</strong>', false);
 
         $this->post(route('guru.jurnal.store'), [
             'id_jadwal' => $jadwal->id_jadwal,
@@ -135,9 +168,13 @@ class GuruAutomaticAttendanceTest extends TestCase
                 $siswaDispen->id_siswa => 'Hadir',
                 $siswaHadir->id_siswa => 'Hadir',
             ],
-        ])->assertRedirect(route('guru.jurnal.show', Jurnal::where('id_jadwal', $jadwal->id_jadwal)->firstOrFail()));
+        ])->assertRedirect(route('guru.jurnal.show', Jurnal::where('id_jadwal', $jadwal->id_jadwal)
+            ->whereDate('tanggal', today()->toDateString())
+            ->firstOrFail()));
 
-        $jurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)->firstOrFail();
+        $jurnal = Jurnal::where('id_jadwal', $jadwal->id_jadwal)
+            ->whereDate('tanggal', today()->toDateString())
+            ->firstOrFail();
 
         $this->assertSame('Menunggu', $jurnal->status_validasi_guru);
         $this->assertFalse($jurnal->diisi_oleh_piket);
@@ -174,6 +211,110 @@ class GuruAutomaticAttendanceTest extends TestCase
             ->assertOk()
             ->assertSee('Lihat foto surat')
             ->assertSee($laporanSakit->surat_path);
+    }
+
+    public function test_late_dispen_is_approved_without_waka_and_only_applies_to_selected_hours(): void
+    {
+        config(['app.jurnal_bebas_testing' => true]);
+        $guru = Guru::create(['nama_guru' => 'Guru Terlambat']);
+        $kelas = Kelas::create(['nama_kelas' => 'XI-IPS', 'wali_kelas' => $guru->id_guru]);
+        $mapel = Mapel::create(['nama_mapel' => 'Sejarah']);
+        $hariIni = today()->locale('id')->isoFormat('dddd');
+        $periods = collect();
+        foreach (range(1, 4) as $hour) {
+            $periods->push(JamPel::create([
+                'klp_hari' => 'Senin-Kamis',
+                'jam_ke' => $hour,
+                'jenis' => 'pelajaran',
+                'jam_mulai' => '00:00:00',
+                'jam_selesai' => '23:59:59',
+            ]));
+        }
+        $jadwalOverlap = Jadwal::create([
+            'id_guru' => $guru->id_guru, 'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas, 'id_jam_mulai' => $periods[1]->id_jam,
+            'id_jam_selesai' => $periods[1]->id_jam, 'hari' => $hariIni,
+            'semester' => 'Ganjil', 'tahun_ajaran' => '2026/2027',
+        ]);
+        $jadwalDiLuarRentang = Jadwal::create([
+            'id_guru' => $guru->id_guru, 'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas, 'id_jam_mulai' => $periods[2]->id_jam,
+            'id_jam_selesai' => $periods[3]->id_jam, 'hari' => $hariIni,
+            'semester' => 'Ganjil', 'tahun_ajaran' => '2026/2027',
+        ]);
+        $siswa = Siswa::create([
+            'id_kelas' => $kelas->id_kelas, 'nis' => '1101', 'no_presensi' => 1,
+            'nama_siswa' => 'Siswa Terlambat', 'jenis_kelamin' => 'L',
+        ]);
+        $piket = User::create([
+            'username' => 'piket_late_dispen', 'password' => bcrypt('password'),
+            'nama_user' => 'Petugas Piket', 'role' => 'Staff Piket',
+        ]);
+        $guruUser = User::create([
+            'username' => 'guru_late_dispen', 'password' => bcrypt('password'),
+            'nama_user' => 'Guru Terlambat', 'role' => 'Guru', 'id_guru' => $guru->id_guru,
+        ]);
+        $jurnalOverlap = Jurnal::create([
+            'id_jadwal' => $jadwalOverlap->id_jadwal, 'id_kelas' => $kelas->id_kelas,
+            'id_guru' => $guru->id_guru, 'id_user' => $guruUser->id_user,
+            'id_jam_mulai' => $periods[1]->id_jam, 'id_jam_selesai' => $periods[1]->id_jam,
+            'tanggal' => today()->toDateString(), 'materi' => 'Sejarah awal',
+            'keterangan' => 'Jurnal jam pertama', 'status_guru' => 'Hadir',
+            'ada_tugas' => 'Tidak', 'jml_hadir' => 1, 'jml_tidak_hadir' => 0,
+            'status_validasi_guru' => 'Disetujui',
+        ]);
+        $jurnalDiLuarRentang = Jurnal::create([
+            'id_jadwal' => $jadwalDiLuarRentang->id_jadwal, 'id_kelas' => $kelas->id_kelas,
+            'id_guru' => $guru->id_guru, 'id_user' => $guruUser->id_user,
+            'id_jam_mulai' => $periods[2]->id_jam, 'id_jam_selesai' => $periods[3]->id_jam,
+            'tanggal' => today()->toDateString(), 'materi' => 'Sejarah lanjutan',
+            'keterangan' => 'Jurnal jam berikutnya', 'status_guru' => 'Hadir',
+            'ada_tugas' => 'Tidak', 'jml_hadir' => 1, 'jml_tidak_hadir' => 0,
+            'status_validasi_guru' => 'Disetujui',
+        ]);
+
+        $this->actingAs($piket)
+            ->post(route('piket.dispen.store'), [
+                'jenis_dispen' => 'terlambat',
+                'students' => [['id_kelas' => $kelas->id_kelas, 'id_siswa' => $siswa->id_siswa]],
+                'tanggal' => today()->toDateString(),
+                'id_jam_mulai' => $periods[0]->id_jam,
+                'id_jam_selesai' => $periods[0]->id_jam,
+                'alasan' => 'Datang terlambat',
+            ])
+            ->assertRedirect(route('piket.dispen.index', ['status' => 'riwayat']));
+
+        $dispen = Dispen::where('id_siswa', $siswa->id_siswa)->where('jenis', 'dispen')->firstOrFail();
+        $this->assertSame('terlambat', $dispen->jenis_dispen);
+        $this->assertSame('disetujui', $dispen->status);
+        $this->assertDatabaseHas('detail_absensi', [
+            'id_jurnal' => $jurnalOverlap->id_jurnal, 'id_siswa' => $siswa->id_siswa,
+            'id_dispen' => $dispen->id_dispen, 'status' => 'Dispen',
+        ]);
+        $this->assertDatabaseMissing('detail_absensi', [
+            'id_jurnal' => $jurnalDiLuarRentang->id_jurnal, 'id_siswa' => $siswa->id_siswa,
+            'id_dispen' => $dispen->id_dispen,
+        ]);
+
+        $jadwalFormOverlap = Jadwal::create([
+            'id_guru' => $guru->id_guru, 'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas, 'id_jam_mulai' => $periods[1]->id_jam,
+            'id_jam_selesai' => $periods[1]->id_jam, 'hari' => $hariIni,
+            'semester' => 'Ganjil', 'tahun_ajaran' => '2026/2027',
+        ]);
+        $jadwalFormLuarRentang = Jadwal::create([
+            'id_guru' => $guru->id_guru, 'id_mapel' => $mapel->id_mapel,
+            'id_kelas' => $kelas->id_kelas, 'id_jam_mulai' => $periods[2]->id_jam,
+            'id_jam_selesai' => $periods[2]->id_jam, 'hari' => $hariIni,
+            'semester' => 'Ganjil', 'tahun_ajaran' => '2026/2027',
+        ]);
+        $this->actingAs($guruUser)
+            ->get(route('guru.jurnal.form', $jadwalFormOverlap))
+            ->assertOk()
+            ->assertSee('Dispen <strong id="dispenCount">1</strong>', false);
+        $this->get(route('guru.jurnal.form', $jadwalFormLuarRentang))
+            ->assertOk()
+            ->assertSee('Dispen <strong id="dispenCount">0</strong>', false);
     }
 
     public function test_teacher_can_edit_journal_attendance_during_class_and_other_roles_see_the_update(): void

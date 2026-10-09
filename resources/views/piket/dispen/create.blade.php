@@ -9,7 +9,7 @@
     .dispen-create-header h1{margin:0;color:var(--navy);font-size:22px;font-weight:800}.dispen-create-header p{margin:5px 0 0;color:var(--muted);font-size:13px}
     .dispen-create-panel{min-width:0;padding:20px;border:1px solid #e1e7f0;border-radius:14px;background:#fff;box-shadow:0 3px 12px rgba(26,39,73,.04)}
     .dispen-create-panel h2{margin:0 0 8px;color:var(--navy);font-size:16px;font-weight:800}.dispen-create-panel-intro{margin:0 0 17px;color:var(--muted);font-size:12px;line-height:1.5}
-    .dispen-create-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.dispen-create-field{display:grid;align-content:start;gap:7px;min-width:0}.dispen-create-field--wide,.dispen-create-actions{grid-column:1/-1}
+    .dispen-create-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.dispen-create-field{display:grid;align-content:start;gap:7px;min-width:0}.dispen-create-field[hidden]{display:none}.dispen-create-field--wide,.dispen-create-actions{grid-column:1/-1}
     .dispen-create-field label,.student-entry-label{color:#475569;font-size:12px;font-weight:700}.dispen-create-control{width:100%;min-height:42px;padding:9px 11px;border:1px solid #cfd7e4;border-radius:8px;background:#fff;color:var(--ink);font:inherit;font-size:13px}.dispen-create-control:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px rgba(65,105,255,.12)}
     .dispen-create-control:disabled{background:#f1f4f8;color:#94a3b8;cursor:not-allowed}.dispen-create-alert{padding:12px 15px;border:1px solid #f2cccc;border-radius:9px;background:#fff2f2;color:#a33232;font-size:12px}.dispen-create-alert ul{margin:0;padding-left:19px}
     .waka-info-card{display:flex;min-height:42px;align-items:center;gap:9px;padding:10px 12px;border:1px solid;border-radius:8px;font-size:12px;line-height:1.45}.waka-info-card--success{border-color:#bbf7d0;background:#f0fdf4;color:#166534}.waka-info-card--warning{border-color:#fde68a;background:#fffbeb;color:#92400e}.waka-info-card--danger{border-color:#fecaca;background:#fef2f2;color:#991b1b}
@@ -21,8 +21,9 @@
 
 @section('content')
 @php($editing = $editing ?? false)
+@php($selectedJenisDispen = old('jenis_dispen', $dispen->jenis_dispen ?? 'kegiatan'))
 <main class="dispen-create-page">
-    <header class="dispen-create-header"><h1>{{ $editing ? 'Edit' : 'Tambah' }} Dispen</h1><p>Ajukan dispensasi untuk satu atau beberapa siswa sekaligus. Petugas Waka ditentukan berdasarkan jadwal.</p></header>
+    <header class="dispen-create-header"><h1>{{ $editing ? 'Edit' : 'Tambah' }} Dispen</h1><p>Catat dispensasi kegiatan atau keterlambatan siswa. Keterlambatan langsung tersinkron ke jurnal pada jam yang dipilih.</p></header>
 
     @if(session('error'))<div class="dispen-create-alert" role="alert">{{ session('error') }}</div>@endif
     @if($errors->any())<div class="dispen-create-alert" role="alert"><ul>@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
@@ -34,6 +35,14 @@
             @csrf
             @if($editing) @method('PUT') @endif
 
+            <div class="dispen-create-field">
+                <label for="dispen-type">Jenis Dispen</label>
+                <select id="dispen-type" name="jenis_dispen" class="dispen-create-control" required>
+                    <option value="kegiatan" @selected($selectedJenisDispen === 'kegiatan')>Dispen kegiatan</option>
+                    <option value="terlambat" @selected($selectedJenisDispen === 'terlambat')>Dispen terlambat</option>
+                </select>
+            </div>
+
             <div class="dispen-create-field dispen-create-field--wide">
                 <div id="student-entries" class="student-entries"></div>
                 <button type="button" id="add-student" class="student-add"><span class="material-symbols-outlined" aria-hidden="true">add</span>Tambah Siswa Dispen</button>
@@ -44,7 +53,7 @@
                 <label for="dispen-date">Tanggal</label>
                 <input type="date" id="dispen-date" name="tanggal" value="{{ old('tanggal', $dispen?->tanggal?->format('Y-m-d') ?? date('Y-m-d')) }}" class="dispen-create-control" required>
             </div>
-            <div class="dispen-create-field">
+            <div class="dispen-create-field" id="waka-field" @if($selectedJenisDispen === 'terlambat') hidden @endif>
                 <label>Waka / Kesiswaan Bertugas</label>
                 <div id="waka-status-box" class="waka-info-card waka-info-card--warning"><span id="waka-status-text">Memeriksa jadwal...</span></div>
             </div>
@@ -100,6 +109,8 @@
     const entries = document.getElementById('student-entries');
     const template = document.getElementById('student-entry-template');
     const dateInput = document.getElementById('dispen-date');
+    const typeInput = document.getElementById('dispen-type');
+    const wakaField = document.getElementById('waka-field');
     const wakaBox = document.getElementById('waka-status-box');
     const wakaText = document.getElementById('waka-status-text');
     let nextIndex = 0;
@@ -184,6 +195,10 @@
     (Array.isArray(initialRows) && initialRows.length ? initialRows : [{}]).forEach(row => addRow(row));
 
     function updateWakaStatus() {
+        const lateDispen = typeInput.value === 'terlambat';
+        wakaField.hidden = lateDispen;
+        if (lateDispen) return;
+
         const date = dateInput.value;
         wakaBox.className = 'waka-info-card';
         if (!date) {
@@ -204,6 +219,7 @@
         }
     }
     dateInput.addEventListener('change', updateWakaStatus);
+    typeInput.addEventListener('change', updateWakaStatus);
     updateWakaStatus();
 })();
 </script>

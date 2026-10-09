@@ -241,7 +241,12 @@ class JurnalController extends Controller
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)
             ->orderBy('nama_siswa')
             ->get();
-        $activeDispenSiswa = $this->activeDispenSiswa($jadwal->id_kelas, $today->toDateString());
+        $activeDispenSiswa = $this->activeDispenSiswa(
+            $jadwal->id_kelas,
+            $today->toDateString(),
+            $jadwal->id_jam_mulai,
+            $jadwal->id_jam_selesai
+        );
         $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $today->toDateString());
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
         $savedAbsences = $jurnal
@@ -291,7 +296,12 @@ class JurnalController extends Controller
         $jadwal->load(['kelas', 'mapel', 'guru', 'jamMulai', 'jamSelesai']);
         [$jamMulaiDisplay, $jamSelesaiDisplay] = $this->displayedJamPeriods($jadwal);
         $siswa = Siswa::where('id_kelas', $jadwal->id_kelas)->orderBy('nama_siswa')->get();
-        $activeDispenSiswa = $this->activeDispenSiswa($jadwal->id_kelas, $today->toDateString());
+        $activeDispenSiswa = $this->activeDispenSiswa(
+            $jadwal->id_kelas,
+            $today->toDateString(),
+            $jadwal->id_jam_mulai,
+            $jadwal->id_jam_selesai
+        );
         $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $today->toDateString());
         $siswaDispen = $siswa->whereIn('id_siswa', $activeDispenSiswa)->values();
         $jurnal = null;
@@ -415,7 +425,12 @@ class JurnalController extends Controller
         }
 
         $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $tanggal);
-        $activeDispenReports = $this->activeDispenQuery($jadwal->id_kelas, $tanggal)
+        $activeDispenReports = $this->activeDispenQuery(
+            $jadwal->id_kelas,
+            $tanggal,
+            $jadwal->id_jam_mulai,
+            $jadwal->id_jam_selesai
+        )
             ->get()
             ->keyBy('id_siswa');
 
@@ -611,7 +626,12 @@ class JurnalController extends Controller
 
         $tanggal = now('Asia/Jakarta')->toDateString();
         $activeSickReports = $this->activeSickReports($jadwal->id_kelas, $tanggal);
-        $activeDispenReports = $this->activeDispenQuery($jadwal->id_kelas, $tanggal)->get()->keyBy('id_siswa');
+        $activeDispenReports = $this->activeDispenQuery(
+            $jadwal->id_kelas,
+            $tanggal,
+            $jadwal->id_jam_mulai,
+            $jadwal->id_jam_selesai
+        )->get()->keyBy('id_siswa');
 
         $activeSickReports->each(function ($report, $idSiswa) use (&$validated) {
             $validated['absensi'][$idSiswa] = $report->jenis === 'izin' ? 'Izin' : 'Sakit';
@@ -747,11 +767,15 @@ class JurnalController extends Controller
 
     private function activeDispenSiswa(
         int $idKelas,
-        string $tanggal
+        string $tanggal,
+        int $idJamMulai,
+        int $idJamSelesai
     ) {
         return $this->activeDispenQuery(
             $idKelas,
-            $tanggal
+            $tanggal,
+            $idJamMulai,
+            $idJamSelesai
         )->pluck('id_siswa');
     }
 
@@ -759,7 +783,8 @@ class JurnalController extends Controller
     {
         return Dispen::query()
             ->whereIn('jenis', ['sakit', 'izin'])
-            ->whereDate('tanggal', $tanggal)
+            ->whereDate('tanggal', '<=', $tanggal)
+            ->whereRaw('DATE(COALESCE(tanggal_selesai, tanggal)) >= ?', [$tanggal])
             ->whereHas('siswa', fn ($query) => $query->where('id_kelas', $idKelas))
             ->latest('id_dispen')
             ->get(['id_dispen', 'id_siswa', 'jenis', 'surat_path'])
@@ -769,17 +794,57 @@ class JurnalController extends Controller
 
     private function activeDispenQuery(
         int $idKelas,
-        string $tanggal
+        string $tanggal,
+        int $idJamMulai,
+        int $idJamSelesai
     ) {
         if ($tanggal !== now('Asia/Jakarta')->toDateString()) {
             return Dispen::query()
                 ->whereRaw('1 = 0');
         }
 
+        $jamMulaiKe = (int) JamPel::whereKey($idJamMulai)->value('jam_ke');
+        $jamSelesaiKe = (int) JamPel::whereKey($idJamSelesai)->value('jam_ke');
+        $hari = now('Asia/Jakarta')->locale('id')->isoFormat('dddd');
+        $jadwalJamMulai = Jadwal::query()
+            ->where('id_kelas', $idKelas)
+            ->where('hari', $hari)
+            ->with('jamMulai')
+            ->get()
+            ->pluck('jamMulai.jam_ke')
+            ->filter()
+            ->map(fn ($jamKe) => (int) $jamKe)
+            ->sort()
+            ->values();
+        $lateNextSlotIds = Dispen::query()
+            ->where('jenis', 'dispen')
+            ->where('jenis_dispen', 'terlambat')
+            ->whereDate('tanggal', $tanggal)
+            ->where('status', 'disetujui')
+            ->whereHas('siswa', fn ($query) => $query->where('id_kelas', $idKelas))
+            ->with('jamSelesai')
+            ->get()
+            ->filter(function (Dispen $report) use ($jadwalJamMulai, $jamMulaiKe) {
+                $jamAkhirLaporan = (int) $report->jamSelesai?->jam_ke;
+                $jamBerikutnya = $jadwalJamMulai->first(fn ($jamKe) => $jamKe > $jamAkhirLaporan);
+
+                return $jamBerikutnya !== null && $jamBerikutnya === $jamMulaiKe;
+            })
+            ->pluck('id_dispen');
+
         return Dispen::query()
             ->where('jenis', 'dispen')
             ->whereDate('tanggal', $tanggal)
             ->where('status', 'disetujui')
+            ->where(function ($query) use ($jamMulaiKe, $jamSelesaiKe, $lateNextSlotIds) {
+                $query->where('jenis_dispen', '!=', 'terlambat')
+                    ->orWhere(function ($late) use ($jamMulaiKe, $jamSelesaiKe) {
+                        $late->where('jenis_dispen', 'terlambat')
+                            ->whereHas('jamMulai', fn ($period) => $period->where('jam_ke', '<=', $jamSelesaiKe))
+                            ->whereHas('jamSelesai', fn ($period) => $period->where('jam_ke', '>=', $jamMulaiKe));
+                            })
+                            ->when($lateNextSlotIds->isNotEmpty(), fn ($late) => $late->orWhereIn('id_dispen', $lateNextSlotIds));
+            })
             ->whereHas(
                 'siswa',
                 fn ($query) => $query->where('id_kelas', $idKelas)

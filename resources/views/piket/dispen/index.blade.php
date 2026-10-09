@@ -40,7 +40,7 @@
                     @php($detailUrl = route('piket.dispen.detail', $dispen->id_dispen))
                     <tr data-detail-url="{{ $detailUrl }}">
                         <td class="dispen-number">{{ str_pad((string) ($dispens->firstItem() + $loop->index), 2, '0', STR_PAD_LEFT) }}</td>
-                        <td class="dispen-date">{{ $dispen->tanggal?->translatedFormat('d M Y') ?? '-' }}</td>
+                        <td class="dispen-date">{{ $dispen->tanggal?->translatedFormat('d M Y') ?? '-' }}<span class="dispen-subline">{{ $dispen->jenis_dispen === 'terlambat' ? 'Terlambat' : 'Kegiatan' }}</span></td>
                         <td><span class="dispen-student-count">{{ $dispen->student_count }} Siswa</span><span class="dispen-subline">{{ $dispen->class_count }} Kelas</span></td>
                         <td class="dispen-time">{{ $dispen->jamMulai?->jam_ke ?? '-' }}–{{ $dispen->jamSelesai?->jam_ke ?? '-' }}<span class="dispen-subline">{{ substr($dispen->jamMulai?->jam_mulai ?? '',0,5) }}–{{ substr($dispen->jamSelesai?->jam_selesai ?? '',0,5) }}</span></td>
                         <td><span class="dispen-status dispen-status--{{ $dispen->status }}">{{ $dispen->status === 'menunggu' ? '🟡' : ($dispen->status === 'disetujui' ? '🟢' : '🔴') }} {{ ucfirst($dispen->status) }}</span></td>
@@ -63,7 +63,7 @@
             @forelse($dispens as $dispen)
                 @php($detailUrl = route('piket.dispen.detail', $dispen->id_dispen))
                 <article class="dispen-mobile-card" data-detail-url="{{ $detailUrl }}" tabindex="0" role="link" aria-label="Lihat detail pengajuan dispen">
-                    <div class="dispen-mobile-head"><div class="dispen-mobile-title"><span class="dispen-mobile-number">{{ str_pad((string) ($dispens->firstItem() + $loop->index), 2, '0', STR_PAD_LEFT) }}</span><div><strong>{{ $dispen->student_count }} Siswa</strong><span class="dispen-subline">{{ $dispen->class_count }} Kelas · {{ $dispen->tanggal?->translatedFormat('d M Y') ?? '-' }}</span></div></div><span class="dispen-status dispen-status--{{ $dispen->status }}">{{ ucfirst($dispen->status) }}</span></div>
+                    <div class="dispen-mobile-head"><div class="dispen-mobile-title"><span class="dispen-mobile-number">{{ str_pad((string) ($dispens->firstItem() + $loop->index), 2, '0', STR_PAD_LEFT) }}</span><div><strong>{{ $dispen->student_count }} Siswa</strong><span class="dispen-subline">{{ $dispen->jenis_dispen === 'terlambat' ? 'Terlambat' : 'Kegiatan' }} · {{ $dispen->class_count }} Kelas · {{ $dispen->tanggal?->translatedFormat('d M Y') ?? '-' }}</span></div></div><span class="dispen-status dispen-status--{{ $dispen->status }}">{{ ucfirst($dispen->status) }}</span></div>
                     <div class="dispen-mobile-meta"><div><span class="dispen-mobile-label">Waktu</span><div class="dispen-mobile-value">Jam {{ $dispen->jamMulai?->jam_ke ?? '-' }}–{{ $dispen->jamSelesai?->jam_ke ?? '-' }}<br>{{ substr($dispen->jamMulai?->jam_mulai ?? '',0,5) }}–{{ substr($dispen->jamSelesai?->jam_selesai ?? '',0,5) }}</div></div><div><span class="dispen-mobile-label">Dikonfirmasi</span><div class="dispen-mobile-value">{{ $dispen->approver?->nama_user ?? '-' }}<span class="dispen-subline">{{ $dispen->disetujui_pada?->translatedFormat('d M, H:i') ?? 'Belum dikonfirmasi' }}</span></div></div></div>
                     <div class="dispen-mobile-actions" data-row-action>
                         @if($dispen->status === 'menunggu')

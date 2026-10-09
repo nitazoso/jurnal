@@ -59,16 +59,12 @@ class JadwalImportController extends Controller
         }
         unset($row);
 
-<<<<<<< HEAD
-        return $this->processRows($data, $data, true);
-=======
         $token = Str::random(40);
         Cache::put($this->importCacheKey($token), $data, now()->addHours(2));
         // Keep the session copy for compatibility with preview links created before this change.
         $request->session()->put('jadwal_import.'.$token, $data);
 
         return redirect()->route('admin.jadwal.import.preview', $token);
->>>>>>> origin/dev
     }
 
     public function showPreview(Request $request, string $token)

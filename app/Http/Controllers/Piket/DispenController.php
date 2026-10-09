@@ -10,6 +10,7 @@ use App\Models\PiketJadwal;
 use App\Models\User;
 use App\Models\JamPel;
 use App\Models\Kelas;
+use App\Models\Jadwal;
 use App\Models\Jurnal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -48,14 +49,7 @@ class DispenController extends Controller
 
     public function izinSakitStore(Request $request)
     {
-        $validated = $request->validate([
-            'jenis' => 'required|in:izin,sakit',
-            'id_kelas' => 'required|exists:kelases,id_kelas',
-            'id_siswa' => ['required', Rule::exists('siswas', 'id_siswa')->where(fn ($query) => $query->where('id_kelas', $request->input('id_kelas')))],
-            'tanggal' => 'required|date',
-            'alasan' => 'required|string|max:255',
-            'surat' => 'nullable|image|max:5120',
-        ]);
+        $validated = $this->validateIzinSakit($request);
 
         $jamMulai = JamPel::where('jenis', 'pelajaran')->orderBy('jam_ke')->firstOrFail();
         $jamSelesai = JamPel::where('jenis', 'pelajaran')->orderByDesc('jam_ke')->firstOrFail();
@@ -76,6 +70,8 @@ class DispenController extends Controller
                 'submitted_by' => auth()->id(),
                 'id_jam_mulai' => $jamMulai->id_jam,
                 'id_jam_selesai' => $jamSelesai->id_jam,
+                'tanggal_selesai' => $validated['tanggal_selesai'],
+                'jenis_surat_sakit' => $validated['jenis_surat_sakit'],
                 'alasan' => $validated['alasan'],
                 'surat_path' => $suratPath,
                 'status' => 'disetujui',
@@ -84,7 +80,11 @@ class DispenController extends Controller
 
         $this->syncAbsenceIntoJournals($report);
 
-        return redirect()->route('piket.izin-sakit.index')
+        $redirectRoute = $request->routeIs('piket.dispen.sakit.store')
+            ? 'piket.dispen.sakit.create'
+            : 'piket.izin-sakit.index';
+
+        return redirect()->route($redirectRoute)
             ->with('success', 'Data izin/sakit tersimpan dan langsung disinkronkan ke jurnal guru pada kelas dan tanggal terkait.');
     }
 
@@ -105,12 +105,7 @@ class DispenController extends Controller
     public function izinSakitUpdate(Request $request, Dispen $dispen)
     {
         abort_unless(in_array($dispen->jenis, ['izin', 'sakit'], true), 404);
-        $validated = $request->validate([
-            'jenis' => 'required|in:izin,sakit',
-            'id_kelas' => 'required|exists:kelases,id_kelas',
-            'id_siswa' => ['required', Rule::exists('siswas', 'id_siswa')->where(fn ($query) => $query->where('id_kelas', $request->input('id_kelas')))],
-            'tanggal' => 'required|date', 'alasan' => 'required|string|max:255', 'surat' => 'nullable|image|max:5120',
-        ]);
+        $validated = $this->validateIzinSakit($request);
 
         $oldReportId = $dispen->id_dispen;
         $jamMulai = JamPel::where('jenis', 'pelajaran')->orderBy('jam_ke')->firstOrFail();
@@ -118,6 +113,8 @@ class DispenController extends Controller
         $data = [
             'id_siswa' => $validated['id_siswa'], 'jenis' => $validated['jenis'], 'tanggal' => $validated['tanggal'],
             'id_jam_mulai' => $jamMulai->id_jam, 'id_jam_selesai' => $jamSelesai->id_jam,
+            'tanggal_selesai' => $validated['tanggal_selesai'],
+            'jenis_surat_sakit' => $validated['jenis_surat_sakit'],
             'alasan' => $validated['alasan'], 'status' => 'disetujui',
         ];
         if ($request->hasFile('surat')) {
@@ -224,7 +221,10 @@ class DispenController extends Controller
 
     public function sickStore(Request $request)
     {
-        $request->merge(['jenis' => 'sakit']);
+        $request->merge([
+            'jenis' => 'sakit',
+            'jenis_surat_sakit' => $request->input('jenis_surat_sakit', 'biasa'),
+        ]);
 
         return $this->izinSakitStore($request);
     }
@@ -236,43 +236,56 @@ class DispenController extends Controller
     public function store(Request $request)
     {
         $validated = $this->validateDispenBatch($request);
-        $petugas = $this->wakaBertugas($validated['tanggal']);
+        $isTerlambat = $validated['jenis_dispen'] === 'terlambat';
+        $petugas = $isTerlambat ? null : $this->wakaBertugas($validated['tanggal']);
 
-        if (! $petugas) {
+        if (! $isTerlambat && ! $petugas) {
             $formattedDate = Carbon::parse($validated['tanggal'])->format('d-m-Y');
             return back()->withInput()->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
                 ->with('error', "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket.");
         }
-        if (empty($petugas->no_hp)) {
+        if (! $isTerlambat && empty($petugas->no_hp)) {
             return back()->withInput()->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
                 ->with('error', "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia.");
         }
 
         $batchToken = (string) Str::uuid();
-        $verificationToken = Str::random(64);
-        $wakaUserId = User::where('id_guru', $petugas->id_guru)->value('id_user');
-        $first = DB::transaction(function () use ($validated, $batchToken, $verificationToken, $wakaUserId) {
-            $first = null;
+        $verificationToken = $isTerlambat ? null : Str::random(64);
+        $wakaUserId = $petugas ? User::where('id_guru', $petugas->id_guru)->value('id_user') : null;
+        $approvedBy = $isTerlambat ? auth()->id() : null;
+        $approvedAt = $isTerlambat ? now() : null;
+        $items = DB::transaction(function () use ($validated, $batchToken, $verificationToken, $wakaUserId, $approvedBy, $approvedAt) {
+            $items = collect();
             foreach ($validated['students'] as $student) {
                 $item = Dispen::create([
                     'id_siswa' => $student['id_siswa'],
                     'batch_token' => $batchToken,
                     'jenis' => 'dispen',
+                    'jenis_dispen' => $validated['jenis_dispen'],
                     'id_kesiswaan' => $wakaUserId,
                     'submitted_by' => auth()->id(),
                     'tanggal' => $validated['tanggal'],
                     'id_jam_mulai' => $validated['id_jam_mulai'],
                     'id_jam_selesai' => $validated['id_jam_selesai'],
                     'alasan' => $validated['alasan'],
-                    'status' => 'menunggu',
+                    'status' => $validated['jenis_dispen'] === 'terlambat' ? 'disetujui' : 'menunggu',
                     'token_verifikasi' => $verificationToken,
+                    'disetujui_oleh' => $approvedBy,
+                    'disetujui_pada' => $approvedAt,
                 ]);
-                $first ??= $item;
+                $items->push($item);
             }
-            return $first;
+            return $items;
         });
 
-        return redirect()->route('piket.dispen.summary', $first->id_dispen);
+        if ($isTerlambat) {
+            $items->each(fn (Dispen $item) => $this->syncLateDispenIntoJournals($item));
+
+            return redirect()->route('piket.dispen.index', ['status' => 'riwayat'])
+                ->with('success', 'Dispen terlambat disimpan dan langsung disinkronkan ke jurnal pada jam yang dipilih.');
+        }
+
+        return redirect()->route('piket.dispen.summary', $items->first()->id_dispen);
     }
 
     public function summary(Dispen $dispen)
@@ -384,35 +397,41 @@ class DispenController extends Controller
     {
         abort_unless($dispen->status === 'menunggu', 409, 'Dispen yang sudah diproses tidak dapat diedit.');
         $validated = $this->validateDispenBatch($request);
-        $petugas = $this->wakaBertugas($validated['tanggal']);
+        $isTerlambat = $validated['jenis_dispen'] === 'terlambat';
+        $petugas = $isTerlambat ? null : $this->wakaBertugas($validated['tanggal']);
 
-        if (! $petugas) {
+        if (! $isTerlambat && ! $petugas) {
             $formattedDate = Carbon::parse($validated['tanggal'])->format('d-m-Y');
             return back()->withInput()->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
                 ->with('error', "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket.");
         }
-        if (empty($petugas->no_hp)) {
+        if (! $isTerlambat && empty($petugas->no_hp)) {
             return back()->withInput()->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
                 ->with('error', "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia.");
         }
 
         $batchToken = $dispen->batch_token ?: (string) Str::uuid();
-        $verificationToken = $dispen->token_verifikasi ?: Str::random(64);
-        $wakaUserId = User::where('id_guru', $petugas->id_guru)->value('id_user');
-        DB::transaction(function () use ($dispen, $validated, $batchToken, $verificationToken, $wakaUserId) {
+        $verificationToken = $isTerlambat ? null : ($dispen->token_verifikasi ?: Str::random(64));
+        $wakaUserId = $petugas ? User::where('id_guru', $petugas->id_guru)->value('id_user') : null;
+        $approvedBy = $isTerlambat ? auth()->id() : null;
+        $approvedAt = $isTerlambat ? now() : null;
+        DB::transaction(function () use ($dispen, $validated, $batchToken, $verificationToken, $wakaUserId, $approvedBy, $approvedAt, $isTerlambat) {
             $existing = $this->batchQuery($dispen)->get()->keyBy('id_siswa');
             foreach ($validated['students'] as $student) {
                 $data = [
                     'batch_token' => $batchToken,
                     'jenis' => 'dispen',
+                    'jenis_dispen' => $validated['jenis_dispen'],
                     'id_kesiswaan' => $wakaUserId,
                     'submitted_by' => $dispen->submitted_by ?? auth()->id(),
                     'tanggal' => $validated['tanggal'],
                     'id_jam_mulai' => $validated['id_jam_mulai'],
                     'id_jam_selesai' => $validated['id_jam_selesai'],
                     'alasan' => $validated['alasan'],
-                    'status' => 'menunggu',
+                    'status' => $isTerlambat ? 'disetujui' : 'menunggu',
                     'token_verifikasi' => $verificationToken,
+                    'disetujui_oleh' => $approvedBy,
+                    'disetujui_pada' => $approvedAt,
                 ];
                 $current = $existing->pull($student['id_siswa']);
                 if ($current) {
@@ -425,7 +444,12 @@ class DispenController extends Controller
             $this->batchQuery($dispen)->update(['batch_token' => $batchToken]);
         });
 
-        return redirect()->route('piket.dispen.index')->with('success', 'Pengajuan dispen berhasil diperbarui.');
+        if ($isTerlambat) {
+            $this->batchQuery($dispen)->get()->each(fn (Dispen $item) => $this->syncLateDispenIntoJournals($item));
+        }
+
+        return redirect()->route('piket.dispen.index', $isTerlambat ? ['status' => 'riwayat'] : [])
+            ->with('success', 'Pengajuan dispen berhasil diperbarui.');
     }
 
     /**
@@ -445,18 +469,22 @@ class DispenController extends Controller
     private function syncAbsenceIntoJournals(Dispen $report, ?int $previousReportId = null): void
     {
         $report->load('siswa');
-        $tanggal = $report->tanggal->format('Y-m-d');
+        $tanggalMulai = $report->tanggal->format('Y-m-d');
+        $tanggalSelesai = ($report->tanggal_selesai ?? $report->tanggal)->format('Y-m-d');
         $idSiswa = $report->id_siswa;
         $idKelas = $report->siswa->id_kelas;
         $attendanceStatus = $report->jenis === 'izin' ? 'Izin' : 'Sakit';
         $keterangan = $report->jenis === 'izin' ? 'Surat izin dari Piket' : 'Surat sakit dari Piket';
 
-        DB::transaction(function () use ($report, $previousReportId, $tanggal, $idSiswa, $idKelas, $attendanceStatus, $keterangan) {
+        DB::transaction(function () use ($report, $previousReportId, $tanggalMulai, $tanggalSelesai, $idSiswa, $idKelas, $attendanceStatus, $keterangan) {
             if ($previousReportId) {
                 DetailAbsensi::where('id_dispen', $previousReportId)
-                    ->where(function ($query) use ($tanggal, $idSiswa, $idKelas) {
+                    ->where(function ($query) use ($tanggalMulai, $tanggalSelesai, $idSiswa, $idKelas) {
                         $query->where('id_siswa', '!=', $idSiswa)
-                            ->orWhereHas('jurnal', fn ($jurnal) => $jurnal->whereDate('tanggal', '!=', $tanggal)->orWhere('id_kelas', '!=', $idKelas));
+                            ->orWhereHas('jurnal', fn ($jurnal) => $jurnal
+                                ->where('id_kelas', '!=', $idKelas)
+                                ->orWhereDate('tanggal', '<', $tanggalMulai)
+                                ->orWhereDate('tanggal', '>', $tanggalSelesai));
                     })
                     ->with('jurnal')
                     ->get()
@@ -471,7 +499,10 @@ class DispenController extends Controller
                     });
             }
 
-            Jurnal::where('id_kelas', $idKelas)->whereDate('tanggal', $tanggal)->get()->each(function ($jurnal) use ($report, $idSiswa, $attendanceStatus, $keterangan) {
+            Jurnal::where('id_kelas', $idKelas)
+                ->whereDate('tanggal', '>=', $tanggalMulai)
+                ->whereDate('tanggal', '<=', $tanggalSelesai)
+                ->get()->each(function ($jurnal) use ($report, $idSiswa, $attendanceStatus, $keterangan) {
                 $detail = DetailAbsensi::where('id_jurnal', $jurnal->id_jurnal)
                     ->where('id_siswa', $idSiswa)->first();
 
@@ -499,11 +530,38 @@ class DispenController extends Controller
         });
     }
 
+    private function validateIzinSakit(Request $request): array
+    {
+        $validated = $request->validate([
+            'jenis' => 'required|in:izin,sakit',
+            'id_kelas' => 'required|exists:kelases,id_kelas',
+            'id_siswa' => ['required', Rule::exists('siswas', 'id_siswa')->where(fn ($query) => $query->where('id_kelas', $request->input('id_kelas')))],
+            'tanggal' => 'required|date',
+            'durasi_hari' => 'nullable|integer|min:1|max:365',
+            'jenis_surat_sakit' => 'required_if:jenis,sakit|nullable|in:biasa,dokter',
+            'alasan' => 'required|string|max:255',
+            'surat' => 'nullable|image|max:5120',
+        ]);
+
+        $validated['jenis_surat_sakit'] = $validated['jenis'] === 'sakit'
+            ? ($validated['jenis_surat_sakit'] ?? 'biasa')
+            : null;
+        $durasiHari = $validated['jenis'] === 'sakit'
+            ? ($validated['jenis_surat_sakit'] === 'dokter' ? 3 : 1)
+            : (int) ($validated['durasi_hari'] ?? 1);
+        $validated['tanggal_selesai'] = Carbon::parse($validated['tanggal'])
+            ->addDays($durasiHari - 1)
+            ->toDateString();
+
+        return $validated;
+    }
+
     private function validateDispenBatch(Request $request): array
     {
         $students = $request->input('students', []);
         $rules = [
             'students' => ['required', 'array', 'min:1'],
+            'jenis_dispen' => ['nullable', Rule::in(['kegiatan', 'terlambat'])],
             'tanggal' => ['required', 'date'],
             'id_jam_mulai' => ['required', 'exists:jam_pels,id_jam'],
             'id_jam_selesai' => ['required', 'exists:jam_pels,id_jam'],
@@ -518,7 +576,7 @@ class DispenController extends Controller
             ];
         }
 
-        return $request->validate($rules, [
+        $validated = $request->validate($rules, [
             'students.required' => 'Tambahkan minimal satu siswa.',
             'students.min' => 'Tambahkan minimal satu siswa.',
             'students.*.id_kelas.required' => 'Kelas wajib dipilih untuk setiap siswa.',
@@ -530,6 +588,78 @@ class DispenController extends Controller
             'id_jam_selesai.required' => 'Jam selesai wajib dipilih.',
             'alasan.required' => 'Alasan dispensasi wajib diisi.',
         ]);
+
+        $jamMulaiKe = (int) JamPel::whereKey($validated['id_jam_mulai'])->value('jam_ke');
+        $jamSelesaiKe = (int) JamPel::whereKey($validated['id_jam_selesai'])->value('jam_ke');
+        if ($jamMulaiKe > $jamSelesaiKe) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'id_jam_selesai' => 'Jam selesai harus sama dengan atau setelah jam mulai.',
+            ]);
+        }
+
+        $validated['jenis_dispen'] = $validated['jenis_dispen'] ?? 'kegiatan';
+
+        return $validated;
+    }
+
+    private function syncLateDispenIntoJournals(Dispen $dispen): void
+    {
+        $dispen->load(['siswa', 'jamMulai', 'jamSelesai']);
+        $jamMulaiKe = (int) $dispen->jamMulai?->jam_ke;
+        $jamSelesaiKe = (int) $dispen->jamSelesai?->jam_ke;
+        $hari = Carbon::parse($dispen->tanggal)->locale('id')->isoFormat('dddd');
+        $jadwalJamMulai = Jadwal::query()
+            ->where('id_kelas', $dispen->siswa->id_kelas)
+            ->where('hari', $hari)
+            ->with('jamMulai')
+            ->get()
+            ->pluck('jamMulai.jam_ke')
+            ->filter()
+            ->map(fn ($jamKe) => (int) $jamKe)
+            ->sort()
+            ->values();
+        $jamBerikutnya = $jadwalJamMulai->first(fn ($jamKe) => $jamKe > $jamSelesaiKe);
+
+        Jurnal::query()
+            ->where('id_kelas', $dispen->siswa->id_kelas)
+            ->whereDate('tanggal', $dispen->tanggal)
+            ->where(function ($query) use ($jamMulaiKe, $jamSelesaiKe, $jamBerikutnya) {
+                $query->where(function ($overlap) use ($jamMulaiKe, $jamSelesaiKe) {
+                    $overlap->whereHas('jamSelesai', fn ($period) => $period->where('jam_ke', '>=', $jamMulaiKe))
+                        ->whereHas('jamMulai', fn ($period) => $period->where('jam_ke', '<=', $jamSelesaiKe));
+                });
+
+                if ($jamBerikutnya !== null) {
+                    $query->orWhereHas('jamMulai', fn ($period) => $period->where('jam_ke', $jamBerikutnya));
+                }
+            })
+            ->get()
+            ->each(function (Jurnal $jurnal) use ($dispen) {
+                $detail = DetailAbsensi::where('id_jurnal', $jurnal->id_jurnal)
+                    ->where('id_siswa', $dispen->id_siswa)
+                    ->first();
+
+                if ($detail) {
+                    $detail->update([
+                        'id_dispen' => $dispen->id_dispen,
+                        'status' => 'Dispen',
+                        'keterangan' => 'Dispensasi terlambat dari Piket',
+                    ]);
+                    return;
+                }
+
+                DetailAbsensi::create([
+                    'id_jurnal' => $jurnal->id_jurnal,
+                    'id_siswa' => $dispen->id_siswa,
+                    'id_dispen' => $dispen->id_dispen,
+                    'status' => 'Dispen',
+                    'keterangan' => 'Dispensasi terlambat dari Piket',
+                ]);
+                $jurnal->update([
+                    'jml_hadir' => max(0, $jurnal->jml_hadir - 1),
+                    'jml_tidak_hadir' => $jurnal->jml_tidak_hadir + 1,
+                ]);
+            });
     }
 
     private function batchQuery(Dispen $dispen)
