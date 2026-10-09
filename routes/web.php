@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\JamPelController;
 use App\Http\Controllers\Admin\JadwalController;
 use App\Http\Controllers\Admin\JadwalImportController;
 use App\Http\Controllers\Admin\JadwalPiketController as AdminJadwalPiketController;
+use App\Http\Controllers\Admin\JadwalPiketImportController;
 use App\Http\Controllers\Admin\SiswaController;
 
 use App\Http\Controllers\DispenVerificationController;
@@ -257,6 +258,15 @@ Route::delete('/admin/jam/{klp_hari}', [JamPelController::class, 'destroy'])
 
 Route::get('/admin/jadwal-piket', [AdminJadwalPiketController::class, 'index'])
     ->name('admin.jadwal-piket.index');
+
+Route::get('/admin/jadwal-piket/export', [AdminJadwalPiketController::class, 'export'])
+    ->name('admin.jadwal-piket.export');
+
+Route::get('/admin/jadwal-piket/import', [JadwalPiketImportController::class, 'create'])
+    ->name('admin.jadwal-piket.import');
+
+Route::post('/admin/jadwal-piket/import', [JadwalPiketImportController::class, 'store'])
+    ->name('admin.jadwal-piket.import.store');
 
 Route::get('/admin/jadwal-piket/create', [AdminJadwalPiketController::class, 'create'])
     ->name('admin.jadwal-piket.create');

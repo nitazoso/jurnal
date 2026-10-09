@@ -28,7 +28,12 @@ class JadwalImportController extends Controller
 
     public function preview(Request $request)
     {
-        $request->validate(['file' => 'required|file|mimes:xlsx,xls,csv,pdf|max:10240', 'semester' => 'required|in:Ganjil,Genap', 'tahun_ajaran' => 'required|regex:/^\d{4}\/\d{4}$/']);
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv,pdf|max:10240',
+            'semester' => 'required|in:Ganjil,Genap',
+            'tahun_ajaran' => 'required|regex:/^\d{4}\/\d{4}$/',
+            'confirm_replace' => 'required|accepted',
+        ]);
 
         try {
             $data = [];
@@ -55,12 +60,7 @@ class JadwalImportController extends Controller
         }
         unset($row);
 
-        $token = Str::random(40);
-        Cache::put($this->importCacheKey($token), $data, now()->addHours(2));
-        // Keep the session copy for compatibility with preview links created before this change.
-        $request->session()->put('jadwal_import.'.$token, $data);
-
-        return redirect()->route('admin.jadwal.import.preview', $token);
+        return $this->processRows($data, $data, true);
     }
 
     public function showPreview(Request $request, string $token)
@@ -91,7 +91,11 @@ class JadwalImportController extends Controller
             return back()->withErrors(['rows_json' => 'Data preview tidak lengkap. Muat ulang preview lalu coba lagi.']);
         }
 
-        $replaceExisting = $request->boolean('confirm_replace');
+        return $this->processRows($submittedRows, $rows, $request->boolean('confirm_replace'));
+    }
+
+    private function processRows(array $submittedRows, array $rows, bool $replaceExisting)
+    {
         $includedRows = collect($submittedRows)->filter(fn ($row) => (string) ($row['include'] ?? '0') === '1');
         $periods = $includedRows
             ->map(fn ($row) => ($row['semester'] ?? '').' '.($row['tahun_ajaran'] ?? ''))
@@ -178,7 +182,15 @@ class JadwalImportController extends Controller
         // duplicate checks prevent an accidental second insert.
         $replacedPeriods = $periods->implode(', ');
 
-        return view('admin.jadwal.import-result', compact('processed', 'failures', 'replaceExisting', 'replacementAborted', 'replacedPeriods'));
+        return redirect()
+            ->route('admin.jadwal.index')
+            ->with('jadwal_import_result', [
+                'processed' => $processed,
+                'failures' => $failures,
+                'replace_existing' => $replaceExisting,
+                'replacement_aborted' => $replacementAborted,
+                'replaced_periods' => $replacedPeriods,
+            ]);
     }
 
     private function options(): array
