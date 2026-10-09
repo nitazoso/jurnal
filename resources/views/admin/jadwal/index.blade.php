@@ -75,6 +75,12 @@
         <!-- HEADER BANNER -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300">
 
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="{{ route('admin.jadwal.import') }}" class="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-indigo-700"><i class="fa-solid fa-file-import"></i> Impor dari file</a>
+                <a href="{{ route('admin.jadwal.export', ['id_kelas' => $selectedKelasId]) }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100"><i class="fa-solid fa-file-excel"></i> Ekspor kelas ini</a>
+                <a href="{{ route('admin.jadwal.export') }}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-emerald-200 hover:text-emerald-700"><i class="fa-solid fa-download"></i> Ekspor semua jadwal</a>
+            </div>
+
             @if(session('success'))
                 <div
                     x-data="{ show: true }"
@@ -349,8 +355,11 @@
 
                                                 // Detail master jam
                                                 $jamObj = $jamPelsGrouped[$jamKe][$klpHari] ?? null;
-
                                                 $shiftThisDay = $shiftSeninJumat && in_array($hari, ['Senin', 'Jumat'], true);
+                                                $isKegiatanRutin = ! $shiftThisDay
+                                                    && (int) $jamKe === 1
+                                                    && in_array($hari, ['Senin', 'Jumat'], true);
+
                                                 $effectiveJamKe = $shiftThisDay ? $jamKe + 1 : $jamKe;
 
                                                 // Batas jam setiap hari
@@ -373,8 +382,23 @@
                                             <td class="p-2.5 border-r border-slate-100 last:border-r-0 vertical-top">
 
 
+                                                <!-- KEGIATAN RUTIN DI SLOT KOSONG JAM PERTAMA -->
+                                                @if($isKegiatanRutin && $hari === 'Senin')
+
+                                                    <div class="p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl text-center text-indigo-900 min-h-[88px] flex flex-col items-center justify-center gap-1 select-none">
+                                                        <i class="fa-solid fa-flag text-indigo-500" aria-hidden="true"></i>
+                                                        <span class="text-xs font-extrabold sm:text-sm">Upacara / Apel</span>
+                                                    </div>
+
+                                                @elseif($isKegiatanRutin && $hari === 'Jumat')
+
+                                                    <div class="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-center text-amber-900 min-h-[88px] flex flex-col items-center justify-center gap-1 select-none">
+                                                        <i class="fa-solid fa-people-group text-amber-500" aria-hidden="true"></i>
+                                                        <span class="text-xs font-extrabold sm:text-sm">Pembiasaan Hari Jumat</span>
+                                                    </div>
+
                                                 <!-- MODE EVENT -->
-                                                @if($allDisabled)
+                                                @elseif($allDisabled)
 
                                                     <div class="p-4 bg-amber-50/80 border border-amber-200 rounded-2xl text-center text-amber-800 min-h-[88px] flex flex-col items-center justify-center gap-1.5 select-none">
                                                         <i class="fa-solid fa-ban text-base" aria-hidden="true"></i>

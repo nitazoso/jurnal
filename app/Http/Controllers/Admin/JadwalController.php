@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\JadwalExport;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicPeriod;
 use App\Models\Jadwal;
@@ -14,9 +15,22 @@ use App\Models\GuruQrAttendance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 class JadwalController extends Controller
 {
+public function export(Request $request)
+{
+    $validated = $request->validate([
+        'id_kelas' => ['nullable', 'integer', 'exists:kelases,id_kelas'],
+    ]);
+
+    $kelas = isset($validated['id_kelas']) ? Kelas::find($validated['id_kelas']) : null;
+    $filename = 'jadwal' . ($kelas ? '-' . str($kelas->nama_kelas)->slug() : '') . '-' . now()->format('Ymd-His') . '.xlsx';
+
+    return Excel::download(new JadwalExport(isset($validated['id_kelas']) ? (int) $validated['id_kelas'] : null), $filename);
+}
+
 public function index(Request $request)
 {
     $kelases = Kelas::orderBy('nama_kelas')->get();
