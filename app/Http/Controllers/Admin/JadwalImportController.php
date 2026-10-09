@@ -32,7 +32,6 @@ class JadwalImportController extends Controller
             'file' => 'required|file|mimes:xlsx,xls,csv,pdf|max:10240',
             'semester' => 'required|in:Ganjil,Genap',
             'tahun_ajaran' => 'required|regex:/^\d{4}\/\d{4}$/',
-            'confirm_replace' => 'required|accepted',
         ]);
 
         try {
@@ -60,7 +59,16 @@ class JadwalImportController extends Controller
         }
         unset($row);
 
+<<<<<<< HEAD
         return $this->processRows($data, $data, true);
+=======
+        $token = Str::random(40);
+        Cache::put($this->importCacheKey($token), $data, now()->addHours(2));
+        // Keep the session copy for compatibility with preview links created before this change.
+        $request->session()->put('jadwal_import.'.$token, $data);
+
+        return redirect()->route('admin.jadwal.import.preview', $token);
+>>>>>>> origin/dev
     }
 
     public function showPreview(Request $request, string $token)
