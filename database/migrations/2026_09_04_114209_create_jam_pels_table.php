@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('jam_pels', function (Blueprint $table) {
@@ -18,13 +15,12 @@ return new class extends Migration
             $table->enum('jenis', ['pelajaran', 'istirahat']);
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            $table->integer('durasi_menit')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('jam_pels');

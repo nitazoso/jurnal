@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Kelas extends Model
 {
@@ -15,41 +16,51 @@ class Kelas extends Model
 
     protected $fillable = [
         'nama_kelas',
+        'qr_token',
         'wali_kelas',
         'jumlah_siswa',
     ];
 
-    protected $casts = [
-        'jumlah_siswa' => 'integer',
-    ];
-
-    // Relasi ke Guru sebagai Wali Kelas
     public function waliKelas()
     {
-        return $this->belongsTo(Guru::class, 'wali_kelas', 'id_guru');
+        return $this->belongsTo(
+            Guru::class,
+            'wali_kelas',
+            'id_guru'
+        );
     }
 
-    // Relasi ke Siswa di kelas ini
     public function siswas()
     {
-        return $this->hasMany(Siswa::class, 'id_kelas', 'id_kelas');
+        return $this->hasMany(
+            Siswa::class,
+            'id_kelas',
+            'id_kelas'
+        );
     }
 
-    // Relasi ke User (Sekretaris kelas ini)
-    public function users()
+    protected static function booted(): void
     {
-        return $this->hasMany(User::class, 'id_kelas', 'id_kelas');
-    }
+        static::creating(function (Kelas $kelas) {
+            if (! empty($kelas->qr_token)) {
+                return;
+            }
 
-    // Relasi ke Jadwal
-    public function jadwals()
-    {
-        return $this->hasMany(Jadwal::class, 'id_kelas', 'id_kelas');
-    }
+            do {
+                $token = Str::random(48);
+            } while (self::where('qr_token', $token)->exists());
 
-    // Relasi ke Jurnal
-    public function jurnals()
-    {
-        return $this->hasMany(Jurnal::class, 'id_kelas', 'id_kelas');
+            $kelas->qr_token = $token;
+        });
+
+        static::updating(function (Kelas $kelas) {
+            if (empty($kelas->qr_token)) {
+                do {
+                    $token = Str::random(48);
+                } while (self::where('qr_token', $token)->exists());
+
+                $kelas->qr_token = $token;
+            }
+        });
     }
 }

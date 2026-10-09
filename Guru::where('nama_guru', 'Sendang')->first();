@@ -1,0 +1,17 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#8181
+    [34mid_user[39m: [35m5[39m,
+    [34musername[39m: [32m"[39m[32msekre_12rpl1[39m[32m"[39m,
+    #[33mpassword[39m: [32m"[39m\$[32m2y[39m\$[32m12[39m\$[32mPku0R/P4jYZG6.iBuy9ToO/38ljSiSEbvrXoyr/aZgRoCUJ1qVmFK[39m[32m"[39m,
+    #[33mtwo_factor_secret[39m: [36mnull[39m,
+    #[33mtwo_factor_recovery_codes[39m: [36mnull[39m,
+    [34mtwo_factor_confirmed_at[39m: [36mnull[39m,
+    [34mnama_user[39m: [32m"[39m[32mNazwa Sekretaris[39m[32m"[39m,
+    [34mrole[39m: [32m"[39m[32mSekretaris[39m[32m"[39m,
+    [34mno_wa[39m: [36mnull[39m,
+    [34mid_guru[39m: [36mnull[39m,
+    [34mid_kelas[39m: [35m1[39m,
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-09-16 01:34:45[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-09-16 01:34:45[39m[32m"[39m,
+    [34mdeleted_at[39m: [36mnull[39m,
+  }

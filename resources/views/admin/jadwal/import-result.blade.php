@@ -1,0 +1,10 @@
+@extends('layouts.admin')
+@section('title', 'Hasil Impor Jadwal - Jurnify')
+@section('page-title', 'Hasil Impor Jadwal')
+@section('content')
+<div class="mx-auto max-w-4xl p-4 sm:p-8"><div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"><p class="text-xs font-bold uppercase tracking-widest text-indigo-600">Ringkasan impor</p><h1 class="mt-2 text-2xl font-bold text-slate-800">Proses impor selesai</h1>
+@if($replacementAborted)<div class="mt-5 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900"><strong>Penggantian dibatalkan.</strong> Tidak ada jadwal lama yang diubah karena konfirmasi belum lengkap, masih ada baris gagal/bentrok, atau tidak ada baris yang dipilih. Perbaiki data lalu coba lagi.</div>@elseif($replaceExisting)<div class="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">Semua jadwal aktif berhasil diganti dengan data periode: {{ $replacedPeriods }}.</div>@endif
+<div class="mt-6 grid gap-4 sm:grid-cols-2"><div class="rounded-2xl bg-emerald-50 p-5"><p class="text-sm text-emerald-700">Berhasil disimpan</p><p class="mt-1 text-3xl font-bold text-emerald-800">{{ $processed }}</p></div><div class="rounded-2xl bg-rose-50 p-5"><p class="text-sm text-rose-700">Gagal diproses</p><p class="mt-1 text-3xl font-bold text-rose-800">{{ count($failures) }}</p></div></div>
+@if($failures)<h2 class="mt-7 font-bold text-slate-800">Baris yang perlu diperbaiki</h2><div class="mt-3 divide-y divide-slate-100 rounded-xl border border-slate-200">@foreach($failures as $failure)<div class="flex gap-4 p-3 text-sm"><span class="shrink-0 font-bold text-slate-500">Baris {{ $failure['row'] }}</span><div><p class="font-medium text-rose-700">{{ $failure['reason'] }}</p>@if(!empty($failure['source']))<p class="mt-1 text-xs text-slate-500">Terbaca: {{ $failure['source'] }}</p>@endif</div></div>@endforeach</div>@endif
+<a href="{{ route('admin.jadwal.index') }}" class="mt-7 inline-flex rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white">Kembali ke jadwal</a></div></div>
+@endsection

@@ -28,6 +28,11 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    'jurnal_bebas_testing' => (bool) env(
+        'JURNAL_BEBAS_TESTING',
+        in_array(env('APP_ENV', 'production'), ['local', 'testing'], true)
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode
@@ -65,7 +70,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'Asia/Jakarta',
 
     /*
     |--------------------------------------------------------------------------

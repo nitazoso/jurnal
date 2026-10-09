@@ -1,0 +1,16 @@
+[90m= [39m[
+    [32m"[39m[32mid_user[39m[32m"[39m,
+    [32m"[39m[32musername[39m[32m"[39m,
+    [32m"[39m[32mpassword[39m[32m"[39m,
+    [32m"[39m[32mtwo_factor_secret[39m[32m"[39m,
+    [32m"[39m[32mtwo_factor_recovery_codes[39m[32m"[39m,
+    [32m"[39m[32mtwo_factor_confirmed_at[39m[32m"[39m,
+    [32m"[39m[32mnama_user[39m[32m"[39m,
+    [32m"[39m[32mrole[39m[32m"[39m,
+    [32m"[39m[32mid_guru[39m[32m"[39m,
+    [32m"[39m[32mid_kelas[39m[32m"[39m,
+    [32m"[39m[32mremember_token[39m[32m"[39m,
+    [32m"[39m[32mcreated_at[39m[32m"[39m,
+    [32m"[39m[32mupdated_at[39m[32m"[39m,
+    [32m"[39m[32mdeleted_at[39m[32m"[39m,
+  ]

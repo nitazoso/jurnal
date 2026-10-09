@@ -22,60 +22,86 @@ class Jurnal extends Model
         'id_jam_selesai',
         'tanggal',
         'materi',
+        'keterangan',
         'status_guru',
         'ada_tugas',
         'deskripsi_tugas',
         'jml_hadir',
         'jml_tidak_hadir',
         'status_validasi_guru',
+        'status_kehadiran_validasi',
+        'diisi_oleh_piket',
+        'validated_by',
+        'validated_at',
+        'piket_approved_by',
+        'piket_approved_at',
         'catatan_revisi',
         'catatan_umum',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
-        'jml_hadir' => 'integer',
-        'jml_tidak_hadir' => 'integer',
+        'validated_at' => 'datetime',
+        'piket_approved_at' => 'datetime',
+        'diisi_oleh_piket' => 'boolean',
     ];
 
-    // Relasi ke Jadwal
-    public function jadwal()
+    public function getStatusValidasiLabelAttribute(): string
     {
-        return $this->belongsTo(Jadwal::class, 'id_jadwal', 'id_jadwal');
+        return match ($this->status_validasi_guru) {
+            'Disetujui' => 'Terverifikasi',
+            'Ditolak' => 'Tidak Terverifikasi',
+            'Perlu Diperbaiki' => 'Perlu Diperbaiki',
+            'Menunggu' => 'Menunggu Validasi',
+            default => (string) ($this->status_validasi_guru ?? '-'),
+        };
     }
 
-    // Relasi ke Kelas
-    public function kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
-    }
-
-    // Relasi ke Guru Pengajar
     public function guru()
     {
         return $this->belongsTo(Guru::class, 'id_guru', 'id_guru');
     }
 
-    // Relasi ke User Pengisi/Pembuat (Sekretaris / Piket)
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
+    }
+
+    public function jadwal()
+    {
+        return $this->belongsTo(Jadwal::class, 'id_jadwal', 'id_jadwal');
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'id_user', 'id_user');
     }
 
-    // Relasi ke Jam Pelajaran Mulai
+    public function validator()
+    {
+        return $this->belongsTo(User::class, 'validated_by', 'id_user');
+    }
+
+    public function piketApprover()
+    {
+        return $this->belongsTo(User::class, 'piket_approved_by', 'id_user');
+    }
+
     public function jamMulai()
     {
         return $this->belongsTo(JamPel::class, 'id_jam_mulai', 'id_jam');
     }
 
-    // Relasi ke Jam Pelajaran Selesai
     public function jamSelesai()
     {
         return $this->belongsTo(JamPel::class, 'id_jam_selesai', 'id_jam');
     }
 
-    // Relasi ke Detail Absensi (Siswa yang hadir/sakit/izin/alpa di jurnal ini)
-    public function details()
+    // Relasi ke detail absensi siswa
+    // Nama method ini HARUS "detailAbsensis" karena dipanggil
+    // dari JurnalController@show dan view admin.jurnal.show
+    // lewat ->load(['detailAbsensis.siswa'])
+    public function detailAbsensis()
     {
         return $this->hasMany(DetailAbsensi::class, 'id_jurnal', 'id_jurnal');
     }

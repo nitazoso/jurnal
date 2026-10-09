@@ -8,6 +8,7 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/admin.css',
                 'resources/js/app.js',
                 'resources/js/passkeys.js',
             ],
@@ -20,10 +21,15 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+
     server: {
         cors: true,
         watch: {
             ignored: [
+                '**/.agents/**',
+                '**/.claude/**',
+                '**/.cursor/**',
+                '**/.junie/**',
                 '**/.agents/**',
                 '**/.claude/**',
                 '**/.cursor/**',

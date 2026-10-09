@@ -52,7 +52,6 @@ return new class extends Migration
             $table->foreign('id_jam_selesai')->references('id_jam')->on('jam_pels')->onDelete('cascade');
         });
     }
-
     public function down(): void
     {
         Schema::dropIfExists('jurnals');

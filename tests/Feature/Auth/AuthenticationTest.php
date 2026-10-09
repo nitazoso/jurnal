@@ -18,6 +18,20 @@ class AuthenticationTest extends TestCase
         $response->assertOk();
     }
 
+    public function test_authenticated_users_can_still_open_the_login_screen_to_switch_accounts(): void
+    {
+        $user = User::create([
+            'username' => 'admin-switch',
+            'password' => 'password',
+            'nama_user' => 'Admin Switch',
+            'role' => 'Admin',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('login'));
+
+        $response->assertOk();
+    }
+
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
         $user = User::factory()->create();

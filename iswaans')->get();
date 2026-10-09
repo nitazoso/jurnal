@@ -1,0 +1,46 @@
+[90m= [39m[34;4mIlluminate\Support\Collection[39;24m {#7702
+    [34mall[39m: [
+      {#8025
+        +"[1mid_user[22m": [35m1[39m,
+        +"[1musername[22m": [32m"[39m[32madmin[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mAdmin Utama[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mAdmin[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+      {#8026
+        +"[1mid_user[22m": [35m2[39m,
+        +"[1musername[22m": [32m"[39m[32msendang[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mSendang[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mGuru[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+      {#7682
+        +"[1mid_user[22m": [35m3[39m,
+        +"[1musername[22m": [32m"[39m[32mbudi_guru[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mBudi Santoso, S.Pd[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mGuru[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+      {#7683
+        +"[1mid_user[22m": [35m4[39m,
+        +"[1musername[22m": [32m"[39m[32mkesiswaan[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mKesiswaan SMK[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mKesiswaan[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+      {#8120
+        +"[1mid_user[22m": [35m5[39m,
+        +"[1musername[22m": [32m"[39m[32msekre_12rpl1[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mNazwa Sekretaris[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mSekretaris[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+      {#8122
+        +"[1mid_user[22m": [35m6[39m,
+        +"[1musername[22m": [32m"[39m[32mwildan_piket[39m[32m"[39m,
+        +"[1mnama_user[22m": [32m"[39m[32mWildan Piket[39m[32m"[39m,
+        +"[1mrole[22m": [32m"[39m[32mStaff Piket[39m[32m"[39m,
+        +"[1mno_wa[22m": [36mnull[39m,
+      },
+    ],
+  }
