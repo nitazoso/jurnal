@@ -252,6 +252,14 @@
             gap: 10px;
         }
 
+        .sidebar-logout { margin: 12px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.16); }
+        .sidebar-logout button {
+            width: 100%; min-height: 46px; padding: 0 16px; border: 1px solid rgba(255,255,255,.16);
+            border-radius: 12px; background: rgba(255,255,255,.08); color: #fff; text-align: left;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        .sidebar-logout button:hover { background: rgba(255,255,255,.16); }
+
         .header-status-block {
             background: #F7F9FF;
             border: 1px solid #E0E9FF;
@@ -680,6 +688,13 @@
                 <span>Profil</span>
             </a>
         </nav>
+
+        <div class="sidebar-logout">
+            <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
+                @csrf
+                <button type="submit">Logout</button>
+            </form>
+        </div>
     </aside>
 
     <div class="sidebar-overlay" id="sekretarisOverlay"></div>
@@ -721,6 +736,7 @@
                         <p class="header-secretary-role">Sekretaris Kelas</p>
                     </div>
                 </div>
+
             </div>
         </header>
 

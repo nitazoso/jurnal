@@ -43,6 +43,23 @@
         background: #fff !important;
         color: #1e293b;
     }
+    .academic-period-dialog { position: fixed; top: 50%; left: 50%; inset: auto; transform: translate(-50%, -50%); width: min(440px, calc(100% - 32px)); max-height: calc(100vh - 32px); margin: 0; padding: 0; border: 1px solid #e2e8f0; border-radius: 18px; color: #1e293b; box-shadow: 0 24px 70px rgba(15,23,42,.25); }
+    .academic-period-dialog[open] { position: fixed; inset: 0; margin: auto; transform: none; }
+    .academic-period-dialog::backdrop { background: rgba(15,23,42,.5); backdrop-filter: blur(3px); }
+    .academic-period-dialog-form { display: grid; gap: 16px; padding: 22px; }
+    .academic-period-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .academic-period-dialog-heading p { margin: 0 0 5px; color: #6366f1; font-size: 9px; font-weight: 800; letter-spacing: .14em; }
+    .academic-period-dialog-heading h2 { margin: 0; color: #202b61; font-size: 18px; font-weight: 800; }
+    .academic-period-dialog-heading button { border: 0; background: transparent; color: #64748b; font-size: 26px; line-height: 1; cursor: pointer; }
+    .academic-period-dialog-form label { display: grid; gap: 7px; color: #475569; font-size: 12px; font-weight: 700; }
+    .academic-period-dialog-form input, .academic-period-dialog-form select { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #1e293b; font: inherit; font-size: 13px; }
+    .academic-period-dialog-form input:focus, .academic-period-dialog-form select:focus { border-color: #6366f1; outline: 3px solid rgba(99,102,241,.14); }
+    .academic-period-dialog-form small { color: #b42318; font-size: 11px; }
+    .academic-period-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+    .academic-period-dialog-actions button { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; gap: 7px; padding: 0 15px; border: 0; border-radius: 8px; font: inherit; font-size: 12px; font-weight: 800; cursor: pointer; }
+    .academic-period-dialog-actions .academic-period-cancel { background: #f1f5f9; color: #475569; }
+    .academic-period-dialog-actions .academic-period-save { background: #30366f; color: #fff; }
+    @media (max-width: 520px) { .academic-period-dialog-form { padding: 18px; } .academic-period-dialog-actions { flex-direction: column-reverse; } .academic-period-dialog-actions button { width: 100%; } }
 </style>
 @endpush
 
@@ -83,10 +100,10 @@
 
                     <form method="GET" class="grid w-full grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                         <div class="flex min-w-0 flex-col items-start gap-2">
-                            <a href="{{ route('admin.jadwal.academic-period') }}" class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 lg:justify-start">
+                            <button type="button" data-academic-period-open class="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-700 shadow-sm transition hover:border-indigo-200 hover:text-indigo-700 lg:justify-start">
                                 <i class="fa-solid fa-calendar-days text-indigo-600" aria-hidden="true"></i>
-                                Pengaturan Tahun Ajaran
-                            </a>
+                                Tahun Ajaran {{ $tahunAjaranDefault ?: 'Belum diatur' }}
+                            </button>
                             <p class="text-xs sm:text-sm text-slate-500 font-medium">
                                 Tentukan kelas yang ingin Anda atur atau tinjau jadwal pelajarannya
                             </p>
@@ -96,7 +113,7 @@
                             <input type="hidden" name="id_kelas" value="{{ $selectedKelasId }}">
                         @endif
 
-                        <label class="group inline-flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-3 py-2.5 shadow-sm shadow-amber-100/60 transition-all duration-200 hover:border-amber-200 hover:shadow-md hover:shadow-amber-200/60">
+                        <label class="group grid w-full min-w-0 grid-cols-[36px_minmax(0,1fr)_56px_44px] items-center gap-3 cursor-pointer rounded-2xl border border-amber-100 bg-gradient-to-r from-amber-50 via-white to-orange-50 px-3 py-2.5 shadow-sm shadow-amber-100/60 transition-all duration-200 hover:border-amber-200 hover:shadow-md hover:shadow-amber-200/60">
                             <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600 text-white shadow-md shadow-amber-500/30">
                                 <i class="fa-solid fa-ban text-base" aria-hidden="true"></i>
                             </span>
@@ -110,11 +127,11 @@
                                 </span>
                             </span>
 
-                            <span class="rounded-md px-1.5 py-1 text-[9px] font-extrabold tracking-wide {{ $allDisabled ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                            <span class="justify-self-center rounded-md px-1.5 py-1 text-center text-[9px] font-extrabold tracking-wide {{ $allDisabled ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                 {{ $allDisabled ? 'AKTIF' : 'NONAKTIF' }}
                             </span>
 
-                            <span class="relative inline-block h-6 w-11 shrink-0">
+                            <span class="relative inline-block h-6 w-11 shrink-0 justify-self-end">
                                 <input type="hidden" name="all_disabled" value="0">
                                 <input
                                     type="checkbox"
@@ -125,11 +142,11 @@
                                     class="peer sr-only"
                                 >
                                 <span class="absolute inset-0 rounded-full bg-rose-200 transition-all duration-300 peer-checked:bg-emerald-500"></span>
-                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-5"></span>
+                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-[10px]"></span>
                             </span>
                         </label>
 
-                        <label class="group inline-flex w-full min-w-0 items-center justify-between gap-2 cursor-pointer rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50 px-3 py-2.5 shadow-sm shadow-indigo-100/60 transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-200/60">
+                        <label class="group grid w-full min-w-0 grid-cols-[36px_minmax(0,1fr)_56px_44px] items-center gap-3 cursor-pointer rounded-2xl border border-indigo-100 bg-gradient-to-r from-indigo-50 via-white to-blue-50 px-3 py-2.5 shadow-sm shadow-indigo-100/60 transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-200/60">
                             <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/30">
                                 <i class="fa-solid fa-calendar-days text-[11px]"></i>
                             </span>
@@ -143,11 +160,11 @@
                                 </span>
                             </span>
 
-                            <span class="rounded-md px-1.5 py-1 text-[9px] font-extrabold tracking-wide {{ $shiftSeninJumat ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
+                            <span class="justify-self-center rounded-md px-1.5 py-1 text-center text-[9px] font-extrabold tracking-wide {{ $shiftSeninJumat ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700' }}">
                                 {{ $shiftSeninJumat ? 'AKTIF' : 'NONAKTIF' }}
                             </span>
 
-                            <span class="relative inline-block h-6 w-11 shrink-0">
+                            <span class="relative inline-block h-6 w-11 shrink-0 justify-self-end">
                                 <input type="hidden" name="shift_senin_jumat" value="0">
                                 <input
                                     type="checkbox"
@@ -158,10 +175,11 @@
                                     class="peer sr-only"
                                 >
                                 <span class="absolute inset-0 rounded-full bg-rose-200 transition-all duration-300 peer-checked:bg-emerald-500"></span>
-                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-5"></span>
+                                <span class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition-transform duration-300 peer-checked:translate-x-[10px]"></span>
                             </span>
                         </label>
                     </form>
+
 
                 </div>
 
@@ -645,7 +663,8 @@
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <label class="block text-xs font-bold text-slate-700">
                             Semester
-                            <select name="semester" required x-model="activeData.semester" class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+                            <input type="hidden" name="semester" :value="activeData.semester">
+                            <select required x-model="activeData.semester" disabled aria-readonly="true" class="mt-1.5 w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
                                 <option value="" disabled>Pilih semester</option>
                                 @foreach(['Ganjil', 'Genap'] as $semester)
                                     <option value="{{ $semester }}">{{ $semester }}</option>
@@ -655,7 +674,7 @@
 
                         <label class="block text-xs font-bold text-slate-700">
                             Tahun Ajaran
-                            <input type="text" name="tahun_ajaran" x-model="activeData.tahun_ajaran" placeholder="Masukkan tahun ajaran" maxlength="9" required class="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">
+                            <input type="text" name="tahun_ajaran" x-model="activeData.tahun_ajaran" maxlength="9" required readonly aria-readonly="true" class="mt-1.5 w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
                         </label>
                     </div>
 
@@ -1014,6 +1033,51 @@
     </div>
 
 </div>
+
+<dialog class="academic-period-dialog" data-academic-period-dialog aria-labelledby="academic-period-title">
+                        <form action="{{ route('admin.jadwal.academic-period.update') }}" method="POST" class="academic-period-dialog-form">
+                            @csrf
+                            @method('PUT')
+                            <div class="academic-period-dialog-heading">
+                                <div>
+                                    <p>TAHUN AJARAN AKTIF</p>
+                                    <h2 id="academic-period-title">Pengaturan Tahun Ajaran</h2>
+                                </div>
+                                <button type="button" data-academic-period-close aria-label="Tutup">&times;</button>
+                            </div>
+                            <label>
+                                <span>Semester</span>
+                                <select name="semester" required>
+                                    <option value="">Pilih semester</option>
+                                    @foreach(['Ganjil', 'Genap'] as $semester)
+                                        <option value="{{ $semester }}" @selected(old('semester', $semesterDefault) === $semester)>{{ $semester }}</option>
+                                    @endforeach
+                                </select>
+                                @error('semester')<small>{{ $message }}</small>@enderror
+                            </label>
+                            <label>
+                                <span>Tahun Ajaran</span>
+                                <input type="text" name="tahun_ajaran" value="{{ old('tahun_ajaran', $tahunAjaranDefault) }}" placeholder="Contoh: 2027/2028" maxlength="9" required>
+                                @error('tahun_ajaran')<small>{{ $message }}</small>@enderror
+                            </label>
+                            <div class="academic-period-dialog-actions">
+                                <button type="button" class="academic-period-cancel" data-academic-period-close>Batal</button>
+                                <button type="submit" class="academic-period-save"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>Simpan</button>
+                            </div>
+                        </form>
+                    </dialog>
+                    <script>
+                        (() => {
+                            const dialog = document.querySelector('[data-academic-period-dialog]');
+                            if (!dialog) return;
+                            document.querySelector('[data-academic-period-open]')?.addEventListener('click', () => dialog.showModal());
+                            dialog.querySelectorAll('[data-academic-period-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+                            dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+                            @if($errors->has('semester') || $errors->has('tahun_ajaran'))
+                                dialog.showModal();
+                            @endif
+                        })();
+                    </script>
 
 @endsection
 

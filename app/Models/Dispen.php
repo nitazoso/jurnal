@@ -12,6 +12,7 @@ class Dispen extends Model
 
     protected $fillable = [
         'id_siswa',
+        'batch_token',
         'jenis',
         'id_kesiswaan',
         'submitted_by',
@@ -63,7 +64,7 @@ class Dispen extends Model
             JamPel::class,
             'id_jam_mulai',
             'id_jam'
-        );
+        )->withTrashed();
     }
 
 
@@ -77,7 +78,7 @@ class Dispen extends Model
             JamPel::class,
             'id_jam_selesai',
             'id_jam'
-        );
+        )->withTrashed();
     }
 
 

@@ -24,9 +24,10 @@ public function index(Request $request)
     $semesterDefault = $academicPeriod?->semester;
     $tahunAjaranDefault = $academicPeriod?->tahun_ajaran ?? '';
 
-    $shiftSeninJumat = $request->has('shift_senin_jumat')
-        ? $request->boolean('shift_senin_jumat')
-        : session('jadwal_shift_senin_jumat', false);
+    if ($request->has('shift_senin_jumat')) {
+        Cache::forever('jadwal_shift_senin_jumat', $request->boolean('shift_senin_jumat'));
+    }
+    $shiftSeninJumat = Cache::get('jadwal_shift_senin_jumat', false);
 
     if ($request->has('all_disabled')) {
         Cache::forever('jadwal_all_disabled', $request->boolean('all_disabled'));
@@ -34,7 +35,6 @@ public function index(Request $request)
 
     $allDisabled = Cache::get('jadwal_all_disabled', false);
 
-    session(['jadwal_shift_senin_jumat' => $shiftSeninJumat]);
 
     $selectedKelasId = $request->get(
         'id_kelas',

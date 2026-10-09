@@ -61,6 +61,101 @@
 
         </section>
 
+        @php
+            $chartWidth = 600;
+            $chartHeight = 170;
+            $chartTop = 16;
+            $chartBottom = 22;
+            $chartSide = 10;
+            $chartMax = max($monthlyTrend->pluck('total')->all() ?: [0]);
+            $chartPlotMax = max($chartMax, 1);
+            $chartPlotWidth = $chartWidth - ($chartSide * 2);
+            $chartPlotHeight = $chartHeight - $chartTop - $chartBottom;
+            $chartPoints = $monthlyTrend->map(function ($item, $index) use ($monthlyTrend, $chartWidth, $chartHeight, $chartTop, $chartBottom, $chartSide, $chartPlotWidth, $chartPlotHeight, $chartPlotMax) {
+                $count = $monthlyTrend->count();
+                $x = $count > 1 ? $chartSide + ($index * ($chartPlotWidth / ($count - 1))) : $chartWidth / 2;
+                $y = $chartHeight - $chartBottom - (($item['total'] / $chartPlotMax) * $chartPlotHeight);
+
+                return ['x' => $x, 'y' => $y, 'label' => $item['label'], 'total' => $item['total']];
+            });
+            $chartLine = $chartPoints->map(fn ($point) => $point['x'] . ',' . $point['y'])->implode(' ');
+            $chartBaseline = $chartHeight - $chartBottom;
+            $chartArea = $chartPoints->isNotEmpty()
+                ? 'M ' . $chartPoints->first()['x'] . ',' . $chartBaseline . ' L ' . $chartLine . ' L ' . $chartPoints->last()['x'] . ',' . $chartBaseline . ' Z'
+                : '';
+        @endphp
+
+        <section class="teacher-statistics" aria-labelledby="teacher-statistics-title">
+            <div class="statistics-heading">
+                <div>
+                    <span class="statistics-eyebrow">AKTIVITAS MENGAJAR</span>
+                    <h3 id="teacher-statistics-title">Statistik Jurnal Saya</h3>
+                    <p>Pantau aktivitas dan status validasi jurnal Anda.</p>
+                </div>
+                <span class="statistics-period">{{ now('Asia/Jakarta')->translatedFormat('F Y') }}</span>
+            </div>
+
+            <div class="teacher-stat-grid">
+                <article class="teacher-stat-card stat-month">
+                    <span class="teacher-stat-label">Total Jurnal</span>
+                    <strong>{{ number_format($totalJurnal) }}</strong>
+                    <small>Seluruh jurnal yang telah dibuat</small>
+                </article>
+                <article class="teacher-stat-card stat-approved">
+                    <span class="teacher-stat-label">Disetujui</span>
+                    <strong>{{ number_format($totalDisetujui) }}</strong>
+                    <small>Terverifikasi</small>
+                </article>
+                <article class="teacher-stat-card stat-pending">
+                    <span class="teacher-stat-label">Menunggu</span>
+                    <strong>{{ number_format($totalMenunggu) }}</strong>
+                    <small>Dalam proses validasi</small>
+                </article>
+                <article class="teacher-stat-card stat-rejected">
+                    <span class="teacher-stat-label">Ditolak</span>
+                    <strong>{{ number_format($totalDitolak) }}</strong>
+                    <small>Perlu ditinjau kembali</small>
+                </article>
+            </div>
+
+            <div class="teacher-trend-panel">
+                <div class="teacher-trend-heading">
+                    <div>
+                        <h4>Perkembangan Jurnal</h4>
+                        <p>Jumlah jurnal dalam enam bulan terakhir</p>
+                    </div>
+                    <span class="teacher-trend-total">{{ number_format($monthlyTrend->sum('total')) }} <small>jurnal</small></span>
+                </div>
+                <svg class="teacher-trend-chart" viewBox="0 0 {{ $chartWidth }} {{ $chartHeight }}" preserveAspectRatio="none" role="img" aria-label="Grafik jumlah jurnal enam bulan terakhir">
+                    <defs>
+                        <linearGradient id="teacherTrendFill" x1="0" x2="0" y1="0" y2="1">
+                            <stop offset="0%" stop-color="#168b74" stop-opacity=".22"></stop>
+                            <stop offset="100%" stop-color="#168b74" stop-opacity=".015"></stop>
+                        </linearGradient>
+                    </defs>
+                    @foreach([0, 1, 2, 3] as $gridIndex)
+                        @php $gridY = $chartTop + ($gridIndex * ($chartPlotHeight / 3)); @endphp
+                        <line x1="0" y1="{{ $gridY }}" x2="{{ $chartWidth }}" y2="{{ $gridY }}" class="teacher-trend-grid"></line>
+                    @endforeach
+                    @if($chartPoints->isNotEmpty())
+                        <path d="{{ $chartArea }}" fill="url(#teacherTrendFill)"></path>
+                    @endif
+                    <polyline points="{{ $chartLine }}" fill="none" class="teacher-trend-line"></polyline>
+                    @foreach($chartPoints as $point)
+                        @if($loop->last)
+                            <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="8" class="teacher-trend-halo"></circle>
+                        @endif
+                        <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="{{ $loop->last ? 5 : 3.5 }}" class="teacher-trend-point {{ $loop->last ? 'is-current' : '' }}"></circle>
+                    @endforeach
+                </svg>
+                <div class="teacher-trend-labels">
+                    @foreach($chartPoints as $point)
+                        <span><strong>{{ $point['total'] }}</strong>{{ $point['label'] }}</span>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+
         {{-- RINGKASAN JURNAL --}}
         <section class="summary-section">
 
@@ -210,6 +305,192 @@
     width: 100%;
     margin: 0;
     animation: pageFade .4s cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.teacher-statistics {
+    margin: 0 0 32px;
+}
+
+.statistics-heading,
+.teacher-trend-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.statistics-heading {
+    margin-bottom: 16px;
+}
+
+.statistics-eyebrow {
+    color: #168b74;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+}
+
+.statistics-heading h3 {
+    margin: 3px 0 0;
+    color: var(--text);
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.statistics-heading p,
+.teacher-trend-heading p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.statistics-period {
+    padding: 7px 10px;
+    border: 1px solid #dce8e5;
+    border-radius: 8px;
+    background: #fff;
+    color: #47665f;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.teacher-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.teacher-stat-card {
+    position: relative;
+    min-height: 120px;
+    padding: 16px;
+    overflow: hidden;
+    border: 1px solid #e4e9ef;
+    border-top: 3px solid #168b74;
+    border-radius: 11px;
+    background: linear-gradient(145deg, #fff, #f8fbfb);
+}
+
+.teacher-stat-card::after {
+    position: absolute;
+    right: -18px;
+    bottom: -25px;
+    width: 78px;
+    height: 78px;
+    border: 12px solid rgba(22, 139, 116, .07);
+    border-radius: 50%;
+    content: "";
+}
+
+.teacher-stat-card.stat-approved { border-top-color: #3c9b70; }
+.teacher-stat-card.stat-pending { border-top-color: #d69b32; }
+.teacher-stat-card.stat-rejected { border-top-color: #cc6666; }
+.teacher-stat-card.stat-approved::after { border-color: rgba(60, 155, 112, .08); }
+.teacher-stat-card.stat-pending::after { border-color: rgba(214, 155, 50, .1); }
+.teacher-stat-card.stat-rejected::after { border-color: rgba(204, 102, 102, .09); }
+
+.teacher-stat-label,
+.teacher-stat-card small {
+    display: block;
+    color: #687787;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.teacher-stat-card strong {
+    display: block;
+    margin: 9px 0 3px;
+    color: #172a36;
+    font-size: 27px;
+    line-height: 1;
+    font-weight: 800;
+}
+
+.teacher-stat-card small {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.teacher-trend-panel {
+    padding: 17px 18px 12px;
+    border: 1px solid #e4e9ef;
+    border-radius: 11px;
+    background: linear-gradient(145deg, #fff, #f7fbfa);
+}
+
+.teacher-trend-heading h4 {
+    margin: 0;
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.teacher-trend-total {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border: 1px solid #cfe6de;
+    border-radius: 8px;
+    background: #eff8f4;
+    color: #176d5d;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.teacher-trend-total small {
+    color: #587d73;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.teacher-trend-chart {
+    display: block;
+    width: 100%;
+    height: 160px;
+    margin-top: 8px;
+    overflow: visible;
+}
+
+.teacher-trend-grid {
+    stroke: #e3ece9;
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+}
+
+.teacher-trend-line {
+    stroke: #168b74;
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 3px 3px rgba(22, 139, 116, .18));
+}
+
+.teacher-trend-point {
+    fill: #168b74;
+    stroke: #fff;
+    stroke-width: 2;
+}
+
+.teacher-trend-point.is-current { fill: #0f6659; }
+.teacher-trend-halo { fill: rgba(22, 139, 116, .16); }
+
+.teacher-trend-labels {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 4px;
+    text-align: center;
+}
+
+.teacher-trend-labels span {
+    display: grid;
+    gap: 3px;
+    color: #738191;
+    font-size: 10px;
+}
+
+.teacher-trend-labels strong {
+    color: #243744;
+    font-size: 11px;
 }
 
 @keyframes pageFade {
@@ -769,6 +1050,24 @@
 
 /* RESPONSIVE DESIGN (MOBILE & TABLET) */
 @media (max-width: 767px) {
+    .teacher-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+    }
+
+    .teacher-stat-card {
+        min-height: 106px;
+        padding: 13px;
+    }
+
+    .teacher-trend-panel {
+        padding: 14px 12px 10px;
+    }
+
+    .teacher-trend-chart {
+        height: 135px;
+    }
+
     .overview-grid {
         grid-template-columns: 1fr 1fr; /* 2 kolom untuk Total Jurnal & Isi Jurnal di bawahnya */
         gap: 12px;

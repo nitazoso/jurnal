@@ -13,6 +13,13 @@
 
 <div class="jurnal-detail-container">
 
+    @if(session('success'))
+        <div class="journal-feedback success" role="status">{{ session('success') }}</div>
+    @endif
+    @if(session('error'))
+        <div class="journal-feedback error" role="alert">{{ session('error') }}</div>
+    @endif
+
     {{-- HERO HEADER --}}
     <section class="jurnal-hero-card">
         <div class="jurnal-hero-content">
@@ -85,7 +92,7 @@
                     <span class="info-label">Jam Ke</span>
                     <div class="info-val">
                         Jam {{ $jurnal->jamMulai->jam_ke ?? '-' }}-{{ $jurnal->jamSelesai->jam_ke ?? '-' }}
-                        <span class="time-sub">({{ $jurnal->jamMulai->jam ?? '-' }} - {{ $jurnal->jamSelesai->jam ?? '-' }})</span>
+                        <span class="time-sub">({{ $jamMulaiDisplay?->jam_mulai ? substr($jamMulaiDisplay->jam_mulai, 0, 5) : '-' }}–{{ $jamSelesaiDisplay?->jam_selesai ? substr($jamSelesaiDisplay->jam_selesai, 0, 5) : '-' }})</span>
                     </div>
                 </div>
 
@@ -289,6 +296,15 @@
 
     {{-- BUTTON KEMBALI --}}
     <div class="action-footer">
+        @if($canEditJournal)
+            <a href="{{ route('guru.jurnal.edit', $jurnal) }}" class="btn-edit-link">
+                <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 2.651 2.651M7.5 16.5l3.75-.75L19.5 7.5a1.875 1.875 0 0 0-2.651-2.651L8.6 13.1 7.5 16.5Z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5v5.25A1.75 1.75 0 0 1 17.75 20.5h-11A1.75 1.75 0 0 1 5 18.75v-11A1.75 1.75 0 0 1 6.75 6h5.5" />
+                </svg>
+                Edit Jurnal dan Kehadiran
+            </a>
+        @endif
         <a href="{{ $backUrl }}" class="btn-back-link">
             <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
@@ -683,9 +699,36 @@
     /* ACTION FOOTER & BUTTON */
     .action-footer {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        gap: 12px;
         margin-top: 10px;
     }
+
+    .journal-feedback {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+    .journal-feedback.success { border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; }
+    .journal-feedback.error { border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; }
+
+    .btn-edit-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border: 1px solid #b7dfd2;
+        border-radius: 12px;
+        background: #eff8f4;
+        color: #176d5d;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+    .btn-edit-link svg { width: 16px; height: 16px; }
 
     .btn-back-link {
         display: inline-flex;

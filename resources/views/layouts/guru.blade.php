@@ -67,8 +67,44 @@
 
         .sidebar-top {
             display: flex;
+            flex: 1 1 auto;
+            min-height: 0;
             flex-direction: column;
+            overflow-y: auto;
         }
+
+        .sidebar-logout {
+            flex: 0 0 auto;
+            margin-top: auto;
+            padding: 12px;
+            border-top: 1px solid rgba(199, 210, 254, .16);
+        }
+
+        .sidebar-logout button {
+            display: flex;
+            width: 100%;
+            min-height: 46px;
+            align-items: center;
+            gap: 13px;
+            padding: 11px 16px;
+            border: 1px solid rgba(255, 255, 255, .12);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .07);
+            color: #e0e7ff;
+            font: inherit;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: background .18s ease, border-color .18s ease;
+        }
+
+        .sidebar-logout button:hover {
+            border-color: rgba(255, 255, 255, .22);
+            background: rgba(255, 255, 255, .14);
+        }
+
+        .sidebar-logout svg { width: 19px; height: 19px; flex: 0 0 19px; }
 
         .sidebar-brand {
             padding: 24px 24px 32px;
@@ -442,7 +478,6 @@
 
             .desktop-main {
                 margin-left: 0;
-                padding-top: 58px;
             }
 
             .desktop-header {
@@ -634,7 +669,6 @@
                         <span>Dashboard</span>
                     </a>
 
-                    @unless(cache('jadwal_all_disabled', false))
                     {{-- ISI JURNAL --}}
                     <a
                         href="{{ route('guru.jurnal.create') }}"
@@ -656,7 +690,6 @@
 
                         <span>Isi Jurnal</span>
                     </a>
-                    @endunless
 
                     {{-- DAFTAR JURNAL --}}
                     <a
@@ -703,6 +736,17 @@
 
             </div>
 
+            <div class="sidebar-logout">
+                <form action="{{ route('logout') }}" method="POST" onsubmit="return confirm('Anda yakin ingin logout?');">
+                    @csrf
+                    <button type="submit">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M15.75 8.25V5.625A1.875 1.875 0 0 0 13.875 3.75h-7.5A1.875 1.875 0 0 0 4.5 5.625v12.75a1.875 1.875 0 0 0 1.875 1.875h7.5a1.875 1.875 0 0 0 1.875-1.875V15.75M10.5 12h9m0 0-3.75-3.75M19.5 12l-3.75 3.75" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
         </aside>
 
         {{-- MOBILE OVERLAY --}}

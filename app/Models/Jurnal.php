@@ -33,6 +33,8 @@ class Jurnal extends Model
         'diisi_oleh_piket',
         'validated_by',
         'validated_at',
+        'piket_approved_by',
+        'piket_approved_at',
         'catatan_revisi',
         'catatan_umum',
     ];
@@ -40,6 +42,7 @@ class Jurnal extends Model
     protected $casts = [
         'tanggal' => 'date',
         'validated_at' => 'datetime',
+        'piket_approved_at' => 'datetime',
         'diisi_oleh_piket' => 'boolean',
     ];
 
@@ -77,6 +80,11 @@ class Jurnal extends Model
     public function validator()
     {
         return $this->belongsTo(User::class, 'validated_by', 'id_user');
+    }
+
+    public function piketApprover()
+    {
+        return $this->belongsTo(User::class, 'piket_approved_by', 'id_user');
     }
 
     public function jamMulai()

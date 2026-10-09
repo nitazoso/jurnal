@@ -292,7 +292,7 @@
                                        class="hidden"
                                        {{ old('mode_durasi', $adaDurasiBerbeda ? 'fleksibel' : 'seragam') === 'fleksibel' ? 'checked' : '' }}>
 
-                                <div class="option-box flex items-center gap-3
+                                <!-- <div class="option-box flex items-center gap-3
                                             border border-slate-200 rounded-xl p-4
                                             hover:border-indigo-300 hover:bg-indigo-50/30 transition">
 
@@ -310,7 +310,7 @@
                                         </div>
                                     </div>
 
-                                </div>
+                                </div> -->
                             </label>
 
 
@@ -630,7 +630,7 @@
                                                        name="istirahat[{{ $index }}][durasi]"
                                                        min="1"
                                                        max="180"
-                                                       value="{{ $ist->durasi_menit }}"
+                                                       value="{{ $ist->durasi_menit ?? \Carbon\Carbon::parse($ist->jam_mulai)->diffInMinutes(\Carbon\Carbon::parse($ist->jam_selesai)) }}"
                                                        class="w-full h-full border-0 outline-none
                                                               text-center text-xs font-bold">
 

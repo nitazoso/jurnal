@@ -34,6 +34,9 @@
             </svg>
         </span>
         <h3 id="shared-account-heading">Informasi Akun</h3>
+        @if($showEditButton ?? false)
+            <button type="button" class="profile-modal-trigger shared-account-edit" data-profile-edit-open>✎ Edit Profil</button>
+        @endif
     </div>
 
     <dl class="shared-account-list">
@@ -62,6 +65,13 @@
             gap: 10px;
             padding-bottom: 15px;
             border-bottom: 1px solid #edf0f6;
+        }
+
+        .shared-account-edit {
+            margin-left: auto;
+            padding: 9px 12px;
+            font-size: 12px;
+            white-space: nowrap;
         }
 
         .shared-account-icon {

@@ -16,6 +16,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class DispenController extends Controller
 {
@@ -40,8 +41,9 @@ class DispenController extends Controller
         ]);
 
         $jenisDefault = in_array($request->query('jenis'), ['izin', 'sakit'], true) ? $request->query('jenis') : 'izin';
+        $dispen = null;
 
-        return view('piket.izin-sakit.create', compact('kelases', 'siswaPerKelas', 'jenisDefault'));
+        return view('piket.izin-sakit.create', compact('dispen', 'kelases', 'siswaPerKelas', 'jenisDefault'));
     }
 
     public function izinSakitStore(Request $request)
@@ -155,36 +157,39 @@ class DispenController extends Controller
             ? $request->query('status')
             : 'menunggu';
 
-        $statusCounts = Dispen::where('jenis', 'dispen')
-            ->selectRaw('status, COUNT(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status');
+        $records = Dispen::with([
+            'siswa.kelas', 'jamMulai', 'jamSelesai', 'approver', 'petugasKesiswaan.guru',
+        ])->where('jenis', 'dispen')->latest('tanggal')->latest('id_dispen')->get();
 
-        $query = Dispen::with([
-            'siswa.kelas',
-            'jamMulai',
-            'jamSelesai',
-            'approver',
-            'petugasKesiswaan.guru',
-        ])->where('jenis', 'dispen');
-
-        if ($filterStatus === 'menunggu') {
-            $query->where('status', 'menunggu');
-        } elseif ($filterStatus === 'riwayat') {
-            $query->whereIn('status', ['disetujui', 'ditolak']);
-        }
-
-        $dispens = $query
-            ->orderByRaw("CASE WHEN status = 'menunggu' THEN 0 ELSE 1 END")
-            ->latest('tanggal')
-            ->paginate(10)
-            ->withQueryString();
+        $groups = $records->groupBy(fn (Dispen $item) => $item->batch_token ?: 'single-' . $item->id_dispen)
+            ->map(function ($items) {
+                $primary = $items->first();
+                $primary->batchItems = $items->values();
+                $primary->student_count = $items->count();
+                $primary->class_count = $items->pluck('siswa.id_kelas')->filter()->unique()->count();
+                return $primary;
+            });
 
         $counts = [
-            'menunggu' => (int) ($statusCounts['menunggu'] ?? 0),
-            'riwayat' => (int) ($statusCounts['disetujui'] ?? 0) + (int) ($statusCounts['ditolak'] ?? 0),
-            'semua' => (int) $statusCounts->sum(),
+            'menunggu' => $groups->where('status', 'menunggu')->count(),
+            'riwayat' => $groups->whereIn('status', ['disetujui', 'ditolak'])->count(),
+            'semua' => $groups->count(),
         ];
+
+        $filtered = match ($filterStatus) {
+            'menunggu' => $groups->where('status', 'menunggu'),
+            'riwayat' => $groups->whereIn('status', ['disetujui', 'ditolak']),
+            default => $groups,
+        };
+        $perPage = 12;
+        $page = max(1, LengthAwarePaginator::resolveCurrentPage());
+        $dispens = new LengthAwarePaginator(
+            $filtered->forPage($page, $perPage)->values(),
+            $filtered->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('piket.dispen.index', compact('dispens', 'filterStatus', 'counts'));
     }
@@ -206,7 +211,10 @@ class DispenController extends Controller
             ->orderBy('jam_ke')
             ->get();
 
-        return view('piket.dispen.create', $this->formData($jamPels));
+        return view('piket.dispen.create', array_merge(
+            $this->formData($jamPels),
+            ['dispen' => null, 'editing' => false, 'initialStudents' => [['id_kelas' => '', 'id_siswa' => '']]]
+        ));
     }
 
     public function sickCreate()
@@ -227,69 +235,69 @@ class DispenController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'id_kelas' => 'required|exists:kelases,id_kelas',
-            'id_siswa' => [
-                'required',
-                Rule::exists('siswas', 'id_siswa')->where(
-                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
-                ),
-            ],
-            'tanggal' => 'required|date',
-            'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
-            'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
-            'alasan' => 'required|string|max:255',
-        ], [
-            'id_kelas.required' => 'Kelas wajib dipilih.',
-            'id_siswa.required' => 'Siswa wajib dipilih.',
-            'id_siswa.exists' => 'Siswa tidak ditemukan pada kelas yang dipilih.',
-            'tanggal.required' => 'Tanggal dispensasi wajib diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'id_jam_mulai.required' => 'Jam mulai wajib dipilih.',
-            'id_jam_selesai.required' => 'Jam selesai wajib dipilih.',
-            'alasan.required' => 'Alasan dispensasi wajib diisi.',
-        ]);
-
-        // Cari petugas Waka/Kesiswaan berdasarkan jadwal pada tanggal tersebut
+        $validated = $this->validateDispenBatch($request);
         $petugas = $this->wakaBertugas($validated['tanggal']);
 
         if (! $petugas) {
             $formattedDate = Carbon::parse($validated['tanggal'])->format('d-m-Y');
-            return back()
-                ->withInput()
-                ->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
+            return back()->withInput()->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
                 ->with('error', "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket.");
         }
-
         if (empty($petugas->no_hp)) {
-            return back()
-                ->withInput()
-                ->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
+            return back()->withInput()->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
                 ->with('error', "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia.");
         }
 
-        $dispen = Dispen::create([
-            'id_siswa' => $validated['id_siswa'],
-            'id_kesiswaan' => User::where('id_guru', $petugas->id_guru)->value('id_user'),
-            'submitted_by' => auth()->id(),
-            'tanggal' => $validated['tanggal'],
-            'id_jam_mulai' => $validated['id_jam_mulai'],
-            'id_jam_selesai' => $validated['id_jam_selesai'],
-            'alasan' => $validated['alasan'],
-            'status' => 'menunggu',
-            'token_verifikasi' => Str::random(64),
-        ]);
+        $batchToken = (string) Str::uuid();
+        $verificationToken = Str::random(64);
+        $wakaUserId = User::where('id_guru', $petugas->id_guru)->value('id_user');
+        $first = DB::transaction(function () use ($validated, $batchToken, $verificationToken, $wakaUserId) {
+            $first = null;
+            foreach ($validated['students'] as $student) {
+                $item = Dispen::create([
+                    'id_siswa' => $student['id_siswa'],
+                    'batch_token' => $batchToken,
+                    'jenis' => 'dispen',
+                    'id_kesiswaan' => $wakaUserId,
+                    'submitted_by' => auth()->id(),
+                    'tanggal' => $validated['tanggal'],
+                    'id_jam_mulai' => $validated['id_jam_mulai'],
+                    'id_jam_selesai' => $validated['id_jam_selesai'],
+                    'alasan' => $validated['alasan'],
+                    'status' => 'menunggu',
+                    'token_verifikasi' => $verificationToken,
+                ]);
+                $first ??= $item;
+            }
+            return $first;
+        });
 
-        return redirect()->route('piket.dispen.summary', $dispen->id_dispen);
+        return redirect()->route('piket.dispen.summary', $first->id_dispen);
     }
 
     public function summary(Dispen $dispen)
     {
-        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
+        $dispens = $this->batchQuery($dispen)->with(['siswa.kelas', 'jamMulai', 'jamSelesai'])->get();
+        $dispen = $dispens->first();
         $petugas = $this->wakaBertugas($dispen->tanggal->format('Y-m-d'));
         $verificationUrl = route('dispen.verifikasi', $dispen->token_verifikasi);
 
-        return view('piket.dispen.summary', compact('dispen', 'petugas', 'verificationUrl'));
+        return view('piket.dispen.summary', compact('dispen', 'dispens', 'petugas', 'verificationUrl'));
+    }
+
+    public function detail(Request $request, Dispen $dispen)
+    {
+        $dispens = $this->batchQuery($dispen)
+            ->with(['siswa.kelas', 'jamMulai', 'jamSelesai', 'approver', 'petugasKesiswaan.guru'])
+            ->get();
+        $dispen = $dispens->first();
+        $petugas = $this->wakaBertugas($dispen->tanggal->format('Y-m-d'));
+
+        if ($request->ajax()) {
+            return view('piket.dispen.partials.detail-content', compact('dispen', 'dispens', 'petugas'));
+        }
+
+        return view('piket.dispen.detail', compact('dispen', 'dispens', 'petugas'));
     }
 
     /**
@@ -299,7 +307,8 @@ class DispenController extends Controller
     {
         abort_unless($dispen->status === 'menunggu', 409, 'Dispen ini sudah diproses.');
 
-        $dispen->load(['siswa.kelas', 'jamMulai', 'jamSelesai']);
+        $dispens = $this->batchQuery($dispen)->with(['siswa.kelas', 'jamMulai', 'jamSelesai'])->get();
+        $dispen = $dispens->first();
 
         // Ambil penugasan Waka terbaru untuk tanggal Dispen, termasuk pengajuan lama.
         $petugas = $this->wakaBertugas($dispen->tanggal->format('Y-m-d'));
@@ -330,9 +339,11 @@ class DispenController extends Controller
         $jamMulaiText = $dispen->jamMulai ? substr($dispen->jamMulai->jam_mulai, 0, 5) : '-';
         $jamSelesaiText = $dispen->jamSelesai ? substr($dispen->jamSelesai->jam_selesai, 0, 5) : '-';
 
-        $message = "Permohonan Dispensasi Siswa\n\n"
-            . "Nama siswa: " . ($dispen->siswa->nama_siswa ?? '-') . "\n"
-            . "Kelas: " . ($dispen->siswa->kelas->nama_kelas ?? '-') . "\n"
+        $studentLines = $dispens->values()->map(fn ($item, $index) => ($index + 1) . '. '
+            . ($item->siswa->nama_siswa ?? '-') . ' — '
+            . ($item->siswa->kelas->nama_kelas ?? '-'))->implode("\n");
+        $message = "Permohonan Dispensasi Siswa (" . $dispens->count() . " siswa)\n\n"
+            . $studentLines . "\n\n"
             . "Tanggal: " . $dispen->tanggal->format('d-m-Y') . "\n"
             . "Jam: " . $jamMulaiText . " - " . $jamSelesaiText . "\n"
             . "Alasan: " . $dispen->alasan . "\n\n"
@@ -355,76 +366,66 @@ class DispenController extends Controller
     public function edit(Dispen $dispen)
     {
         abort_unless($dispen->status === 'menunggu', 409, 'Dispen yang sudah diproses tidak dapat diedit.');
+        $jamPels = JamPel::where('jenis', 'pelajaran')->orderBy('jam_ke')->get();
+        $items = $this->batchQuery($dispen)->with('siswa')->get();
+        $initialStudents = $items->map(fn ($item) => [
+            'id_kelas' => $item->siswa?->id_kelas,
+            'id_siswa' => $item->id_siswa,
+        ])->values()->all();
 
-        $jamPels = JamPel::where('jenis', 'pelajaran')
-            ->orderBy('jam_ke')
-            ->get();
-
-        return view('piket.dispen.edit', array_merge(
-            compact('dispen'),
-            $this->formData($jamPels)
+        return view('piket.dispen.create', array_merge(
+            compact('dispen', 'initialStudents'),
+            $this->formData($jamPels),
+            ['editing' => true]
         ));
     }
 
-    /**
-     * Update dispen.
-     */
     public function update(Request $request, Dispen $dispen)
     {
         abort_unless($dispen->status === 'menunggu', 409, 'Dispen yang sudah diproses tidak dapat diedit.');
-
-        $validated = $request->validate([
-            'id_kelas' => 'required|exists:kelases,id_kelas',
-            'id_siswa' => [
-                'required',
-                Rule::exists('siswas', 'id_siswa')->where(
-                    fn ($query) => $query->where('id_kelas', $request->input('id_kelas'))
-                ),
-            ],
-            'tanggal' => 'required|date',
-            'id_jam_mulai' => 'required|exists:jam_pels,id_jam',
-            'id_jam_selesai' => 'required|exists:jam_pels,id_jam',
-            'alasan' => 'required|string|max:255',
-        ], [
-            'id_kelas.required' => 'Kelas wajib dipilih.',
-            'id_siswa.required' => 'Siswa wajib dipilih.',
-            'id_siswa.exists' => 'Siswa tidak ditemukan pada kelas yang dipilih.',
-            'tanggal.required' => 'Tanggal dispensasi wajib diisi.',
-            'tanggal.date' => 'Format tanggal tidak valid.',
-            'id_jam_mulai.required' => 'Jam mulai wajib dipilih.',
-            'id_jam_selesai.required' => 'Jam selesai wajib dipilih.',
-            'alasan.required' => 'Alasan dispensasi wajib diisi.',
-        ]);
-
+        $validated = $this->validateDispenBatch($request);
         $petugas = $this->wakaBertugas($validated['tanggal']);
 
         if (! $petugas) {
             $formattedDate = Carbon::parse($validated['tanggal'])->format('d-m-Y');
-            return back()
-                ->withInput()
-                ->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
+            return back()->withInput()->withErrors(['tanggal' => "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket."])
                 ->with('error', "Waka untuk tanggal {$formattedDate} belum ada di jadwal piket.");
         }
-
         if (empty($petugas->no_hp)) {
-            return back()
-                ->withInput()
-                ->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
+            return back()->withInput()->withErrors(['tanggal' => "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia."])
                 ->with('error', "Nomor WhatsApp untuk Waka yang bertugas ({$petugas->nama_guru}) belum tersedia.");
         }
 
-        $dispen->update([
-            'id_siswa' => $validated['id_siswa'],
-            'id_kesiswaan' => User::where('id_guru', $petugas->id_guru)->value('id_user'),
-            'tanggal' => $validated['tanggal'],
-            'id_jam_mulai' => $validated['id_jam_mulai'],
-            'id_jam_selesai' => $validated['id_jam_selesai'],
-            'alasan' => $validated['alasan'],
-        ]);
+        $batchToken = $dispen->batch_token ?: (string) Str::uuid();
+        $verificationToken = $dispen->token_verifikasi ?: Str::random(64);
+        $wakaUserId = User::where('id_guru', $petugas->id_guru)->value('id_user');
+        DB::transaction(function () use ($dispen, $validated, $batchToken, $verificationToken, $wakaUserId) {
+            $existing = $this->batchQuery($dispen)->get()->keyBy('id_siswa');
+            foreach ($validated['students'] as $student) {
+                $data = [
+                    'batch_token' => $batchToken,
+                    'jenis' => 'dispen',
+                    'id_kesiswaan' => $wakaUserId,
+                    'submitted_by' => $dispen->submitted_by ?? auth()->id(),
+                    'tanggal' => $validated['tanggal'],
+                    'id_jam_mulai' => $validated['id_jam_mulai'],
+                    'id_jam_selesai' => $validated['id_jam_selesai'],
+                    'alasan' => $validated['alasan'],
+                    'status' => 'menunggu',
+                    'token_verifikasi' => $verificationToken,
+                ];
+                $current = $existing->pull($student['id_siswa']);
+                if ($current) {
+                    $current->update($data);
+                } else {
+                    Dispen::create($data + ['id_siswa' => $student['id_siswa']]);
+                }
+            }
+            $existing->each->delete();
+            $this->batchQuery($dispen)->update(['batch_token' => $batchToken]);
+        });
 
-        return redirect()
-            ->route('piket.dispen.index')
-            ->with('success', 'Data dispen berhasil diperbarui.');
+        return redirect()->route('piket.dispen.index')->with('success', 'Pengajuan dispen berhasil diperbarui.');
     }
 
     /**
@@ -434,7 +435,7 @@ class DispenController extends Controller
     {
         abort_unless($dispen->status === 'menunggu', 409, 'Dispen yang sudah diproses tidak dapat dihapus.');
 
-        $dispen->delete();
+        $this->batchQuery($dispen)->delete();
 
         return redirect()
             ->route('piket.dispen.index')
@@ -496,6 +497,46 @@ class DispenController extends Controller
                 ]);
             });
         });
+    }
+
+    private function validateDispenBatch(Request $request): array
+    {
+        $students = $request->input('students', []);
+        $rules = [
+            'students' => ['required', 'array', 'min:1'],
+            'tanggal' => ['required', 'date'],
+            'id_jam_mulai' => ['required', 'exists:jam_pels,id_jam'],
+            'id_jam_selesai' => ['required', 'exists:jam_pels,id_jam'],
+            'alasan' => ['required', 'string', 'max:255'],
+        ];
+        foreach (array_keys(is_array($students) ? $students : []) as $index) {
+            $classId = data_get($students, "$index.id_kelas");
+            $rules["students.$index.id_kelas"] = ['required', 'exists:kelases,id_kelas'];
+            $rules["students.$index.id_siswa"] = [
+                'required', 'distinct',
+                Rule::exists('siswas', 'id_siswa')->where(fn ($query) => $query->where('id_kelas', $classId)),
+            ];
+        }
+
+        return $request->validate($rules, [
+            'students.required' => 'Tambahkan minimal satu siswa.',
+            'students.min' => 'Tambahkan minimal satu siswa.',
+            'students.*.id_kelas.required' => 'Kelas wajib dipilih untuk setiap siswa.',
+            'students.*.id_siswa.required' => 'Siswa wajib dipilih untuk setiap baris.',
+            'students.*.id_siswa.distinct' => 'Siswa yang sama tidak boleh ditambahkan dua kali.',
+            'students.*.id_siswa.exists' => 'Siswa tidak cocok dengan kelas yang dipilih.',
+            'tanggal.required' => 'Tanggal dispensasi wajib diisi.',
+            'id_jam_mulai.required' => 'Jam mulai wajib dipilih.',
+            'id_jam_selesai.required' => 'Jam selesai wajib dipilih.',
+            'alasan.required' => 'Alasan dispensasi wajib diisi.',
+        ]);
+    }
+
+    private function batchQuery(Dispen $dispen)
+    {
+        return $dispen->batch_token
+            ? Dispen::where('batch_token', $dispen->batch_token)
+            : Dispen::whereKey($dispen->id_dispen);
     }
 
     /**

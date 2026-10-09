@@ -217,10 +217,37 @@
     padding: 16px 20px 20px;
 }
 
-.schedule-table-wrapper {
-    width: 100%;
-    overflow-x: auto;
+.schedule-list {
+    display: grid;
+    gap: 12px;
 }
+
+.schedule-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.schedule-item-main { min-width: 0; }
+.schedule-item-meta { display:flex; flex-wrap:wrap; gap:7px; align-items:center; margin-bottom:8px; }
+.schedule-item-number { color:#64748B; font-size:11px; font-weight:800; }
+.schedule-item-class { padding:4px 9px; border-radius:7px; background:#EEF2FF; color:#2D336B; font-size:11px; font-weight:800; }
+.schedule-item-subject { margin:0; color:#0F172A; font-size:15px; font-weight:800; }
+.schedule-item-time { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:7px; color:#64748B; font-size:12px; font-weight:650; }
+.schedule-item-status { display:inline-flex; align-items:center; gap:5px; margin-top:9px; font-size:11px; font-weight:800; }
+.schedule-item-status.is-ready { color:#047857; }
+.schedule-item-status.is-locked { color:#B45309; }
+.schedule-item-status.is-done { color:#475569; }
+.schedule-item-action { display:flex; flex-direction:column; align-items:flex-end; gap:7px; }
+.journal-action.is-disabled { background:#E2E8F0; color:#64748B; cursor:not-allowed; box-shadow:none; }
+.journal-action.is-disabled:hover { transform:none; box-shadow:none; }
+.schedule-locked-note { max-width:180px; color:#64748B; font-size:10px; line-height:1.4; text-align:right; }
+.schedule-empty { padding:28px 16px; border:1px dashed #CBD5E1; border-radius:12px; color:#64748B; text-align:center; }
 
 .schedule-table {
     width: 100%;
@@ -501,6 +528,24 @@
         padding: 12px 14px 16px;
     }
 
+    .schedule-item {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .schedule-item-action {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .schedule-locked-note {
+        max-width: none;
+        text-align: left;
+        align-self: center;
+    }
+
     .schedule-today {
         font-size: 10.5px;
     }
@@ -589,131 +634,53 @@
         </div>
 
         <div class="schedule-content">
-
-            <div class="schedule-table-wrapper">
-
-                <table class="schedule-table">
-
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Hari</th>
-                            <th>Kelas</th>
-                            <th>Mata Pelajaran</th>
-                            <th>Jam Pelajaran</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-
+            @if($jadwals->isEmpty())
+                <div class="schedule-empty">
+                    Tidak ada jadwal mengajar untuk {{ config('app.jurnal_bebas_testing') ? 'akun ini' : 'hari ini' }}.
+                </div>
+            @else
+                <div class="schedule-list">
+                    @foreach($jadwals as $jadwal)
                         @php
-                            $allSlots = $jadwalsSaatIni->merge($jadwalsTertinggal);
+                            $sudahDiisiHariIni = $jadwal->jurnal_sudah_diisi_hari_ini;
+                            $bisaDiisiSekarang = $jadwal->bisa_diisi_sekarang && !$sudahDiisiHariIni;
+                            $jamMulaiDisplay = $jadwal->jamMulai?->jam_mulai ? substr($jadwal->jamMulai->jam_mulai, 0, 5) : '--:--';
+                            $jamSelesaiDisplay = $jadwal->jamSelesai?->jam_selesai ? substr($jadwal->jamSelesai->jam_selesai, 0, 5) : '--:--';
                         @endphp
-
-                        @forelse($allSlots as $jadwal)
-
-                            <tr>
-
-                                {{-- NO --}}
-                                <td>
-                                    <div class="schedule-number">
-                                        {{ $loop->iteration }}
-                                    </div>
-                                </td>
-
-                                {{-- HARI --}}
-                                <td>
-                                    <span class="schedule-day">
-                                        {{ $jadwal->hari }}
-                                    </span>
-                                </td>
-
-                                {{-- KELAS --}}
-                                <td>
-                                    <span class="schedule-class">
-                                        {{ $jadwal->kelas->nama_kelas ?? '-' }}
-                                    </span>
-                                </td>
-
-                                {{-- MATA PELAJARAN --}}
-                                <td>
-                                    <span class="schedule-subject">
-                                        {{ $jadwal->mapel->nama_mapel ?? '-' }}
-                                    </span>
-                                </td>
-
-                                {{-- JAM --}}
-                                <td>
-                                    <span class="schedule-time">
-
-                                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="9" />
-                                            <path d="M12 7v5l3 2" stroke-linecap="round" stroke-linejoin="round" />
-                                        </svg>
-
-                                        Jam Ke {{ $jadwal->jamMulai->jam_ke ?? '-' }}
-                                        -
-                                        {{ $jadwal->jamSelesai->jam_ke ?? '-' }}
-
-                                    </span>
-                                </td>
-
-                                {{-- AKSI --}}
-                                <td>
-                                    <a href="{{ route('guru.jurnal.form', ['jadwal' => $jadwal->id_jadwal]) }}"
-                                       class="journal-action">
-
-                                        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                            <path d="M12 5v14M5 12h14" stroke-linecap="round" />
-                                        </svg>
-
-                                        {{ $jadwal->jamSelesai && now()->gt(now()->copy()->setTimeFromTimeString($jadwal->jamSelesai->jam_selesai)) ? 'Isi Jurnal Terlambat' : 'Isi Jurnal' }}
-
-                                    </a>
-                                </td>
-
-                            </tr>
-
-                        @empty
-
-                            <tr class="empty-row">
-
-                                <td colspan="6">
-
-                                    <div class="empty-state">
-
-                                        <div class="empty-icon">
-                                            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
-                                                <rect width="18" height="18" x="3" y="3" rx="2" />
-                                                <path d="M8 8h8M8 12h8M8 16h5" stroke-linecap="round" />
-                                            </svg>
-                                        </div>
-
-                                        <p class="empty-title">
-                                            Tidak ada jurnal yang perlu diisi
-                                        </p>
-
-                                        <p class="empty-text">
-                                            {{ config('app.jurnal_bebas_testing')
-                                                ? 'Belum ada jadwal mengajar yang terdaftar untuk akun ini.'
-                                                : 'Tidak ada jadwal mengajar yang perlu diisi untuk hari ini.' }}
-                                        </p>
-
-                                    </div>
-
-                                </td>
-
-                            </tr>
-
-                        @endforelse
-
-                    </tbody>
-
-                </table>
-
-            </div>
-
+                        <article class="schedule-item">
+                            <div class="schedule-item-main">
+                                <div class="schedule-item-meta">
+                                    <span class="schedule-item-number">Jadwal {{ $loop->iteration }}</span>
+                                    <span class="schedule-item-class">{{ $jadwal->kelas->nama_kelas ?? '-' }}</span>
+                                </div>
+                                <h3 class="schedule-item-subject">{{ $jadwal->mapel->nama_mapel ?? 'Mata pelajaran' }}</h3>
+                                <div class="schedule-item-time">
+                                    <span>{{ $jadwal->hari }}</span><span>·</span>
+                                    <span>{{ $jamMulaiDisplay }}–{{ $jamSelesaiDisplay }}</span><span>·</span>
+                                    <span>Jam {{ $jadwal->jamMulai->jam_ke ?? '-' }}–{{ $jadwal->jamSelesai->jam_ke ?? '-' }}</span>
+                                </div>
+                                @if($sudahDiisiHariIni)
+                                    <span class="schedule-item-status is-done">✓ Jurnal hari ini sudah diisi</span>
+                                @elseif($bisaDiisiSekarang)
+                                    <span class="schedule-item-status is-ready">● {{ $jadwal->jurnal_terlambat ? 'Bisa diisi terlambat' : 'Waktu pengisian tersedia' }}</span>
+                                @else
+                                    <span class="schedule-item-status is-locked">◷ Belum waktunya mengisi</span>
+                                @endif
+                            </div>
+                            <div class="schedule-item-action">
+                                @if($sudahDiisiHariIni)
+                                    <a href="{{ route('guru.jurnal.index') }}" class="journal-action">Lihat Jurnal</a>
+                                @elseif($bisaDiisiSekarang)
+                                    <a href="{{ route('guru.jurnal.form', ['jadwal' => $jadwal->id_jadwal]) }}" class="journal-action">＋ Isi Jurnal</a>
+                                @else
+                                    <span class="journal-action is-disabled" aria-disabled="true">Belum tersedia</span>
+                                    <span class="schedule-locked-note">Tombol aktif mulai {{ $jamMulaiDisplay }}</span>
+                                @endif
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
     </section>
