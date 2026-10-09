@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\JamPelController;
 use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\JadwalImportController;
 use App\Http\Controllers\Admin\JadwalPiketController as AdminJadwalPiketController;
 use App\Http\Controllers\Admin\SiswaController;
 
@@ -203,6 +204,9 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
     Route::get('/admin/jadwal', [JadwalController::class, 'index'])
         ->name('admin.jadwal.index');
 
+    Route::get('/admin/jadwal/export', [JadwalController::class, 'export'])
+        ->name('admin.jadwal.export');
+
     Route::get('/admin/jadwal/tahun-ajaran', [JadwalController::class, 'academicPeriodSettings'])
         ->name('admin.jadwal.academic-period');
 
@@ -211,6 +215,11 @@ Route::middleware(['auth', 'role:Admin'])->group(function () {
 
     Route::get('/admin/jadwal/create', [JadwalController::class, 'create'])
         ->name('admin.jadwal.create');
+
+    Route::get('/admin/jadwal/import', [JadwalImportController::class, 'create'])->name('admin.jadwal.import');
+    Route::post('/admin/jadwal/import', [JadwalImportController::class, 'preview'])->name('admin.jadwal.import.preview-upload');
+    Route::get('/admin/jadwal/import/{token}', [JadwalImportController::class, 'showPreview'])->name('admin.jadwal.import.preview');
+    Route::post('/admin/jadwal/import/{token}', [JadwalImportController::class, 'store'])->name('admin.jadwal.import.store');
 
     Route::post('/admin/jadwal', [JadwalController::class, 'store'])
         ->name('admin.jadwal.store');

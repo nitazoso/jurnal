@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Mapel;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,57 +10,57 @@ class MapelSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('mapels')->insert(
-array (
-  0 => 
-  array (
-    'id_mapel' => 1,
-    'nama_mapel' => 'Matematika Wajib',
-    'created_at' => '2026-09-27 04:02:36',
-    'updated_at' => '2026-09-27 04:02:36',
-    'deleted_at' => NULL,
-  ),
-  1 => 
-  array (
-    'id_mapel' => 2,
-    'nama_mapel' => 'Bahasa Indonesia',
-    'created_at' => '2026-09-27 04:02:36',
-    'updated_at' => '2026-09-27 04:02:36',
-    'deleted_at' => NULL,
-  ),
-  2 => 
-  array (
-    'id_mapel' => 3,
-    'nama_mapel' => 'Pendidikan Pancasila',
-    'created_at' => '2026-09-27 04:02:36',
-    'updated_at' => '2026-09-27 04:02:36',
-    'deleted_at' => NULL,
-  ),
-  3 => 
-  array (
-    'id_mapel' => 4,
-    'nama_mapel' => 'Sejarah',
-    'created_at' => '2026-09-28 01:30:12',
-    'updated_at' => '2026-09-28 01:30:12',
-    'deleted_at' => NULL,
-  ),
-  4 => 
-  array (
-    'id_mapel' => 5,
-    'nama_mapel' => 'PAI',
-    'created_at' => '2026-09-28 01:30:23',
-    'updated_at' => '2026-09-28 01:30:23',
-    'deleted_at' => NULL,
-  ),
-  5 => 
-  array (
-    'id_mapel' => 6,
-    'nama_mapel' => 'iPA',
-    'created_at' => '2026-09-28 01:30:35',
-    'updated_at' => '2026-09-28 01:30:35',
-    'deleted_at' => NULL,
-  ),
-)
-        );
+        $namaMapels = [
+            'Matematika',
+            'Bahasa Inggris',
+            'Bahasa Jawa',
+            'Bahasa Jepang',
+            'PJOK',
+            'Seni Budaya',
+            'IPAS',
+            'Informatika',
+            'BK',
+            'Pendidikan Agama Islam dan Budi Pekerti',
+            'Koding dan Kecerdasan Artifisial',
+            'Dasar AKL',
+            'Dasar AN',
+            'Dasar BP',
+            'Dasar DKV',
+            'Dasar MPLB',
+            'Dasar PM',
+            'Dasar PPLG',
+            'Dasar TJKT',
+            'Dasar TKI',
+            'Dasar ULP',
+            'Konsentrasi AK',
+            'Konsentrasi AN',
+            'Konsentrasi BD',
+            'Konsentrasi DKV',
+            'Konsentrasi MP',
+            'Konsentrasi PSPT',
+            'Konsentrasi RPL',
+            'Konsentrasi TKI',
+            'Konsentrasi TKJ',
+            'Konsentrasi ULW',
+            'Kreativitas, Inovasi, dan Kewirausahaan',
+        ];
+
+        DB::transaction(function () use ($namaMapels): void {
+            foreach ($namaMapels as $namaMapel) {
+                $mapel = Mapel::withTrashed()
+                    ->whereRaw('LOWER(nama_mapel) = ?', [mb_strtolower($namaMapel)])
+                    ->first();
+
+                if ($mapel) {
+                    if ($mapel->trashed()) {
+                        $mapel->restore();
+                    }
+
+                    continue;
+                }
+
+                Mapel::create(['nama_mapel' => $namaMapel]);
+            }
+        });
     }
 }
