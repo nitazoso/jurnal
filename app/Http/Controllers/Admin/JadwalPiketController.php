@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\JadwalPiketExport;
 use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Models\PiketJadwal;
@@ -12,10 +13,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class JadwalPiketController extends Controller
 {
+    public function export(Request $request)
+    {
+        $validated = $request->validate([
+            'month' => ['required', 'date_format:Y-m'],
+        ]);
+
+        $month = Carbon::createFromFormat('Y-m', $validated['month'])->startOfMonth();
+        $filename = 'jadwal-piket-'.$month->format('Y-m').'.xlsx';
+
+        return Excel::download(new JadwalPiketExport($month), $filename);
+    }
+
     /**
      * =========================================================
      * INDEX
@@ -1660,4 +1674,3 @@ class JadwalPiketController extends Controller
 
     }
 }
-    

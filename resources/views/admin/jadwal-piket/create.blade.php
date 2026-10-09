@@ -505,24 +505,6 @@
 
             </div>
 
-            <div class="form-section">
-
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">📝</span>
-                        Keterangan
-                    </h2>
-                </div>
-
-                <textarea
-                    name="keterangan"
-                    class="form-control"
-                    style="height:100px;padding-top:12px;resize:vertical;"
-                    placeholder="Keterangan tambahan jika diperlukan..."
-                >{{ old('keterangan') }}</textarea>
-
-            </div>
-
             <div class="form-actions">
 
                 <a

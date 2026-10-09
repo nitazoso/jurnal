@@ -72,6 +72,82 @@
 
     <div class="w-full space-y-6">
 
+        @if(session('jadwal_import_result'))
+            @php
+                $importResult = session('jadwal_import_result');
+            @endphp
+            <div
+                x-data="{ open: true }"
+                x-show="open"
+                x-cloak
+                @keydown.escape.window="open = false"
+                class="fixed inset-0 z-[10000] flex items-center justify-center bg-slate-950/55 p-4 backdrop-blur-sm"
+                @click.self="open = false"
+            >
+                <section class="w-full max-w-xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-900/10" role="dialog" aria-modal="true" aria-labelledby="jadwal-import-result-title">
+                    <div class="flex items-start gap-4 px-6 pb-5 pt-6 sm:px-7">
+                        <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl {{ $importResult['replacement_aborted'] ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700' }}">
+                            <i class="fa-solid {{ $importResult['replacement_aborted'] ? 'fa-triangle-exclamation' : 'fa-circle-check' }} text-xl"></i>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[10px] font-extrabold uppercase tracking-[0.16em] text-indigo-600">Ringkasan impor</p>
+                            <h2 id="jadwal-import-result-title" class="mt-1 text-xl font-extrabold text-slate-900">
+                                {{ $importResult['replacement_aborted'] ? 'Jadwal belum diganti' : 'Impor jadwal berhasil' }}
+                            </h2>
+                            <p class="mt-1 text-sm leading-5 text-slate-500">
+                                @if($importResult['replacement_aborted'])
+                                    Jadwal sebelumnya tetap aman. Perbaiki data yang gagal lalu unggah ulang.
+                                @else
+                                    Jadwal lama sudah diganti dengan periode {{ $importResult['replaced_periods'] }}.
+                                @endif
+                            </p>
+                        </div>
+                        <button type="button" @click="open = false" class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-400 transition hover:bg-slate-100 hover:text-slate-700" aria-label="Tutup popup">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 px-6 sm:px-7">
+                        <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                            <p class="text-xs font-bold text-emerald-700">Berhasil disimpan</p>
+                            <p class="mt-1 text-3xl font-extrabold text-emerald-800">{{ $importResult['processed'] }}</p>
+                        </div>
+                        <div class="rounded-2xl border border-rose-100 bg-rose-50 p-4">
+                            <p class="text-xs font-bold text-rose-700">Gagal diproses</p>
+                            <p class="mt-1 text-3xl font-extrabold text-rose-800">{{ count($importResult['failures']) }}</p>
+                        </div>
+                    </div>
+
+                    @if(count($importResult['failures']))
+                        <div class="px-6 pt-5 sm:px-7">
+                            <h3 class="text-sm font-extrabold text-slate-800">Baris yang perlu diperbaiki</h3>
+                            <div class="mt-2 max-h-64 divide-y divide-slate-100 overflow-y-auto rounded-2xl border border-slate-200">
+                                @foreach($importResult['failures'] as $failure)
+                                    <div class="p-3.5">
+                                        <div class="flex items-start gap-3">
+                                            <span class="shrink-0 rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-extrabold text-slate-600">Baris {{ $failure['row'] }}</span>
+                                            <div class="min-w-0">
+                                                <p class="text-xs font-bold text-rose-700">{{ $failure['reason'] }}</p>
+                                                @if(!empty($failure['source']))
+                                                    <p class="mt-1 text-xs leading-5 text-slate-500">Terbaca: {{ $failure['source'] }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    <div class="mt-6 flex justify-end border-t border-slate-100 bg-slate-50/70 px-6 py-4 sm:px-7">
+                        <button type="button" @click="open = false" class="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-extrabold text-white shadow-sm transition hover:bg-indigo-700">
+                            <i class="fa-solid fa-check text-xs"></i> Mengerti
+                        </button>
+                    </div>
+                </section>
+            </div>
+        @endif
+
         <!-- HEADER BANNER -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 transition-all duration-300">
 
