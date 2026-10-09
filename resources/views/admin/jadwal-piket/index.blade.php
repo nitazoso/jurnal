@@ -744,6 +744,81 @@
         background: #30366f;
     }
 
+    .piket-import-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+        padding: 18px 20px;
+        border: 1px solid #e5e7f5;
+        border-radius: 16px;
+        background: linear-gradient(110deg, #fff, #f6f7ff);
+    }
+
+    .piket-import-toolbar h2 { margin: 0; color: #1b234a; font-size: 15px; font-weight: 800; }
+    .piket-import-toolbar p { margin: 4px 0 0; color: #64748b; font-size: 12px; }
+    .piket-import-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .piket-export-button { background: #fff; border: 1px solid #cbd5e1; color: #1b234a; }
+    .piket-export-button:hover { background: #f1f5f9; }
+
+    .piket-import-result-dialog {
+        position: fixed;
+        inset: 0;
+        width: min(560px, calc(100vw - 32px));
+        max-width: none;
+        max-height: calc(100dvh - 32px);
+        margin: auto;
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        background: transparent;
+        color: inherit;
+    }
+
+    .piket-import-result-dialog::backdrop {
+        background: rgba(15, 23, 42, .42);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+    }
+
+    .piket-import-result-panel {
+        width: 100%;
+        max-height: calc(100dvh - 32px);
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        background: #fff;
+        box-shadow: 0 22px 60px rgba(15, 23, 42, .24);
+    }
+
+    .piket-import-result-dialog.is-warning .piket-import-result-panel { border-color: #fed7aa; }
+    .piket-import-result-dialog.is-success .piket-import-result-panel { border-color: #bbf7d0; }
+
+    .piket-import-result-heading { display: flex; align-items: flex-start; gap: 13px; padding: 23px 24px 18px; }
+    .piket-import-result-icon { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border-radius: 14px; font-size: 18px; }
+    .piket-import-result-icon.is-success { background: #dcfce7; color: #15803d; }
+    .piket-import-result-icon.is-warning { background: #fef3c7; color: #b45309; }
+    .piket-import-result-title-wrap { min-width: 0; flex: 1; }
+    .piket-import-result-title-wrap small { color: #4f46e5; font-size: 9px; font-weight: 900; letter-spacing: .14em; }
+    .piket-import-result-title-wrap h2 { margin: 3px 0 0; color: #172033; font-size: 19px; font-weight: 900; }
+    .piket-import-result-title-wrap p { margin: 5px 0 0; color: #64748b; font-size: 12px; line-height: 1.55; }
+    .piket-import-result-close { border: 0; background: transparent; color: #94a3b8; font-size: 25px; cursor: pointer; }
+    .piket-import-result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; padding: 0 24px; }
+    .piket-import-result-stats div { padding: 14px 16px; border: 1px solid #e2e8f0; border-radius: 15px; background: #f8fafc; }
+    .piket-import-result-stats div:first-child { border-color: #bbf7d0; background: #f0fdf4; }
+    .piket-import-result-stats div:last-child { border-color: #fecdd3; background: #fff1f2; }
+    .piket-import-result-stats span { display: block; color: #64748b; font-size: 11px; font-weight: 700; }
+    .piket-import-result-stats strong { display: block; margin-top: 3px; color: #166534; font-size: 27px; line-height: 1; }
+    .piket-import-result-stats div:last-child strong { color: #be123c; }
+    .piket-import-failure-heading { margin: 18px 24px 8px; color: #334155; font-size: 12px; font-weight: 800; }
+    .piket-import-failures { max-height: 270px; overflow-y: auto; margin: 0 24px; border: 1px solid #e2e8f0; border-radius: 13px; }
+    .piket-import-failures div { display: flex; gap: 10px; padding: 10px 12px; border-bottom: 1px solid #f1f5f9; }
+    .piket-import-failures div:last-child { border-bottom: 0; }
+    .piket-import-failures span { flex: 0 0 auto; color: #64748b; font-size: 10px; font-weight: 800; }
+    .piket-import-failures p { margin: 0; color: #be123c; font-size: 11px; line-height: 1.5; }
+    .piket-import-result-actions { display: flex; justify-content: flex-end; margin-top: 20px; padding: 14px 24px; border-top: 1px solid #f1f5f9; background: #f8fafc; }
+
     /* =========================
        RESPONSIVE
     ========================= */
@@ -762,6 +837,16 @@
     }
 
     @media (max-width: 640px) {
+        .piket-import-toolbar { align-items: flex-start; flex-direction: column; }
+        .piket-import-actions { width: 100%; flex-direction: column; }
+        .piket-import-actions .btn-primary { width: 100%; justify-content: center; }
+        .piket-import-result-dialog { max-height: calc(100dvh - 24px); }
+        .piket-import-result-panel { max-height: calc(100dvh - 24px); border-radius: 16px; }
+        .piket-import-result-heading, .piket-import-result-stats { padding-right: 16px; padding-left: 16px; }
+        .piket-import-result-stats { grid-template-columns: 1fr; }
+        .piket-import-failure-heading { margin-right: 16px; margin-left: 16px; }
+        .piket-import-failures { margin-right: 16px; margin-left: 16px; }
+        .piket-import-result-actions { padding-right: 16px; padding-left: 16px; }
         .filter-form {
             grid-template-columns: 1fr;
         }
@@ -802,6 +887,96 @@
             {{ session('success') }}
         </div>
     @endif
+
+    @if(session('piket_import_result'))
+        @php
+            $piketImportResult = session('piket_import_result');
+        @endphp
+        <dialog id="piket-import-result-modal" class="piket-import-result-dialog {{ $piketImportResult['aborted'] ? 'is-warning' : 'is-success' }}" aria-labelledby="piket-import-result-title">
+            <section class="piket-import-result-panel">
+                <div class="piket-import-result-heading">
+                    <span class="piket-import-result-icon {{ $piketImportResult['aborted'] ? 'is-warning' : 'is-success' }}">
+                        <i class="fas {{ $piketImportResult['aborted'] ? 'fa-triangle-exclamation' : 'fa-circle-check' }}"></i>
+                    </span>
+                    <div class="piket-import-result-title-wrap">
+                        <small>RINGKASAN IMPOR JADWAL PIKET</small>
+                        <h2 id="piket-import-result-title">{{ $piketImportResult['aborted'] ? 'Jadwal belum diganti' : 'Impor jadwal berhasil' }}</h2>
+                        <p>{{ $piketImportResult['aborted'] ? 'Jadwal lama tetap aman. Perbaiki hasil baca PDF lalu unggah kembali.' : 'Jadwal bulan ' . $piketImportResult['month'] . ' sudah diperbarui.' }}</p>
+                    </div>
+                    <button type="button" class="piket-import-result-close" data-close-piket-import aria-label="Tutup">&times;</button>
+                </div>
+                <div class="piket-import-result-stats">
+                    <div><span>Jadwal berhasil disimpan</span><strong>{{ $piketImportResult['processed'] }}</strong></div>
+                    <div><span>Data perlu diperbaiki</span><strong>{{ count($piketImportResult['failures']) }}</strong></div>
+                </div>
+                @if(count($piketImportResult['failures']))
+                    <h3 class="piket-import-failure-heading">Periksa bagian berikut</h3>
+                    <div class="piket-import-failures">
+                        @foreach($piketImportResult['failures'] as $failure)
+                            <div><span>Baris {{ $failure['row'] }}</span><p>{{ $failure['reason'] }}</p></div>
+                        @endforeach
+                    </div>
+                @endif
+                <div class="piket-import-result-actions">
+                    @if($piketImportResult['aborted'])
+                        <a href="{{ route('admin.jadwal-piket.import') }}" class="btn-primary">
+                            <i class="fas fa-rotate-right"></i> Unggah ulang PDF
+                        </a>
+                    @else
+                        <button type="button" class="btn-primary" data-close-piket-import>Oke, mengerti</button>
+                    @endif
+                </div>
+            </section>
+        </dialog>
+        <script>
+            (() => {
+                const dialog = document.getElementById('piket-import-result-modal');
+                if (!dialog) return;
+
+                const previousBodyOverflow = document.body.style.overflow;
+                document.body.style.overflow = 'hidden';
+                dialog.showModal();
+
+                const closeDialog = () => {
+                    if (dialog.open) dialog.close();
+                };
+
+                dialog.addEventListener('close', () => {
+                    document.body.style.overflow = previousBodyOverflow;
+                    dialog.remove();
+                });
+
+                dialog.querySelectorAll('[data-close-piket-import]').forEach((button) => {
+                    button.addEventListener('click', closeDialog);
+                });
+
+                dialog.addEventListener('click', (event) => {
+                    if (event.target !== dialog) return;
+                    const bounds = dialog.getBoundingClientRect();
+                    const clickedInside = event.clientX >= bounds.left && event.clientX <= bounds.right
+                        && event.clientY >= bounds.top && event.clientY <= bounds.bottom;
+                    if (!clickedInside) closeDialog();
+                });
+
+                requestAnimationFrame(() => dialog.querySelector('button')?.focus());
+            })();
+        </script>
+    @endif
+
+    <div class="piket-import-toolbar">
+        <div>
+            <h2>Jadwal petugas bulanan</h2>
+            <p>Atur dan tinjau penugasan piket harian.</p>
+        </div>
+        <div class="piket-import-actions">
+            <a href="{{ route('admin.jadwal-piket.export', ['month' => $tanggalAwal->format('Y-m')]) }}" class="btn-primary piket-export-button">
+                <i class="fas fa-file-excel"></i> Ekspor Excel
+            </a>
+            <a href="{{ route('admin.jadwal-piket.import') }}" class="btn-primary">
+                <i class="fas fa-file-import"></i> Impor jadwal PDF
+            </a>
+        </div>
+    </div>
 
     {{-- =========================
          HEADER
@@ -1507,25 +1682,6 @@
                     </div>
 
                 </div>
-
-
-                {{-- KETERANGAN --}}
-                <div class="form-section">
-
-                    <h3 class="form-section-title">
-                        Keterangan
-                    </h3>
-
-                    <textarea
-                        name="keterangan"
-                        id="createKeterangan"
-                        class="form-control"
-                        style="height:100px; padding:12px; resize:vertical;"
-                        placeholder="Tambahkan keterangan jika diperlukan..."
-                    ></textarea>
-
-                </div>
-
             </form>
 
         </div>
@@ -1717,25 +1873,6 @@
                     </div>
 
                 </div>
-
-
-                {{-- KETERANGAN --}}
-                <div class="form-section">
-
-                    <h3 class="form-section-title">
-                        Keterangan
-                    </h3>
-
-                    <textarea
-                        name="keterangan"
-                        id="editKeterangan"
-                        class="form-control"
-                        style="height:100px; padding:12px; resize:vertical;"
-                        placeholder="Tambahkan keterangan jika diperlukan..."
-                    ></textarea>
-
-                </div>
-
             </form>
 
         </div>
@@ -2742,16 +2879,6 @@
             data?.waka?.id_guru ?? '';
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | KETERANGAN
-        |--------------------------------------------------------------------------
-        */
-
-        document.getElementById('editKeterangan').value =
-            data?.keterangan ?? '';
-
-
         updatePetugasOptions('edit', 'pagi');
         updatePetugasOptions('edit', 'siang');
     }
@@ -2958,7 +3085,7 @@
         document.body.style.overflow = '';
     }
 
-    document.getElementById('deleteModal').addEventListener('click', function(event) {
+    document.getElementById('deleteModal')?.addEventListener('click', function(event) {
         if (event.target === this) {
             closeDeleteModal();
         }

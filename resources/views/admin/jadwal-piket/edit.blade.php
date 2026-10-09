@@ -427,17 +427,6 @@
 
             </div>
 
-            <div class="section">
-
-                <h2>📝 Keterangan</h2>
-
-                <textarea
-                    name="keterangan"
-                    placeholder="Keterangan tambahan..."
-                >{{ old('keterangan', $keterangan) }}</textarea>
-
-            </div>
-
             <div class="actions">
 
                 <button
